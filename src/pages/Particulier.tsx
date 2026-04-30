@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
 const PROFILES = [
-  { icon: Sun, name: "Maisons du Sud", desc: "Piscine + clim", detail: "Forte conso été. 6 mois de spreads spot très favorables." },
+  { icon: Sun, name: "Maisons du Sud", desc: "Piscine + clim", detail: "Forte conso été. 6 mois de spreads spot très favorables. Faire installer du solaire complet sur une villa du Sud, c'est un projet à 30 000 €+ sur 14 mois. Avec Dynawatt à 8 000 €, vous capturez 70% des économies dès le premier mois — et l'installation reste compatible avec un solaire futur." },
   { icon: Snowflake, name: "Maisons avec PAC", desc: "Pompe à chaleur + ECS", detail: "Conso hivernale élevée. Double levier batterie + pilotage thermique." },
   { icon: Zap, name: "Foyers avec VE", desc: "Recharge nocturne pilotée", detail: "Économies sur la charge VE : 200-400 €/an supplémentaires." },
   { icon: Waves, name: "Multiples charges flexibles", desc: "Piscine, jacuzzi, ECS", detail: "Plus de charges flexibles = plus d'économies." },
