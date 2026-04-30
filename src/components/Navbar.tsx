@@ -13,7 +13,6 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-7 text-sm font-medium">
           <Link to="/pro" className="hover:text-primary-light transition-colors">Pro</Link>
           <Link to="/particulier" className="hover:text-primary-light transition-colors">Particuliers</Link>
-          <Link to="/pilotage" className="hover:text-primary-light transition-colors">Pilotage</Link>
           <div className="relative group">
             <button className="flex items-center gap-1 hover:text-primary-light transition-colors">
               Comprendre <ChevronDown className="w-3 h-3" />
@@ -54,7 +53,6 @@ export const Navbar = () => {
         <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl px-4 py-4 flex flex-col gap-3">
           <Link to="/pro" onClick={() => setOpen(false)}>Pro</Link>
           <Link to="/particulier" onClick={() => setOpen(false)}>Particuliers</Link>
-          <Link to="/pilotage" onClick={() => setOpen(false)}>Pilotage</Link>
           <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-2">Comprendre</div>
           <Link to="/comprendre/tarification-dynamique" className="pl-3 text-sm" onClick={() => setOpen(false)}>Tarification dynamique</Link>
           <Link to="/comprendre/qui-n-est-pas-concerne" className="pl-3 text-sm" onClick={() => setOpen(false)}>Qui n'est pas concerné&nbsp;?</Link>
