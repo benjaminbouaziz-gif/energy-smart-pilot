@@ -1,17 +1,12 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProForm } from "@/components/ProForm";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Utensils, Hotel, Tent, Croissant, Building2, TrendingUp, Calendar, Wallet } from "lucide-react";
+import { ArrowRight, Building2, TrendingUp, Calendar, Wallet } from "lucide-react";
 import { useEffect } from "react";
-
-const SECTORS = [
-  { icon: Utensils, name: "Restaurants & Pizzerias", range: "30k-80k kWh/an", saving: "4 500 - 8 000 €/an" },
-  { icon: Hotel, name: "Hôtels", range: "80k-250k kWh/an", saving: "8 000 - 25 000 €/an" },
-  { icon: Tent, name: "Campings", range: "40k-150k kWh/an", saving: "5 000 - 15 000 €/an" },
-  { icon: Croissant, name: "Boulangeries & Artisans", range: "50k-100k kWh/an", saving: "5 000 - 12 000 €/an" },
-];
+import { SECTORS } from "@/lib/sectors";
 
 const ProPage = () => {
   useEffect(() => {
