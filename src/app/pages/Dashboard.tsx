@@ -13,6 +13,9 @@ const fmtEur = (n: number, d = 0) => `${n.toLocaleString("fr-FR", { minimumFract
 
 export default function Dashboard() {
   const live = useLiveTelemetry(5000);
+  const { state: pilotageState } = usePilotage();
+  const activeMode = getActiveMode(pilotageState);
+  const liveWithMode = { ...live, pilotageLabel: activeMode.label, pilotageMode: activeMode.type === "vacation" ? "vacation" as const : activeMode.type === "event" ? "event" as const : activeMode.type === "manual" ? "manual" as const : "auto" as const };
   const savings = useMemo(() => generateDailySavings(120), []);
   const cumulative = useMemo(() => buildCumulativeSeries(savings), [savings]);
   const forecast = useMemo(() => generateForecast(), []);
