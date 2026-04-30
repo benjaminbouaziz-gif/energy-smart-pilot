@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { PragmaticPositioning } from "@/components/PragmaticPositioning";
 import { HowItWorks } from "@/components/HowItWorks";
 import { WhyDynawatt } from "@/components/WhyDynawatt";
 import { Stats } from "@/components/Stats";
@@ -22,6 +23,7 @@ const Index = () => {
     <main className="relative">
       <Navbar />
       <Hero />
+      <PragmaticPositioning />
       <HowItWorks />
       <WhyDynawatt />
       <Stats />
