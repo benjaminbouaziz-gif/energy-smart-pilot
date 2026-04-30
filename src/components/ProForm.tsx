@@ -165,6 +165,25 @@ export const ProForm = () => {
                 <div><Label>Téléphone</Label><Input {...form.register("phone")} className="mt-1.5 h-11 bg-input/50 border-primary/20" /></div>
                 <div><Label>Code postal</Label><Input {...form.register("postalCode")} className="mt-1.5 h-11 bg-input/50 border-primary/20" /></div>
               </div>
+              <div>
+                <Label>Comment avez-vous entendu parler de nous&nbsp;? <span className="text-muted-foreground font-normal">(optionnel)</span></Label>
+                <Select value={form.watch("hearAbout") || ""} onValueChange={(v) => form.setValue("hearAbout", v)}>
+                  <SelectTrigger className="mt-1.5 h-11 bg-input/50 border-primary/20"><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="internet">Recherche internet</SelectItem>
+                    <SelectItem value="recommandation">Recommandation</SelectItem>
+                    <SelectItem value="distributeur">Distributeur agréé</SelectItem>
+                    <SelectItem value="salon">Salon professionnel</SelectItem>
+                    <SelectItem value="autre">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {form.watch("hearAbout") === "distributeur" && (
+                <div>
+                  <Label>Nom du distributeur</Label>
+                  <Input {...form.register("hearAboutDistributor")} placeholder="Nom de l'entreprise / contact" className="mt-1.5 h-11 bg-input/50 border-primary/20" />
+                </div>
+              )}
               {Object.values(form.formState.errors)[0] && (
                 <p className="text-destructive text-xs">{Object.values(form.formState.errors)[0]?.message as string}</p>
               )}
@@ -204,18 +223,25 @@ export const ProForm = () => {
       </AnimatePresence>
 
       {step < 3 && (
-        <div className="flex justify-between gap-3 mt-8">
-          <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
-            <ArrowLeft className="mr-2 h-4 w-4" />Retour
-          </Button>
-          {step < 2 ? (
-            <Button onClick={next} className="bg-primary hover:bg-primary-dark">
-              Suivant<ArrowRight className="ml-2 h-4 w-4" />
+        <div className="mt-8 space-y-3">
+          <div className="flex justify-between gap-3">
+            <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
+              <ArrowLeft className="mr-2 h-4 w-4" />Retour
             </Button>
-          ) : (
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={submitting} className="bg-gradient-to-r from-gold to-gold-warm text-background hover:opacity-90 font-bold">
-              {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Envoi…</> : <>Calculer mes économies<ArrowRight className="ml-2 h-4 w-4" /></>}
-            </Button>
+            {step < 2 ? (
+              <Button onClick={next} className="bg-primary hover:bg-primary-dark">
+                Suivant<ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            ) : (
+              <Button onClick={form.handleSubmit(onSubmit)} disabled={submitting} className="bg-gradient-to-r from-gold to-gold-warm text-background hover:opacity-90 font-bold">
+                {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Envoi…</> : <>Calculer mes économies<ArrowRight className="ml-2 h-4 w-4" /></>}
+              </Button>
+            )}
+          </div>
+          {step === 2 && (
+            <p className="text-xs text-muted-foreground text-center">
+              Vous serez recontacté sous 48h par Dynawatt ou l'un de nos distributeurs agréés près de chez vous.
+            </p>
           )}
         </div>
       )}
