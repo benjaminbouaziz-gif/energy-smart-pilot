@@ -28,6 +28,9 @@ export const Navbar = () => {
                 <Link to="/comprendre/qui-n-est-pas-concerne" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
                   Qui n'est pas concerné&nbsp;?
                 </Link>
+                <Link to="/comprendre/vs-solaire" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
+                  Comparer avec le solaire
+                </Link>
                 <Link to="/contact#faq" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
                   FAQ générale
                 </Link>
@@ -56,6 +59,7 @@ export const Navbar = () => {
           <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-2">Comprendre</div>
           <Link to="/comprendre/tarification-dynamique" className="pl-3 text-sm" onClick={() => setOpen(false)}>Tarification dynamique</Link>
           <Link to="/comprendre/qui-n-est-pas-concerne" className="pl-3 text-sm" onClick={() => setOpen(false)}>Qui n'est pas concerné&nbsp;?</Link>
+          <Link to="/comprendre/vs-solaire" className="pl-3 text-sm" onClick={() => setOpen(false)}>Comparer avec le solaire</Link>
           <Link to="/about" onClick={() => setOpen(false)}>À propos</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
           <Button asChild variant="outline" className="mt-2">
