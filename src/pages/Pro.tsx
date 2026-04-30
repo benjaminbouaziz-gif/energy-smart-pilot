@@ -1,17 +1,12 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProForm } from "@/components/ProForm";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Utensils, Hotel, Tent, Croissant, Building2, TrendingUp, Calendar, Wallet } from "lucide-react";
+import { ArrowRight, Building2, TrendingUp, Calendar, Wallet } from "lucide-react";
 import { useEffect } from "react";
-
-const SECTORS = [
-  { icon: Utensils, name: "Restaurants & Pizzerias", range: "30k-80k kWh/an", saving: "4 500 - 8 000 €/an" },
-  { icon: Hotel, name: "Hôtels", range: "80k-250k kWh/an", saving: "8 000 - 25 000 €/an" },
-  { icon: Tent, name: "Campings", range: "40k-150k kWh/an", saving: "5 000 - 15 000 €/an" },
-  { icon: Croissant, name: "Boulangeries & Artisans", range: "50k-100k kWh/an", saving: "5 000 - 12 000 €/an" },
-];
+import { SECTORS } from "@/lib/sectors";
 
 const ProPage = () => {
   useEffect(() => {
@@ -42,22 +37,34 @@ const ProPage = () => {
         </div>
       </section>
 
-      {/* Pour qui */}
+      {/* Votre activité — grille cliquable vers pages sectorielles */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-black text-center mb-12">Pour qui ?</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {SECTORS.map((s, i) => (
-              <motion.div key={s.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="glass rounded-2xl p-6 hover:border-gold/40 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center mb-4">
-                  <s.icon className="w-5 h-5 text-primary-light" />
-                </div>
-                <h3 className="font-bold mb-2">{s.name}</h3>
-                <p className="text-xs font-mono text-muted-foreground mb-3">{s.range}</p>
-                <div className="text-sm font-bold text-gradient-gold">{s.saving}</div>
-              </motion.div>
-            ))}
+          <div className="text-center mb-12">
+            <div className="text-xs font-mono text-accent uppercase tracking-widest mb-3">Votre activité</div>
+            <h2 className="text-3xl md:text-4xl font-black">Une page dédiée à votre métier</h2>
+            <p className="text-muted-foreground mt-3">Cas client, profil énergétique, leviers d'économie et configuration recommandée.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {SECTORS.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <motion.div key={s.slug} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
+                  <Link to={`/pro/${s.slug}`}
+                    className="group glass rounded-2xl p-5 flex flex-col items-start hover:border-accent/50 hover:-translate-y-1 transition-all h-full">
+                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center mb-4 group-hover:bg-accent/20 group-hover:border-accent/40 transition-colors">
+                      <Icon className="w-5 h-5 text-primary-light group-hover:text-accent transition-colors" />
+                    </div>
+                    <h3 className="font-bold mb-1">{s.name}</h3>
+                    <p className="text-xs font-mono text-muted-foreground mb-3">{s.profile.annualKwh}</p>
+                    <span className="mt-auto text-xs font-mono text-accent flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Voir la page <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

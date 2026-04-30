@@ -2,7 +2,7 @@ import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
@@ -14,11 +14,29 @@ export const Navbar = () => {
           <Link to="/pro" className="hover:text-primary-light transition-colors">Pro</Link>
           <Link to="/particulier" className="hover:text-primary-light transition-colors">Particuliers</Link>
           <Link to="/pilotage" className="hover:text-primary-light transition-colors">Pilotage</Link>
+          <div className="relative group">
+            <button className="flex items-center gap-1 hover:text-primary-light transition-colors">
+              Comprendre <ChevronDown className="w-3 h-3" />
+            </button>
+            <div className="absolute top-full left-0 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <div className="glass rounded-2xl py-2 min-w-[260px] shadow-xl">
+                <Link to="/comprendre/tarification-dynamique" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
+                  Tarification dynamique
+                </Link>
+                <Link to="/pilotage" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
+                  Pilotage J-1
+                </Link>
+                <Link to="/contact#faq" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
+                  FAQ générale
+                </Link>
+              </div>
+            </div>
+          </div>
           <Link to="/about" className="hover:text-primary-light transition-colors">À propos</Link>
           <Link to="/contact" className="hover:text-primary-light transition-colors">Contact</Link>
         </div>
         <div className="hidden md:block">
-          <Button asChild variant="default" className="bg-gradient-to-r from-gold to-gold-warm text-background hover:opacity-90 font-semibold shadow-[0_8px_30px_-8px_hsl(43_96%_56%_/_0.5)]">
+          <Button asChild variant="default" className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground hover:opacity-90 font-semibold shadow-[0_8px_30px_-8px_hsl(43_96%_56%_/_0.5)]">
             <Link to="/particulier">Calculer mes économies</Link>
           </Button>
         </div>
@@ -31,9 +49,12 @@ export const Navbar = () => {
           <Link to="/pro" onClick={() => setOpen(false)}>Pro</Link>
           <Link to="/particulier" onClick={() => setOpen(false)}>Particuliers</Link>
           <Link to="/pilotage" onClick={() => setOpen(false)}>Pilotage</Link>
+          <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-2">Comprendre</div>
+          <Link to="/comprendre/tarification-dynamique" className="pl-3 text-sm" onClick={() => setOpen(false)}>Tarification dynamique</Link>
+          <Link to="/pilotage" className="pl-3 text-sm" onClick={() => setOpen(false)}>Pilotage J-1</Link>
           <Link to="/about" onClick={() => setOpen(false)}>À propos</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
-          <Button asChild className="bg-gradient-to-r from-gold to-gold-warm text-background mt-2">
+          <Button asChild className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground mt-2">
             <Link to="/particulier" onClick={() => setOpen(false)}>Calculer mes économies</Link>
           </Button>
         </div>
