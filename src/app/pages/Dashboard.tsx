@@ -125,8 +125,6 @@ export default function Dashboard() {
         </div>
         {/* Mode */}
         <div className="flex items-center gap-3 md:px-4">
-        {/* Mode */}
-        <div className="flex items-center gap-3 md:px-4">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activeMode.type === "vacation" ? "bg-sky-500/10 border border-sky-500/30" : activeMode.type === "event" ? "bg-gold/15 border border-gold/30" : "bg-emerald-500/10 border border-emerald-500/30"}`}>
             {activeMode.type === "vacation" ? <Plane className="w-5 h-5 text-sky-400" /> :
              activeMode.type === "event" ? <PartyPopper className="w-5 h-5 text-gold" /> :
