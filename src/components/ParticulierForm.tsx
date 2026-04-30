@@ -27,6 +27,8 @@ const schema = z.object({
   email: z.string().trim().email("Email invalide").max(255),
   phone: z.string().trim().min(8).max(25),
   postalCode: z.string().trim().min(4).max(10),
+  hearAbout: z.string().optional(),
+  hearAboutDistributor: z.string().max(120).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -72,6 +74,11 @@ export const ParticulierForm = () => {
     };
     const sim = simulateSavings(inputs);
     try {
+      const sourceLabel = data.hearAbout
+        ? data.hearAbout === "distributeur" && data.hearAboutDistributor
+          ? `particulier_form|via:distributeur:${data.hearAboutDistributor}`
+          : `particulier_form|via:${data.hearAbout}`
+        : "particulier_form";
       const { error } = await supabase.from("leads").insert({
         type: "particulier",
         first_name: data.firstName,
@@ -90,7 +97,7 @@ export const ParticulierForm = () => {
         estimated_savings_eur: Math.round(sim.annualSavings),
         recommended_config: sim.recommendedConfig.code,
         estimated_roi_years: sim.estimatedRoiYears,
-        source: "particulier_form",
+        source: sourceLabel,
       });
       if (error) throw error;
       setResult(sim);
