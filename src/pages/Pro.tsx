@@ -37,6 +37,18 @@ const ProPage = () => {
         </div>
       </section>
 
+      {/* Pour qui — mention discrète anti-PV */}
+      <section className="py-8">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="glass rounded-2xl p-6 md:p-8 border-primary/30 text-center">
+            <p className="text-base md:text-lg leading-relaxed">
+              Vous êtes locataire de votre local ? Vous n'avez pas le budget pour une installation solaire complète à 70 000 € ? Vous voulez économiser sans 18 mois de chantier ?{" "}
+              <span className="text-gold font-bold">Dynawatt est conçu pour vous.</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Votre activité — grille cliquable vers pages sectorielles */}
       <section className="py-16">
         <div className="container mx-auto px-4">

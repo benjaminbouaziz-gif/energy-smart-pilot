@@ -168,6 +168,35 @@ const SectorPage = () => {
         </div>
       </section>
 
+      {/* Anti-PV pour copropriété */}
+      {sector.slug === "copropriete" && (
+        <section className="py-16">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <div className="glass rounded-3xl p-8 md:p-10 border-primary/30 relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
+              <div className="relative">
+                <div className="text-xs font-mono text-gold uppercase tracking-widest mb-3">Différenciation</div>
+                <h2 className="text-2xl md:text-4xl font-black mb-6">
+                  Pourquoi le solaire ne marche pas en copropriété
+                </h2>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Décision en assemblée générale, toiture commune mais propriété divisée, investissement collectif compliqué, travaux longs et invasifs, répartition des économies entre copropriétaires complexe. Le solaire en copropriété, c'est presque impossible.
+                  </p>
+                  <p>
+                    Dynawatt ne nécessite ni toiture, ni accord d'AG sur les parties privatives, ni travaux structurels.{" "}
+                    <span className="text-foreground font-bold">Une décision du conseil syndical suffit.</span> L'installation se fait au tableau électrique des parties communes en une journée. Les économies allègent immédiatement les charges communes votées chaque année.
+                  </p>
+                  <p className="text-gold font-bold">
+                    C'est la seule solution énergétique réellement déployable en copropriété.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Extra (copro) */}
       {sector.extraSection && (
         <section className="py-16">

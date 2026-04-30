@@ -145,6 +145,31 @@ const PilotagePage = () => {
         </div>
       </section>
 
+      {/* Pourquoi le pilotage seul fait l'essentiel */}
+      <section className="py-20">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-10">
+            <div className="text-xs font-mono text-gold uppercase tracking-widest mb-3">Différenciation</div>
+            <h2 className="text-3xl md:text-5xl font-black">
+              Pourquoi notre pilotage seul fait <span className="text-gradient-gold">déjà l'essentiel</span> du travail
+            </h2>
+          </div>
+          <div className="glass rounded-3xl p-8 md:p-10 space-y-5 text-muted-foreground leading-relaxed">
+            <p>
+              Une installation solaire avec batterie cumule trois sources d'économie : production gratuite, autoconsommation, et arbitrage tarifaire.
+            </p>
+            <p>
+              Dans une installation pro réelle,{" "}
+              <span className="text-foreground font-bold">l'arbitrage tarifaire représente 60 à 80% des économies totales</span>. La production solaire et l'autoconsommation représentent 20 à 40%.
+            </p>
+            <p>
+              Dynawatt sans panneaux solaires capture donc déjà la majorité des économies. C'est ce qui rend notre solution si compétitive financièrement : nous adressons{" "}
+              <span className="text-gold font-bold">le levier qui rapporte le plus, sans l'investissement qui coûte le plus</span>.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24">
         <div className="container mx-auto px-4 max-w-3xl text-center">

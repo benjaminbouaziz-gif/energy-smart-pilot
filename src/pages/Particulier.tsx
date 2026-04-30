@@ -4,10 +4,12 @@ import { Footer } from "@/components/Footer";
 import { ParticulierForm } from "@/components/ParticulierForm";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sun, Snowflake, Zap, Waves, Home as HomeIcon } from "lucide-react";
+import { ComparativeTable } from "@/components/ComparativeTable";
+import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
 const PROFILES = [
-  { icon: Sun, name: "Maisons du Sud", desc: "Piscine + clim", detail: "Forte conso été. 6 mois de spreads spot très favorables." },
+  { icon: Sun, name: "Maisons du Sud", desc: "Piscine + clim", detail: "Forte conso été. 6 mois de spreads spot très favorables. Faire installer du solaire complet sur une villa du Sud, c'est un projet à 30 000 €+ sur 14 mois. Avec Dynawatt à 8 000 €, vous capturez 70% des économies dès le premier mois — et l'installation reste compatible avec un solaire futur." },
   { icon: Snowflake, name: "Maisons avec PAC", desc: "Pompe à chaleur + ECS", detail: "Conso hivernale élevée. Double levier batterie + pilotage thermique." },
   { icon: Zap, name: "Foyers avec VE", desc: "Recharge nocturne pilotée", detail: "Économies sur la charge VE : 200-400 €/an supplémentaires." },
   { icon: Waves, name: "Multiples charges flexibles", desc: "Piscine, jacuzzi, ECS", detail: "Plus de charges flexibles = plus d'économies." },
@@ -38,6 +40,44 @@ const ParticulierPage = () => {
               <a href="#simulation">Calculer mes économies<ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Comparatif solaire */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <ComparativeTable
+            title="Vous hésitez avec le solaire ?"
+            subtitle="C'est une question légitime. Voici comment se compare honnêtement Dynawatt face à une installation photovoltaïque complète."
+            rows={[
+              { label: "Investissement", alternative: "25 000 à 35 000 €", dynawatt: "6 000 à 9 000 €", highlight: true },
+              { label: "Délai de mise en service", alternative: "12 à 18 mois", dynawatt: "4 à 6 semaines" },
+              { label: "Toiture nécessaire", alternative: "Plein sud, sans ombre", dynawatt: "Aucune" },
+              { label: "Démarches administratives", alternative: "Enedis, mairie, CONSUEL", dynawatt: "Aucune" },
+              { label: "Économies annuelles", alternative: "1 200 à 1 800 €/an", dynawatt: "1 000 à 1 500 €/an" },
+              { label: "ROI", alternative: "12 à 20 ans", dynawatt: "5 à 8 ans", highlight: true },
+              { label: "Idéal si", alternative: "Maison, propriétaire long terme", dynawatt: "Tout type de logement" },
+            ]}
+          />
+          <div className="max-w-3xl mx-auto mt-8 space-y-4 text-sm text-muted-foreground">
+            <p>
+              Le solaire reste pertinent si vous êtes propriétaire d'une maison avec une toiture adaptée et que vous prévoyez d'y vivre 15 à 20 ans. Dans ce cas, c'est probablement la meilleure solution.
+            </p>
+            <p>
+              Pour les 90% d'autres situations — locataires, propriétaires sans toiture exposée, profils urbains, projets à moyen terme, ou simplement budgets limités — Dynawatt capture la majorité des économies pour une fraction de l'investissement.
+            </p>
+            <p className="italic">Ce n'est pas une compétition. C'est une question de profil.</p>
+            <div className="text-center pt-4">
+              <a href="#simulation" className="inline-flex items-center gap-2 text-gold font-bold hover:gap-3 transition-all">
+                Voir si Dynawatt est fait pour vous — Calculer mes économies <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+            <div className="text-center pt-2">
+              <Link to="/comprendre/vs-solaire" className="text-xs font-mono text-muted-foreground hover:text-foreground underline">
+                Voir la comparaison détaillée sur 4 profils →
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
