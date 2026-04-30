@@ -14,7 +14,96 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          activity: string | null
+          annual_budget_eur: number | null
+          city: string | null
+          company_name: string | null
+          created_at: string
+          current_tariff: string | null
+          email: string
+          estimated_roi_years: number | null
+          estimated_savings_eur: number | null
+          first_name: string
+          has_ac: boolean | null
+          has_ev: boolean | null
+          has_heat_pump: boolean | null
+          has_pool: boolean | null
+          housing_type: string | null
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string
+          postal_code: string | null
+          recommended_config: string | null
+          region: string | null
+          source: string | null
+          status: string
+          surface_m2: number | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          activity?: string | null
+          annual_budget_eur?: number | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          current_tariff?: string | null
+          email: string
+          estimated_roi_years?: number | null
+          estimated_savings_eur?: number | null
+          first_name: string
+          has_ac?: boolean | null
+          has_ev?: boolean | null
+          has_heat_pump?: boolean | null
+          has_pool?: boolean | null
+          housing_type?: string | null
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone: string
+          postal_code?: string | null
+          recommended_config?: string | null
+          region?: string | null
+          source?: string | null
+          status?: string
+          surface_m2?: number | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          activity?: string | null
+          annual_budget_eur?: number | null
+          city?: string | null
+          company_name?: string | null
+          created_at?: string
+          current_tariff?: string | null
+          email?: string
+          estimated_roi_years?: number | null
+          estimated_savings_eur?: number | null
+          first_name?: string
+          has_ac?: boolean | null
+          has_ev?: boolean | null
+          has_heat_pump?: boolean | null
+          has_pool?: boolean | null
+          housing_type?: string | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string
+          postal_code?: string | null
+          recommended_config?: string | null
+          region?: string | null
+          source?: string | null
+          status?: string
+          surface_m2?: number | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
