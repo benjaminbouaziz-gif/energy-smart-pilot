@@ -16,7 +16,12 @@ import AppLayout from "./app/AppLayout.tsx";
 import AppLogin from "./app/pages/AppLogin.tsx";
 import Dashboard from "./app/pages/Dashboard.tsx";
 import Previsions from "./app/pages/Previsions.tsx";
-import ComingSoon from "./app/pages/ComingSoon.tsx";
+import Economies from "./app/pages/Economies.tsx";
+import PilotageApp from "./app/pages/PilotageApp.tsx";
+import Installation from "./app/pages/Installation.tsx";
+import Faq from "./app/pages/Faq.tsx";
+import Sav from "./app/pages/Sav.tsx";
+import Parametres from "./app/pages/Parametres.tsx";
 
 const queryClient = new QueryClient();
 
@@ -41,12 +46,12 @@ const App = () => (
           <Route path="/app" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="previsions" element={<Previsions />} />
-            <Route path="economies" element={<ComingSoon title="Économies — détails" desc="Suivi détaillé, exports CSV/PDF et bilans mensuels arrivent juste après la démo Tigo." />} />
-            <Route path="pilotage" element={<ComingSoon title="Pilotage & modes" desc="Mode Vacances, mode Événement et préférences de confort — prochaine itération." />} />
-            <Route path="installation" element={<ComingSoon title="Mon installation Tigo" desc="État de santé batterie, cycles, garantie, maintenance — Phase 2." />} />
-            <Route path="faq" element={<ComingSoon title="FAQ Tigo + Dynawatt" desc="30+ articles produits classés par catégorie — Phase 2." />} />
-            <Route path="sav" element={<ComingSoon title="Support" desc="Tickets, contact direct, commercial assigné — Phase 2." />} />
-            <Route path="parametres" element={<ComingSoon title="Paramètres du compte" desc="Profil, sécurité, RGPD, notifications — Phase 2." />} />
+            <Route path="economies" element={<Economies />} />
+            <Route path="pilotage" element={<PilotageApp />} />
+            <Route path="installation" element={<Installation />} />
+            <Route path="faq" element={<Faq />} />
+            <Route path="sav" element={<Sav />} />
+            <Route path="parametres" element={<Parametres />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
