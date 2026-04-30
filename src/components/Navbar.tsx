@@ -23,9 +23,6 @@ export const Navbar = () => {
                 <Link to="/comprendre/tarification-dynamique" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
                   Tarification dynamique
                 </Link>
-                <Link to="/pilotage" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
-                  Pilotage J-1
-                </Link>
                 <Link to="/contact#faq" className="block px-4 py-2.5 text-sm hover:bg-primary/10 hover:text-primary-light transition-colors">
                   FAQ générale
                 </Link>
@@ -51,7 +48,6 @@ export const Navbar = () => {
           <Link to="/pilotage" onClick={() => setOpen(false)}>Pilotage</Link>
           <div className="text-xs font-mono uppercase tracking-wider text-muted-foreground mt-2">Comprendre</div>
           <Link to="/comprendre/tarification-dynamique" className="pl-3 text-sm" onClick={() => setOpen(false)}>Tarification dynamique</Link>
-          <Link to="/pilotage" className="pl-3 text-sm" onClick={() => setOpen(false)}>Pilotage J-1</Link>
           <Link to="/about" onClick={() => setOpen(false)}>À propos</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
           <Button asChild className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground mt-2">
