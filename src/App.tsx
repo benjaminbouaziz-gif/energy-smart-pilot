@@ -11,6 +11,7 @@ import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
 import SectorPage from "./pages/SectorPage.tsx";
 import TarificationDynamique from "./pages/TarificationDynamique.tsx";
+import QuiNestPasConcerne from "./pages/QuiNestPasConcerne.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLayout from "./app/AppLayout.tsx";
 import AppLogin from "./app/pages/AppLogin.tsx";
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/comprendre/tarification-dynamique" element={<TarificationDynamique />} />
+          <Route path="/comprendre/qui-n-est-pas-concerne" element={<QuiNestPasConcerne />} />
 
           {/* Espace client /app */}
           <Route path="/app/login" element={<AppLogin />} />
