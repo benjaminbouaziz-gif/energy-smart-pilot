@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
-import { Battery, Zap, Coins, Cpu, ArrowDownRight, ArrowUpRight, Plug, Sparkles, TrendingUp, Calendar, Activity, AlertCircle } from "lucide-react";
+import { Battery, Zap, Coins, Cpu, ArrowDownRight, ArrowUpRight, Plug, Sparkles, TrendingUp, Calendar, Activity, AlertCircle, Plane, PartyPopper } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveTelemetry } from "@/app/hooks/useLiveTelemetry";
 import { useCountUp } from "@/app/hooks/useCountUp";
 import { generateDailySavings, buildCumulativeSeries } from "@/app/mock/savings";
 import { generateForecast } from "@/app/mock/forecast";
 import { demoClient } from "@/app/mock/client";
+import { usePilotage, getActiveMode } from "@/app/hooks/usePilotage";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const fmtEur = (n: number, d = 0) => `${n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d })} €`;
