@@ -32,7 +32,10 @@ export const Navbar = () => {
           <Link to="/about" className="hover:text-primary-light transition-colors">À propos</Link>
           <Link to="/contact" className="hover:text-primary-light transition-colors">Contact</Link>
         </div>
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm" className="border border-border/60 hover:border-primary/50 hover:text-primary-light">
+            <Link to="/app/login">Espace client</Link>
+          </Button>
           <Button asChild variant="default" className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground hover:opacity-90 font-semibold shadow-[0_8px_30px_-8px_hsl(43_96%_56%_/_0.5)]">
             <Link to="/particulier">Calculer mes économies</Link>
           </Button>
@@ -50,7 +53,10 @@ export const Navbar = () => {
           <Link to="/comprendre/tarification-dynamique" className="pl-3 text-sm" onClick={() => setOpen(false)}>Tarification dynamique</Link>
           <Link to="/about" onClick={() => setOpen(false)}>À propos</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
-          <Button asChild className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground mt-2">
+          <Button asChild variant="outline" className="mt-2">
+            <Link to="/app/login" onClick={() => setOpen(false)}>Espace client</Link>
+          </Button>
+          <Button asChild className="bg-gradient-to-r from-accent to-accent-warm text-accent-foreground">
             <Link to="/particulier" onClick={() => setOpen(false)}>Calculer mes économies</Link>
           </Button>
         </div>
