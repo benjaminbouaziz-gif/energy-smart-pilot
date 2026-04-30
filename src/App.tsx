@@ -9,6 +9,8 @@ import Particulier from "./pages/Particulier.tsx";
 import Pilotage from "./pages/Pilotage.tsx";
 import About from "./pages/About.tsx";
 import Contact from "./pages/Contact.tsx";
+import SectorPage from "./pages/SectorPage.tsx";
+import TarificationDynamique from "./pages/TarificationDynamique.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,10 +24,12 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/pro" element={<Pro />} />
+          <Route path="/pro/:slug" element={<SectorPage />} />
           <Route path="/particulier" element={<Particulier />} />
           <Route path="/pilotage" element={<Pilotage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/comprendre/tarification-dynamique" element={<TarificationDynamique />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
