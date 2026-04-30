@@ -125,13 +125,17 @@ export default function Dashboard() {
         </div>
         {/* Mode */}
         <div className="flex items-center gap-3 md:px-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-            <Cpu className="w-5 h-5 text-emerald-400" />
+        {/* Mode */}
+        <div className="flex items-center gap-3 md:px-4">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activeMode.type === "vacation" ? "bg-sky-500/10 border border-sky-500/30" : activeMode.type === "event" ? "bg-gold/15 border border-gold/30" : "bg-emerald-500/10 border border-emerald-500/30"}`}>
+            {activeMode.type === "vacation" ? <Plane className="w-5 h-5 text-sky-400" /> :
+             activeMode.type === "event" ? <PartyPopper className="w-5 h-5 text-gold" /> :
+             <Cpu className="w-5 h-5 text-emerald-400" />}
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Mode actif</div>
-            <div className="font-black text-sm leading-tight">{live.pilotageLabel}</div>
-            <div className="text-[11px] text-emerald-400">Algorithme J-1 actif</div>
+            <div className="font-black text-sm leading-tight">{liveWithMode.pilotageLabel}</div>
+            <div className={`text-[11px] ${activeMode.type === "vacation" ? "text-sky-400" : activeMode.type === "event" ? "text-gold" : "text-emerald-400"}`}>Algorithme J-1 actif</div>
           </div>
         </div>
       </motion.div>
