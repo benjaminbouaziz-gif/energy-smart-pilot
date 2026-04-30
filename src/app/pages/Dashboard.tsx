@@ -1,17 +1,21 @@
 import { motion } from "framer-motion";
-import { Battery, Zap, Coins, Cpu, ArrowDownRight, ArrowUpRight, Plug, Sparkles, TrendingUp, Calendar, Activity, AlertCircle } from "lucide-react";
+import { Battery, Zap, Coins, Cpu, ArrowDownRight, ArrowUpRight, Plug, Sparkles, TrendingUp, Calendar, Activity, AlertCircle, Plane, PartyPopper } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useLiveTelemetry } from "@/app/hooks/useLiveTelemetry";
 import { useCountUp } from "@/app/hooks/useCountUp";
 import { generateDailySavings, buildCumulativeSeries } from "@/app/mock/savings";
 import { generateForecast } from "@/app/mock/forecast";
 import { demoClient } from "@/app/mock/client";
+import { usePilotage, getActiveMode } from "@/app/hooks/usePilotage";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const fmtEur = (n: number, d = 0) => `${n.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d })} €`;
 
 export default function Dashboard() {
   const live = useLiveTelemetry(5000);
+  const { state: pilotageState } = usePilotage();
+  const activeMode = getActiveMode(pilotageState);
+  const liveWithMode = { ...live, pilotageLabel: activeMode.label, pilotageMode: activeMode.type === "vacation" ? "vacation" as const : activeMode.type === "event" ? "event" as const : activeMode.type === "manual" ? "manual" as const : "auto" as const };
   const savings = useMemo(() => generateDailySavings(120), []);
   const cumulative = useMemo(() => buildCumulativeSeries(savings), [savings]);
   const forecast = useMemo(() => generateForecast(), []);
@@ -121,13 +125,15 @@ export default function Dashboard() {
         </div>
         {/* Mode */}
         <div className="flex items-center gap-3 md:px-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-            <Cpu className="w-5 h-5 text-emerald-400" />
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${activeMode.type === "vacation" ? "bg-sky-500/10 border border-sky-500/30" : activeMode.type === "event" ? "bg-gold/15 border border-gold/30" : "bg-emerald-500/10 border border-emerald-500/30"}`}>
+            {activeMode.type === "vacation" ? <Plane className="w-5 h-5 text-sky-400" /> :
+             activeMode.type === "event" ? <PartyPopper className="w-5 h-5 text-gold" /> :
+             <Cpu className="w-5 h-5 text-emerald-400" />}
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Mode actif</div>
-            <div className="font-black text-sm leading-tight">{live.pilotageLabel}</div>
-            <div className="text-[11px] text-emerald-400">Algorithme J-1 actif</div>
+            <div className="font-black text-sm leading-tight">{liveWithMode.pilotageLabel}</div>
+            <div className={`text-[11px] ${activeMode.type === "vacation" ? "text-sky-400" : activeMode.type === "event" ? "text-gold" : "text-emerald-400"}`}>Algorithme J-1 actif</div>
           </div>
         </div>
       </motion.div>
