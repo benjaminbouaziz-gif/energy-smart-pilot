@@ -4,6 +4,8 @@ import { Footer } from "@/components/Footer";
 import { ParticulierForm } from "@/components/ParticulierForm";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sun, Snowflake, Zap, Waves, Home as HomeIcon } from "lucide-react";
+import { ComparativeTable } from "@/components/ComparativeTable";
+import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
 const PROFILES = [
@@ -38,6 +40,44 @@ const ParticulierPage = () => {
               <a href="#simulation">Calculer mes économies<ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Comparatif solaire */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <ComparativeTable
+            title="Vous hésitez avec le solaire ?"
+            subtitle="C'est une question légitime. Voici comment se compare honnêtement Dynawatt face à une installation photovoltaïque complète."
+            rows={[
+              { label: "Investissement", alternative: "25 000 à 35 000 €", dynawatt: "6 000 à 9 000 €", highlight: true },
+              { label: "Délai de mise en service", alternative: "12 à 18 mois", dynawatt: "4 à 6 semaines" },
+              { label: "Toiture nécessaire", alternative: "Plein sud, sans ombre", dynawatt: "Aucune" },
+              { label: "Démarches administratives", alternative: "Enedis, mairie, CONSUEL", dynawatt: "Aucune" },
+              { label: "Économies annuelles", alternative: "1 200 à 1 800 €/an", dynawatt: "1 000 à 1 500 €/an" },
+              { label: "ROI", alternative: "12 à 20 ans", dynawatt: "5 à 8 ans", highlight: true },
+              { label: "Idéal si", alternative: "Maison, propriétaire long terme", dynawatt: "Tout type de logement" },
+            ]}
+          />
+          <div className="max-w-3xl mx-auto mt-8 space-y-4 text-sm text-muted-foreground">
+            <p>
+              Le solaire reste pertinent si vous êtes propriétaire d'une maison avec une toiture adaptée et que vous prévoyez d'y vivre 15 à 20 ans. Dans ce cas, c'est probablement la meilleure solution.
+            </p>
+            <p>
+              Pour les 90% d'autres situations — locataires, propriétaires sans toiture exposée, profils urbains, projets à moyen terme, ou simplement budgets limités — Dynawatt capture la majorité des économies pour une fraction de l'investissement.
+            </p>
+            <p className="italic">Ce n'est pas une compétition. C'est une question de profil.</p>
+            <div className="text-center pt-4">
+              <a href="#simulation" className="inline-flex items-center gap-2 text-gold font-bold hover:gap-3 transition-all">
+                Voir si Dynawatt est fait pour vous — Calculer mes économies <ArrowRight className="w-4 h-4" />
+              </a>
+            </div>
+            <div className="text-center pt-2">
+              <Link to="/comprendre/vs-solaire" className="text-xs font-mono text-muted-foreground hover:text-foreground underline">
+                Voir la comparaison détaillée sur 4 profils →
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
