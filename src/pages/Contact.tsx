@@ -151,6 +151,46 @@ const ContactPage = () => {
         </div>
       </section>
 
+      {/* FAQ générale */}
+      <section id="faq" className="py-16">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <div className="text-center mb-10">
+            <div className="text-xs font-mono text-gold uppercase tracking-widest mb-3">FAQ générale</div>
+            <h2 className="text-3xl md:text-4xl font-black">Les questions fréquentes</h2>
+          </div>
+          <div className="space-y-3">
+            {[
+              {
+                q: "Qui installe ma batterie ?",
+                a: "L'installation est assurée par l'un des distributeurs agréés Dynawatt près de chez vous. Tous nos partenaires sont sélectionnés pour leur expertise technique et leur qualité de service. C'est avec eux que vous signez votre contrat d'achat ou de leasing.",
+              },
+              {
+                q: "Pourquoi Dynawatt ne m'installe pas directement ?",
+                a: "Notre métier, c'est l'édition du logiciel de pilotage qui rend votre batterie intelligente. L'installation est un métier de terrain qui demande une présence locale et une expertise spécifique. Nous nous appuyons donc sur un réseau de professionnels qualifiés du secteur énergétique.",
+              },
+              {
+                q: "Que se passe-t-il après la première année de pilotage incluse ?",
+                a: "Au bout de 12 mois, vous serez informé par Dynawatt de la fin de votre première année de pilotage. Vous pourrez alors souscrire un abonnement mensuel pour continuer à bénéficier de l'algorithme à pleine performance, des mises à jour, et de votre espace client. Sans engagement long terme.",
+              },
+            ].map((item) => (
+              <details key={item.q} className="glass rounded-2xl group">
+                <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4 font-semibold text-sm md:text-base">
+                  <span>{item.q}</span>
+                  <span className="text-primary-light text-xl shrink-0 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <div className="px-5 pb-5 pt-0 text-sm text-muted-foreground leading-relaxed border-t border-border/30">
+                  <p className="pt-4">{item.a}</p>
+                </div>
+              </details>
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            Vous voulez en savoir plus sur notre fonctionnement ?{" "}
+            <a href="/notre-modele" className="text-primary-light hover:underline">Découvrez notre modèle</a>
+          </p>
+        </div>
+      </section>
+
       <Footer />
     </main>
   );
