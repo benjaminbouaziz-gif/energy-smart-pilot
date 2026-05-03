@@ -114,15 +114,15 @@ export default function Step5Animations() {
     return arr.map((v, h) => ({ hour: `${h}h`, soc: v }));
   }, [hourly, day, result.config.capacite]);
 
-  // Heatmap : jours × mois
+  // Heatmap : intensité = économie totale du jour
   const heatmap = useMemo(() => {
-    const max = Math.max(...days.map((d) => d.gainJour), 0.0001);
-    return days.map((d) => ({
+    const max = Math.max(...dayEconomies.map((e) => e.total), 0.0001);
+    return days.map((d, i) => ({
       date: d.date,
-      gain: d.gainJour,
-      intensity: d.gainJour / max,
+      gain: dayEconomies[i].total,
+      intensity: dayEconomies[i].total / max,
     }));
-  }, [days]);
+  }, [days, dayEconomies]);
 
   return (
     <>
