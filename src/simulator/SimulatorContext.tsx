@@ -92,7 +92,7 @@ export function SimulatorProvider({ children }: { children: ReactNode }) {
   const saveProgress = useCallback(
     async (patch: Record<string, any>) => {
       if (!simulationId) return;
-      await supabase.from("simulations").update(patch).eq("id", simulationId);
+      await supabase.from("simulations").update(patch as any).eq("id", simulationId);
     },
     [simulationId]
   );
