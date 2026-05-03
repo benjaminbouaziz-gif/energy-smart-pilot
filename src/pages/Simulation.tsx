@@ -3,7 +3,9 @@ import { WizardHeader } from "@/simulator/components/WizardHeader";
 import Step1Client from "@/simulator/steps/Step1Client";
 import Step2Upload from "@/simulator/steps/Step2Upload";
 import Step3Config from "@/simulator/steps/Step3Config";
-import StepPlaceholder from "@/simulator/steps/StepPlaceholder";
+import Step4Comparison from "@/simulator/steps/Step4Comparison";
+import Step5Animations from "@/simulator/steps/Step5Animations";
+import Step6Financing from "@/simulator/steps/Step6Financing";
 
 function WizardBody() {
   const { step } = useSimulator();
@@ -13,9 +15,9 @@ function WizardBody() {
       {step === 1 && <Step1Client />}
       {step === 2 && <Step2Upload />}
       {step === 3 && <Step3Config />}
-      {step === 4 && <StepPlaceholder step={4} title="Comparaison facture initiale vs Sobry+Dynawatt" />}
-      {step === 5 && <StepPlaceholder step={5} title="Animations dynamiques (slider date + heatmap)" />}
-      {step === 6 && <StepPlaceholder step={6} title="Financement avec cashflow" />}
+      {step === 4 && <Step4Comparison />}
+      {step === 5 && <Step5Animations />}
+      {step === 6 && <Step6Financing />}
     </div>
   );
 }
