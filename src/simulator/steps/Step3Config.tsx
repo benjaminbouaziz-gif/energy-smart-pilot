@@ -154,8 +154,8 @@ export default function Step3Config() {
                       </span>
                     </div>
                     <div className="text-2xl font-black text-gold">
-                      {fmtEur(sim.roi.gainNetAn)}
-                      <span className="text-xs font-mono text-muted-foreground ml-1">/an</span>
+                      {fmtEur(sim.roi.gainNetAn * (1 + CONSTANTES.TVA))}
+                      <span className="text-xs font-mono text-muted-foreground ml-1">TTC/an</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Vous économiseriez <strong className="text-foreground">{fmtEur(sim.economieAnnuelleTtc)}</strong>{" "}
