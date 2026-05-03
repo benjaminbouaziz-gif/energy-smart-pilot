@@ -15,7 +15,7 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, simulationId } = useSimulator();
+  const { result, facture, simulationId } = useSimulator();
   const [mode, setMode] = useState<Mode>("leasing");
   const [duree, setDuree] = useState<60 | 84>(60); // mois
   const [saved, setSaved] = useState(false);
@@ -29,7 +29,14 @@ export default function Step6Financing() {
   }
 
   const config = result.config;
-  const gainAnnuelTtc = result.roi.gainTtcAn;
+  const fournisseur = facture?.fournisseur || "ancien fournisseur";
+
+  // Les 2 économies cumulées (TTC)
+  const economieSobryTtc = result.factureInitiale.ttc - result.sobry.ttc;
+  const economieBatterieTtc = result.roi.gainTtcAn;
+  const economieTotaleTtc = economieSobryTtc + economieBatterieTtc; // = result.economieAnnuelleTtc
+
+  const gainAnnuelTtc = economieTotaleTtc;
   const gainMensuelTtc = gainAnnuelTtc / 12;
 
   // Loyer mensuel HT = prix HT × coef × ajustement durée
