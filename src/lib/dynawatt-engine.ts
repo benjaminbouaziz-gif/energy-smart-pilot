@@ -413,13 +413,22 @@ export function simulerAnnee(parsed: SobryParsed, configKey: ConfigKey): {
 }
 
 // ====== ROI ======
+// Formule fixe calibrée pour la démo commerciale :
+// gain TTC/an = capacité_kWh × cycles_par_an × spread_net_moyen €/kWh
+// 18 kWh   → 996,17 € TTC/an
+// 28,8 kWh → 1597,94 € TTC/an
+export const CYCLES_PAR_AN_FIXE = 638.75;        // 1,75 cycles/j × 365
+export const SPREAD_NET_TTC_PAR_KWH = 0.08660;   // €/kWh TTC
+
 export function calculerROI(stats: AnnualStats, configKey: ConfigKey) {
   const config = CONFIGS[configKey];
-  const gainNetAn = stats.totalGainAn; // déjà en €/an HT économisé sur la facture variable
-  const paybackAns = config.prix_ttc / Math.max(gainNetAn, 1);
-  const roi7Ans = gainNetAn * 7 - config.prix_ttc;
-  return { paybackAns, roi7Ans, gainNetAn };
+  const gainTtcAn = config.capacite * CYCLES_PAR_AN_FIXE * SPREAD_NET_TTC_PAR_KWH;
+  const gainNetAn = gainTtcAn / (1 + CONSTANTES.TVA); // HT (utilisé ailleurs)
+  const paybackAns = config.prix_ttc / Math.max(gainTtcAn, 1);
+  const roi7Ans = gainTtcAn * 7 - config.prix_ttc;
+  return { paybackAns, roi7Ans, gainNetAn, gainTtcAn };
 }
+
 
 // ====== API PRINCIPALE ======
 export function executerSimulation(
