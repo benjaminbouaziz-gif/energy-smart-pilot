@@ -52,7 +52,30 @@ export default function Step5Animations() {
 
   const tva = 1 + CONSTANTES.TVA;
   const tarifAncienTtc = (facture?.prix_kwh_ht || 0) * tva;
+  const aboAncienTtcJour = ((facture?.abonnement_mensuel_ht || 0) * 12 / 365) * tva;
   const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
+
+  // Économie quotidienne : Sobry vs ancien fournisseur + pilotage batterie
+  const dayEconomies = useMemo(() => {
+    return days.map((d) => {
+      const consoJour = d.conso24h.reduce((s, c) => s + c, 0);
+      const coutAncienTtc = consoJour * tarifAncienTtc + aboAncienTtcJour;
+      // coût Sobry variable HT du jour (somme prix*conso) + part fixe HT
+      let coutSobryVarHt = 0;
+      for (let h = 0; h < 24; h++) coutSobryVarHt += d.prix24h[h] * d.conso24h[h];
+      const partFixeSobryHtJour = result.parsed.fixedCostsAnnualHt / 365;
+      const coutSobryTtc = (coutSobryVarHt + partFixeSobryHtJour) * tva;
+      const economieSobry = Math.max(0, coutAncienTtc - coutSobryTtc);
+      const economiePilotage = d.gainJour; // déjà TTC (€)
+      return {
+        sobry: economieSobry,
+        pilotage: economiePilotage,
+        total: economieSobry + economiePilotage,
+      };
+    });
+  }, [days, tarifAncienTtc, aboAncienTtcJour, tva, result.parsed.fixedCostsAnnualHt]);
+
+  const econoDuJour = dayEconomies[dayIdx];
 
   // Données graphiques heure par heure
   const hourly = useMemo(() => {
@@ -91,15 +114,15 @@ export default function Step5Animations() {
     return arr.map((v, h) => ({ hour: `${h}h`, soc: v }));
   }, [hourly, day, result.config.capacite]);
 
-  // Heatmap : jours × mois
+  // Heatmap : intensité = économie totale du jour
   const heatmap = useMemo(() => {
-    const max = Math.max(...days.map((d) => d.gainJour), 0.0001);
-    return days.map((d) => ({
+    const max = Math.max(...dayEconomies.map((e) => e.total), 0.0001);
+    return days.map((d, i) => ({
       date: d.date,
-      gain: d.gainJour,
-      intensity: d.gainJour / max,
+      gain: dayEconomies[i].total,
+      intensity: dayEconomies[i].total / max,
     }));
-  }, [days]);
+  }, [days, dayEconomies]);
 
   return (
     <>
@@ -284,7 +307,7 @@ export default function Step5Animations() {
           </Panel>
         </div>
 
-        {/* Gain du jour */}
+        {/* Gain total du jour */}
         <motion.div
           key={day.date}
           initial={{ opacity: 0, scale: 0.95 }}
@@ -292,12 +315,17 @@ export default function Step5Animations() {
           className="glass rounded-3xl p-6 text-center mb-8"
         >
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            Gain pilotage ce jour
+            Gain Dynawatt ce jour
           </div>
-          <div className="font-black text-4xl text-gradient-gold font-mono mt-1">
-            +{fmt(day.gainJour, 2)} €
+          <div className="font-black text-4xl font-mono mt-1" style={{ color: "#10B981" }}>
+            +{fmt(econoDuJour.total, 2)} €
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
+          <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
+            <div>dont :</div>
+            <div>• Sobry vs {nomFournisseur} : <span className="font-semibold text-foreground">+{fmt(econoDuJour.sobry, 2)} €</span></div>
+            <div>• Pilotage batterie : <span className="font-semibold text-foreground">+{fmt(econoDuJour.pilotage, 2)} €</span></div>
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-2">
             {day.cycleCount} cycle{day.cycleCount > 1 ? "s" : ""} effectué{day.cycleCount > 1 ? "s" : ""}
           </div>
         </motion.div>
