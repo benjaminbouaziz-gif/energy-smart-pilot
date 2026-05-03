@@ -52,17 +52,6 @@ export default function Step1Client() {
       setSubmitting(false);
     }
   };
-    setErrors({});
-    setSubmitting(true);
-    try {
-      await saveStep1();
-      next();
-    } catch (e: any) {
-      toast.error("Erreur lors de la sauvegarde", { description: e.message });
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const field = (key: keyof typeof client) => ({
     value: client[key],
