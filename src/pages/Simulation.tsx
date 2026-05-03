@@ -10,7 +10,7 @@ import Step6Financing from "@/simulator/steps/Step6Financing";
 function WizardBody() {
   const { step } = useSimulator();
   return (
-    <div className="min-h-screen pb-16">
+    <div className="simulator-light relative min-h-screen pb-16 bg-background text-foreground">
       <WizardHeader />
       {step === 1 && <Step1Client />}
       {step === 2 && <Step2Upload />}
