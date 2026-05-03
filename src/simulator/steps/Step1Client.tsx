@@ -15,7 +15,11 @@ const schema = z.object({
     .string()
     .trim()
     .regex(/^(?:\+33|0)[1-9](?:[\s.-]?\d{2}){4}$/, "Téléphone français invalide"),
-  pdl: z.string().regex(/^\d{14}$/, "Le PDL doit faire exactement 14 chiffres"),
+  pdl: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ""))
+    .pipe(z.string().regex(/^\d{14}$/, "Le PDL doit faire exactement 14 chiffres")),
   adresse: z.string().trim().min(5, "Adresse trop courte").max(500),
 });
 
@@ -89,7 +93,10 @@ export default function Step1Client() {
             <Label htmlFor="pdl">Numéro PDL (14 chiffres) *</Label>
             <Input
               id="pdl"
-              {...field("pdl")}
+              value={client.pdl}
+              onChange={(e) =>
+                setClient({ ...client, pdl: e.target.value.replace(/\D/g, "").slice(0, 14) })
+              }
               maxLength={14}
               placeholder="21527206882046"
               inputMode="numeric"
