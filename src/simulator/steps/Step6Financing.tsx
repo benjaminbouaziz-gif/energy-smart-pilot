@@ -58,7 +58,7 @@ export default function Step6Financing() {
 
   // Résumé barres : gain / loyer / net (mensuel)
   const barData = [
-    { name: "Gain mensuel", value: gainMensuelTtc, color: "hsl(var(--gold))" },
+    { name: "Gain mensuel", value: gainMensuelTtc, color: "hsl(var(--accent))" },
     { name: mode === "leasing" ? "Loyer mensuel" : "Pas de loyer", value: mode === "leasing" ? -loyerTtc : 0, color: "hsl(var(--muted-foreground))" },
     { name: "Cashflow net", value: cashflowMensuel, color: cashflowMensuel >= 0 ? "hsl(var(--primary))" : "hsl(0 70% 60%)" },
   ];
@@ -232,13 +232,13 @@ export default function Step6Financing() {
                   formatter={(v: number) => [fmt(v), "Cumul"]}
                   labelFormatter={(m) => `Mois ${m} (${(Number(m) / 12).toFixed(1)} ans)`}
                 />
-                <ReferenceLine y={0} stroke="hsl(var(--gold))" strokeDasharray="4 4" />
+                <ReferenceLine y={0} stroke="hsl(var(--accent))" strokeDasharray="4 4" />
                 {breakevenMois && (
                   <ReferenceLine
                     x={breakevenMois}
-                    stroke="hsl(var(--gold))"
+                    stroke="hsl(var(--accent))"
                     strokeDasharray="4 4"
-                    label={{ value: "Break-even", fill: "hsl(var(--gold))", fontSize: 10 }}
+                    label={{ value: "Break-even", fill: "hsl(var(--accent))", fontSize: 10 }}
                   />
                 )}
                 <Line

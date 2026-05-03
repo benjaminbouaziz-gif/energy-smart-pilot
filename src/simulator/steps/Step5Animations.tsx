@@ -199,7 +199,7 @@ export default function Step5Animations() {
                         h.action === "charge"
                           ? "hsl(var(--primary))"
                           : h.action === "decharge"
-                          ? "hsl(var(--gold))"
+                          ? "hsl(var(--accent))"
                           : "hsl(var(--muted-foreground) / 0.2)"
                       }
                     />
@@ -224,8 +224,8 @@ export default function Step5Animations() {
                 <Area
                   type="monotone"
                   dataKey="soc"
-                  stroke="hsl(var(--gold))"
-                  fill="hsl(var(--gold) / 0.25)"
+                  stroke="hsl(var(--accent))"
+                  fill="hsl(var(--accent) / 0.25)"
                   strokeWidth={2}
                 />
               </AreaChart>
@@ -294,7 +294,7 @@ export default function Step5Animations() {
                 style={{
                   background: `hsl(43 96% 56% / ${0.15 + h.intensity * 0.85})`,
                   outline:
-                    i === dayIdx ? "2px solid hsl(var(--gold))" : "none",
+                    i === dayIdx ? "2px solid hsl(var(--accent))" : "none",
                 }}
               />
             ))}
@@ -358,7 +358,7 @@ function Legend() {
         <span className="w-3 h-3 rounded-sm" style={{ background: "hsl(var(--primary))" }} /> Charge
       </span>
       <span className="flex items-center gap-1">
-        <span className="w-3 h-3 rounded-sm" style={{ background: "hsl(var(--gold))" }} /> Décharge
+        <span className="w-3 h-3 rounded-sm" style={{ background: "hsl(var(--accent))" }} /> Décharge
       </span>
     </div>
   );
