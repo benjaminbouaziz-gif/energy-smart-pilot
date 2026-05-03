@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { TrendingDown, Sparkles, Receipt } from "lucide-react";
+import { Sparkles, Receipt } from "lucide-react";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -21,13 +21,10 @@ export default function Step4Comparison() {
   const fournisseur = facture.fournisseur || "Fournisseur actuel";
   const data = [
     { name: fournisseur, ttc: result.factureInitiale.ttc, color: "hsl(var(--muted-foreground))" },
-    { name: "Sobry seul", ttc: result.sobry.ttc, color: "hsl(var(--primary))" },
     { name: "Sobry + Dynawatt", ttc: result.dynawatt.ttc, color: "hsl(var(--gold))" },
   ];
 
-  const economieSobry = result.factureInitiale.ttc - result.sobry.ttc;
   const economieDynawatt = result.factureInitiale.ttc - result.dynawatt.ttc;
-  const pctSobry = (economieSobry / result.factureInitiale.ttc) * 100;
   const pctDyn = (economieDynawatt / result.factureInitiale.ttc) * 100;
 
   return (
@@ -50,21 +47,14 @@ export default function Step4Comparison() {
           </p>
         </div>
 
-        {/* Cards 3 niveaux */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        {/* Cards 2 niveaux */}
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
           <Card
             icon={<Receipt className="w-5 h-5" />}
             label={fournisseur}
             sub="Facture actuelle"
             value={fmt(result.factureInitiale.ttc)}
             tone="muted"
-          />
-          <Card
-            icon={<TrendingDown className="w-5 h-5" />}
-            label="Sobry seul"
-            sub={`-${fmt(economieSobry)} (${pctSobry.toFixed(1)}%)`}
-            value={fmt(result.sobry.ttc)}
-            tone="primary"
           />
           <Card
             icon={<Sparkles className="w-5 h-5" />}
