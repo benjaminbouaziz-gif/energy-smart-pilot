@@ -34,6 +34,10 @@ export default function Step1Client() {
       const fe: Record<string, string> = {};
       for (const issue of parsed.error.issues) fe[issue.path[0] as string] = issue.message;
       setErrors(fe);
+      const first = parsed.error.issues[0];
+      toast.error("Champs invalides", {
+        description: `${String(first?.path[0] ?? "")} : ${first?.message ?? ""}`,
+      });
       return;
     }
     setErrors({});
@@ -42,7 +46,8 @@ export default function Step1Client() {
       await saveStep1();
       next();
     } catch (e: any) {
-      toast.error("Erreur lors de la sauvegarde", { description: e.message });
+      console.error("saveStep1 error", e);
+      toast.error("Erreur lors de la sauvegarde", { description: e?.message ?? String(e) });
     } finally {
       setSubmitting(false);
     }
