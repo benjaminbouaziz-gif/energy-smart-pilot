@@ -66,46 +66,6 @@ export default function Step4Comparison() {
           />
         </div>
 
-        {/* Graph */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.15 }}
-          className="glass rounded-3xl p-5 md:p-7"
-        >
-          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-1">
-            Coût annuel TTC
-          </div>
-          <h2 className="text-xl md:text-2xl font-black mb-4">Visualisation comparative</h2>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 20, right: 20, bottom: 0, left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.25} />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k €`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: "hsl(248 35% 16%)",
-                    border: "1px solid hsl(262 70% 70% / 0.3)",
-                    borderRadius: 12,
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number) => [fmt(v), "Coût TTC"]}
-                />
-                <Bar dataKey="ttc" radius={[12, 12, 0, 0]}>
-                  {data.map((d, i) => (
-                    <Cell key={i} fill={d.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </motion.div>
-
         {/* Récap big number */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
