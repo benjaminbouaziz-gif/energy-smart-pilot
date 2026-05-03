@@ -161,26 +161,45 @@ export default function Step5Animations() {
 
         {/* 4 panels */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {/* Panel 1 : prix horaire */}
-          <Panel icon={<Euro className="w-4 h-4" />} title="Prix horaire (€/MWh)" tone="primary">
+          {/* Panel 1 : comparaison tarifs €/kWh TTC */}
+          <Panel icon={<Euro className="w-4 h-4" />} title="Tarif horaire (€/kWh TTC)" tone="primary">
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={hourly}>
+              <LineChart data={hourly}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
                 <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" fontSize={10} interval={2} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={10}
+                  domain={[0, 0.4]}
+                  tickFormatter={(v) => v.toFixed(2)}
+                />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(v: number) => [`${v.toFixed(0)} €/MWh`, "Prix"]}
+                  formatter={(v: number, name: string) => [`${Number(v).toFixed(4)} €/kWh`, name]}
+                  labelFormatter={(l) => `Heure ${l}`}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="prix"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary) / 0.2)"
+                <RLegend wrapperStyle={{ fontSize: 10, paddingTop: 4 }} />
+                <Line
+                  type="stepAfter"
+                  dataKey="ancien"
+                  name={nomFournisseur}
+                  stroke="#F97316"
                   strokeWidth={2}
+                  dot={false}
                 />
-              </AreaChart>
+                <Line
+                  type="monotone"
+                  dataKey="sobry"
+                  name="Sobry"
+                  stroke="#7C3AED"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
+            <div className="text-[10px] font-mono text-muted-foreground mt-1 text-center">
+              Écart moyen : {(hourly.reduce((s, h) => s + h.ecart, 0) / 24).toFixed(4)} €/kWh
+            </div>
           </Panel>
 
           {/* Panel 2 : actions */}
