@@ -115,6 +115,36 @@ export default function Step6Financing() {
           </p>
         </div>
 
+        {/* Décomposition des 2 économies */}
+        <div className="glass rounded-3xl p-5 md:p-7 mb-6">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-3">
+            Vos économies annuelles (TTC)
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 items-stretch">
+            <div className="rounded-2xl p-4 border border-border bg-card/40">
+              <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
+                Économie Sobry vs {fournisseur}
+              </div>
+              <div className="text-2xl font-black text-primary-light">{fmt(economieSobryTtc)}</div>
+              <div className="text-xs text-muted-foreground mt-1">Dès le passage à Sobry</div>
+            </div>
+            <div className="rounded-2xl p-4 border border-border bg-card/40">
+              <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
+                Pilotage batterie Dynawatt
+              </div>
+              <div className="text-2xl font-black text-primary-light">{fmt(economieBatterieTtc)}</div>
+              <div className="text-xs text-muted-foreground mt-1">Arbitrage horaire sur prix Sobry</div>
+            </div>
+            <div className="rounded-2xl p-4 border-2 border-gold/60 bg-gold/5 shadow-[var(--shadow-gold)]">
+              <div className="text-xs font-mono uppercase tracking-widest mb-2 text-gold">
+                Économie totale annuelle
+              </div>
+              <div className="text-3xl font-black text-gradient-gold">{fmt(economieTotaleTtc)}</div>
+              <div className="text-xs text-muted-foreground mt-1">Base du cashflow ci-dessous</div>
+            </div>
+          </div>
+        </div>
+
         {/* Switch mode */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <Toggle active={mode === "comptant"} onClick={() => setMode("comptant")}>
