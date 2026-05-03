@@ -321,10 +321,12 @@ export default function Step5Animations() {
 }
 
 const tooltipStyle = {
-  background: "hsl(248 35% 16%)",
-  border: "1px solid hsl(262 70% 70% / 0.3)",
+  background: "#FFFFFF",
+  border: "1px solid hsl(262 83% 58%)",
   borderRadius: 12,
   fontSize: 12,
+  color: "hsl(248 35% 17%)",
+  boxShadow: "0 8px 24px -8px hsl(248 35% 17% / 0.15)",
 };
 
 function Panel({
