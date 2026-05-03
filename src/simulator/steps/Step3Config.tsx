@@ -154,7 +154,7 @@ export default function Step3Config() {
                       </span>
                     </div>
                     <div className="text-2xl font-black text-gold">
-                      {fmtEur(sim.roi.gainNetAn * (1 + CONSTANTES.TVA))}
+                      {new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(sim.roi.gainTtcAn)}
                       <span className="text-xs font-mono text-muted-foreground ml-1">TTC/an</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
