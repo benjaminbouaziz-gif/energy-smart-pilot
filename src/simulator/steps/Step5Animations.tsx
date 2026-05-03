@@ -12,12 +12,14 @@ import {
   Cell,
   Line,
   LineChart,
+  Legend as RLegend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { Activity, Battery, Euro, Zap } from "lucide-react";
+import { CONSTANTES } from "@/lib/dynawatt-engine";
 
 const fmt = (n: number, d = 0) =>
   new Intl.NumberFormat("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
