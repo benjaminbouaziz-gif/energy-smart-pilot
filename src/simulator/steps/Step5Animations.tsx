@@ -50,6 +50,10 @@ export default function Step5Animations() {
 
   const day = days[dayIdx];
 
+  const tva = 1 + CONSTANTES.TVA;
+  const tarifAncienTtc = (facture?.prix_kwh_ht || 0) * tva;
+  const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
+
   // Données graphiques heure par heure
   const hourly = useMemo(() => {
     const c1 = day.cycle1;
@@ -60,14 +64,18 @@ export default function Step5Animations() {
       else if (c1 && h >= c1.dechargeStart && h <= c1.dechargeEnd) action = "decharge";
       else if (c2 && h >= c2.chargeStart && h <= c2.chargeEnd) action = "charge";
       else if (c2 && h >= c2.dechargeStart && h <= c2.dechargeEnd) action = "decharge";
+      const sobryTtc = day.prix24h[h] * tva; // €/kWh TTC
       return {
-        hour: `${h}h`,
-        prix: day.prix24h[h] * 1000, // €/MWh
+        hour: `${h.toString().padStart(2, "0")}h`,
+        prix: day.prix24h[h] * 1000, // €/MWh (autres panels)
+        sobry: +sobryTtc.toFixed(4),
+        ancien: +tarifAncienTtc.toFixed(4),
+        ecart: +(tarifAncienTtc - sobryTtc).toFixed(4),
         conso: day.conso24h[h],
         action,
       };
     });
-  }, [day]);
+  }, [day, tarifAncienTtc, tva]);
 
   // SoC simulé
   const soc = useMemo(() => {
