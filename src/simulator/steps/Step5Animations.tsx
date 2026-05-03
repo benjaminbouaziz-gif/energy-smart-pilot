@@ -12,18 +12,20 @@ import {
   Cell,
   Line,
   LineChart,
+  Legend as RLegend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { Activity, Battery, Euro, Zap } from "lucide-react";
+import { CONSTANTES } from "@/lib/dynawatt-engine";
 
 const fmt = (n: number, d = 0) =>
   new Intl.NumberFormat("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
 
 export default function Step5Animations() {
-  const { result, next } = useSimulator();
+  const { result, facture, next } = useSimulator();
 
   if (!result || !result.planJours.length) {
     return (
@@ -48,6 +50,10 @@ export default function Step5Animations() {
 
   const day = days[dayIdx];
 
+  const tva = 1 + CONSTANTES.TVA;
+  const tarifAncienTtc = (facture?.prix_kwh_ht || 0) * tva;
+  const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
+
   // Données graphiques heure par heure
   const hourly = useMemo(() => {
     const c1 = day.cycle1;
@@ -58,14 +64,18 @@ export default function Step5Animations() {
       else if (c1 && h >= c1.dechargeStart && h <= c1.dechargeEnd) action = "decharge";
       else if (c2 && h >= c2.chargeStart && h <= c2.chargeEnd) action = "charge";
       else if (c2 && h >= c2.dechargeStart && h <= c2.dechargeEnd) action = "decharge";
+      const sobryTtc = day.prix24h[h] * tva; // €/kWh TTC
       return {
-        hour: `${h}h`,
-        prix: day.prix24h[h] * 1000, // €/MWh
+        hour: `${h.toString().padStart(2, "0")}h`,
+        prix: day.prix24h[h] * 1000, // €/MWh (autres panels)
+        sobry: +sobryTtc.toFixed(4),
+        ancien: +tarifAncienTtc.toFixed(4),
+        ecart: +(tarifAncienTtc - sobryTtc).toFixed(4),
         conso: day.conso24h[h],
         action,
       };
     });
-  }, [day]);
+  }, [day, tarifAncienTtc, tva]);
 
   // SoC simulé
   const soc = useMemo(() => {
@@ -151,26 +161,45 @@ export default function Step5Animations() {
 
         {/* 4 panels */}
         <div className="grid md:grid-cols-2 gap-4 mb-8">
-          {/* Panel 1 : prix horaire */}
-          <Panel icon={<Euro className="w-4 h-4" />} title="Prix horaire (€/MWh)" tone="primary">
+          {/* Panel 1 : comparaison tarifs €/kWh TTC */}
+          <Panel icon={<Euro className="w-4 h-4" />} title="Tarif horaire (€/kWh TTC)" tone="primary">
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={hourly}>
+              <LineChart data={hourly}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.2} />
                 <XAxis dataKey="hour" stroke="hsl(var(--muted-foreground))" fontSize={10} interval={2} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={10}
+                  domain={[0, 0.4]}
+                  tickFormatter={(v) => v.toFixed(2)}
+                />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(v: number) => [`${v.toFixed(0)} €/MWh`, "Prix"]}
+                  formatter={(v: number, name: string) => [`${Number(v).toFixed(4)} €/kWh`, name]}
+                  labelFormatter={(l) => `Heure ${l}`}
                 />
-                <Area
-                  type="monotone"
-                  dataKey="prix"
-                  stroke="hsl(var(--primary))"
-                  fill="hsl(var(--primary) / 0.2)"
+                <RLegend wrapperStyle={{ fontSize: 10, paddingTop: 4 }} />
+                <Line
+                  type="stepAfter"
+                  dataKey="ancien"
+                  name={nomFournisseur}
+                  stroke="#F97316"
                   strokeWidth={2}
+                  dot={false}
                 />
-              </AreaChart>
+                <Line
+                  type="monotone"
+                  dataKey="sobry"
+                  name="Sobry"
+                  stroke="#7C3AED"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
             </ResponsiveContainer>
+            <div className="text-[10px] font-mono text-muted-foreground mt-1 text-center">
+              Écart moyen : {(hourly.reduce((s, h) => s + h.ecart, 0) / 24).toFixed(4)} €/kWh
+            </div>
           </Panel>
 
           {/* Panel 2 : actions */}
