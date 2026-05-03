@@ -119,6 +119,7 @@ export interface SimulationResult {
     paybackAns: number;
     roi7Ans: number;
     gainNetAn: number;
+    gainTtcAn: number;
   };
   config: typeof CONFIGS[ConfigKey];
   parsed: SobryParsed;
