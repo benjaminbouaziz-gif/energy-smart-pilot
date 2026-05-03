@@ -2,7 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const stats = [
-  { value: 33, suffix: "%", label: "d'économies moyennes vs TRV" },
+  { value: 33, suffix: "%", label: "d'économies moyennes vs tarif marché pro" },
   { value: 1.8, suffix: " ans", label: "ROI moyen", decimals: 1 },
   { value: 331, prefix: "+", suffix: " €/mois", label: "cash flow positif dès M1" },
   { value: 100, suffix: "%", label: "sans panneaux PV requis" },

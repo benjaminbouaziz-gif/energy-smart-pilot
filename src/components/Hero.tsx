@@ -33,8 +33,8 @@ export const Hero = () => {
               transition={{ duration: 0.7, delay: 0.25 }}
               className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl leading-relaxed"
             >
-              Batterie pilotée par algorithme + contrat énergie dynamique. Jusqu'à{" "}
-              <span className="text-gold font-semibold">33% d'économies</span> sur votre facture. Sans changer vos habitudes.
+              Pros : batterie pilotée par algorithme + contrat énergie dynamique. Jusqu'à{" "}
+              <span className="text-gold font-semibold">33% d'économies</span> sur votre facture, sans intermédiaire qui marge sur votre dos.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 30 }}

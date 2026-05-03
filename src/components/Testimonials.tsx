@@ -5,7 +5,7 @@ const items = [
   {
     name: "Hotel America Opera",
     role: "39 chambres + bar — Paris 8e",
-    savings: "7 400 €/an",
+    savings: "8 980 €/an",
     quote: "Le ROI s'est fait en 1,8 an. Cash flow positif dès le premier mois. Aucune contrainte sur l'exploitation.",
     badge: "Hôtellerie",
   },

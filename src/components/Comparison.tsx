@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
 const rows = [
-  { label: "TRV", price: "0,21 €", saving: "—", color: "text-muted-foreground", highlight: false },
-  { label: "Concurrent -10%", price: "0,189 €", saving: "-10%", color: "text-foreground/80", highlight: false },
-  { label: "Concurrent -20%", price: "0,168 €", saving: "-20%", color: "text-foreground/80", highlight: false },
-  { label: "Dynawatt", price: "0,141 €", saving: "-33%", color: "text-gold", highlight: true },
+  { label: "Tarif marché pro (post-2022)", price: "0,260 €", saving: "—", color: "text-muted-foreground", highlight: false },
+  { label: "Concurrent -10%", price: "0,234 €", saving: "-10%", color: "text-foreground/80", highlight: false },
+  { label: "Concurrent -20%", price: "0,208 €", saving: "-20%", color: "text-foreground/80", highlight: false },
+  { label: "Dynawatt + Sobry", price: "0,175 €", saving: "-33%", color: "text-gold", highlight: true },
 ];
 
 export const Comparison = () => (
@@ -18,8 +18,8 @@ export const Comparison = () => (
         className="text-center mb-12"
       >
         <div className="text-xs font-mono text-gold uppercase tracking-widest mb-3">Comparaison</div>
-        <h2 className="text-4xl md:text-5xl font-black">Le marché. <span className="text-gradient-gold">Et nous.</span></h2>
-        <p className="mt-4 text-muted-foreground">Prix kWh TTC moyen sur 100 kWh consommés.</p>
+        <h2 className="text-4xl md:text-5xl font-black">Le marché pro. <span className="text-gradient-gold">Et nous.</span></h2>
+        <p className="mt-4 text-muted-foreground">Prix kWh TTC moyen — base contrat marché pro signé après 2022.</p>
       </motion.div>
 
       <div className="glass rounded-3xl overflow-hidden">

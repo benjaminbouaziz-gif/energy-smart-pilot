@@ -96,9 +96,9 @@ const ProPage = () => {
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { icon: TrendingUp, label: "Conso annuelle", value: "106 688", unit: "kWh" },
-                  { icon: Wallet, label: "Facture TRV", value: "22 400 €", unit: "/an" },
-                  { icon: Wallet, label: "Avec Dynawatt", value: "15 000 €", unit: "/an", gold: true },
-                  { icon: Calendar, label: "ROI", value: "1,8 an", unit: "+331€/mois", gold: true },
+                  { icon: Wallet, label: "Facture marché pro", value: "27 200 €", unit: "/an" },
+                  { icon: Wallet, label: "Avec Dynawatt", value: "18 220 €", unit: "/an", gold: true },
+                  { icon: Calendar, label: "ROI", value: "1,5 an", unit: "+747€/mois", gold: true },
                 ].map((m, i) => (
                   <div key={i} className={`rounded-2xl p-4 ${m.gold ? "bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30" : "bg-card/50 border border-border"}`}>
                     <m.icon className={`w-4 h-4 mb-2 ${m.gold ? "text-gold" : "text-muted-foreground"}`} />
@@ -110,7 +110,7 @@ const ProPage = () => {
               </div>
 
               <div className="mt-8 p-4 rounded-xl bg-gold/10 border border-gold/30 text-center">
-                <span className="font-mono text-2xl font-black text-gradient-gold">7 400 €</span>
+                <span className="font-mono text-2xl font-black text-gradient-gold">8 980 €</span>
                 <span className="text-sm text-muted-foreground ml-2">d'économies annuelles — soit 33% de réduction</span>
               </div>
             </div>
