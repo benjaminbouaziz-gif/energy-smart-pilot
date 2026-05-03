@@ -104,6 +104,89 @@ export type Database = {
         }
         Relationships: []
       }
+      simulations: {
+        Row: {
+          client_adresse: string
+          client_email: string
+          client_nom: string
+          client_pdl: string
+          client_telephone: string
+          config_choisie: string | null
+          created_at: string
+          current_step: number
+          facture_actuelle: Json | null
+          id: string
+          resultats_simulation: Json | null
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          client_adresse: string
+          client_email: string
+          client_nom: string
+          client_pdl: string
+          client_telephone: string
+          config_choisie?: string | null
+          created_at?: string
+          current_step?: number
+          facture_actuelle?: Json | null
+          id?: string
+          resultats_simulation?: Json | null
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          client_adresse?: string
+          client_email?: string
+          client_nom?: string
+          client_pdl?: string
+          client_telephone?: string
+          config_choisie?: string | null
+          created_at?: string
+          current_step?: number
+          facture_actuelle?: Json | null
+          id?: string
+          resultats_simulation?: Json | null
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      simulator_documents: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          mois: string | null
+          simulation_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          id?: string
+          mois?: string | null
+          simulation_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          mois?: string | null
+          simulation_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulator_documents_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
