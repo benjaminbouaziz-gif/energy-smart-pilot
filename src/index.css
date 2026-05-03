@@ -112,11 +112,15 @@
 .simulator-light .text-muted-foreground {
   color: hsl(var(--muted-foreground));
 }
+/* Quand le wizard light est monté, on masque le fond sombre fixed du body */
+body:has(.simulator-light) {
+  background: #FFFFFF !important;
+}
+body:has(.simulator-light)::before {
+  display: none !important;
+}
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+
 
   html {
     scroll-behavior: smooth;
