@@ -21,7 +21,6 @@ export default function Step4Comparison() {
   const fournisseur = facture.fournisseur || "Fournisseur actuel";
   const data = [
     { name: fournisseur, ttc: result.factureInitiale.ttc, color: "hsl(var(--muted-foreground))" },
-    { name: "Sobry seul", ttc: result.sobry.ttc, color: "hsl(var(--primary))" },
     { name: "Sobry + Dynawatt", ttc: result.dynawatt.ttc, color: "hsl(var(--gold))" },
   ];
 
