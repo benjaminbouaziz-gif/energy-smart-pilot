@@ -1,5 +1,10 @@
-import { corsHeaders } from "@supabase/supabase-js/cors";
 import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
 
 const SYSTEM_PROMPT = `Tu es un expert en analyse de factures d'électricité françaises.
 À partir du texte brut d'une facture, extrais les informations demandées via l'outil extract_facture.
