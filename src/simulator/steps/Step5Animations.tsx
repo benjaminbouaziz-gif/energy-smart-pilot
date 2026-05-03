@@ -52,7 +52,30 @@ export default function Step5Animations() {
 
   const tva = 1 + CONSTANTES.TVA;
   const tarifAncienTtc = (facture?.prix_kwh_ht || 0) * tva;
+  const aboAncienTtcJour = ((facture?.abonnement_mensuel_ht || 0) * 12 / 365) * tva;
   const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
+
+  // Économie quotidienne : Sobry vs ancien fournisseur + pilotage batterie
+  const dayEconomies = useMemo(() => {
+    return days.map((d) => {
+      const consoJour = d.conso24h.reduce((s, c) => s + c, 0);
+      const coutAncienTtc = consoJour * tarifAncienTtc + aboAncienTtcJour;
+      // coût Sobry variable HT du jour (somme prix*conso) + part fixe HT
+      let coutSobryVarHt = 0;
+      for (let h = 0; h < 24; h++) coutSobryVarHt += d.prix24h[h] * d.conso24h[h];
+      const partFixeSobryHtJour = result.parsed.fixedCostsAnnualHt / 365;
+      const coutSobryTtc = (coutSobryVarHt + partFixeSobryHtJour) * tva;
+      const economieSobry = Math.max(0, coutAncienTtc - coutSobryTtc);
+      const economiePilotage = d.gainJour; // déjà TTC (€)
+      return {
+        sobry: economieSobry,
+        pilotage: economiePilotage,
+        total: economieSobry + economiePilotage,
+      };
+    });
+  }, [days, tarifAncienTtc, aboAncienTtcJour, tva, result.parsed.fixedCostsAnnualHt]);
+
+  const econoDuJour = dayEconomies[dayIdx];
 
   // Données graphiques heure par heure
   const hourly = useMemo(() => {
