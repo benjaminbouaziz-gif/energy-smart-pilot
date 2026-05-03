@@ -24,9 +24,7 @@ export default function Step4Comparison() {
     { name: "Sobry + Dynawatt", ttc: result.dynawatt.ttc, color: "hsl(var(--gold))" },
   ];
 
-  const economieSobry = result.factureInitiale.ttc - result.sobry.ttc;
   const economieDynawatt = result.factureInitiale.ttc - result.dynawatt.ttc;
-  const pctSobry = (economieSobry / result.factureInitiale.ttc) * 100;
   const pctDyn = (economieDynawatt / result.factureInitiale.ttc) * 100;
 
   return (
