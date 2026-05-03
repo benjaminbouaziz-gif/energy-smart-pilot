@@ -19,10 +19,6 @@ export default function Step4Comparison() {
   }
 
   const fournisseur = facture.fournisseur || "Fournisseur actuel";
-  const data = [
-    { name: fournisseur, ttc: result.factureInitiale.ttc, color: "hsl(var(--muted-foreground))" },
-    { name: "Sobry + Dynawatt", ttc: result.dynawatt.ttc, color: "hsl(var(--gold))" },
-  ];
 
   const economieDynawatt = result.factureInitiale.ttc - result.dynawatt.ttc;
   const pctDyn = (economieDynawatt / result.factureInitiale.ttc) * 100;
