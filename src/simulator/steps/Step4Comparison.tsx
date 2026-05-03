@@ -168,7 +168,7 @@ function Card({
         {icon}
         <span className="text-xs font-mono uppercase tracking-widest">{label}</span>
       </div>
-      <div className="text-3xl font-black">{value}</div>
+      <div className={`text-3xl font-black ${highlight ? "text-gradient-gold" : "text-foreground"}`}>{value}</div>
       <div className={`text-xs mt-1 font-mono ${toneClass}`}>{sub}</div>
     </div>
   );
