@@ -25,7 +25,7 @@ const fmt = (n: number, d = 0) =>
   new Intl.NumberFormat("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
 
 export default function Step5Animations() {
-  const { result, next } = useSimulator();
+  const { result, facture, next } = useSimulator();
 
   if (!result || !result.planJours.length) {
     return (
