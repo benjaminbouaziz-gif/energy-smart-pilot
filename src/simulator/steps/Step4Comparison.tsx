@@ -49,21 +49,14 @@ export default function Step4Comparison() {
           </p>
         </div>
 
-        {/* Cards 3 niveaux */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
+        {/* Cards 2 niveaux */}
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
           <Card
             icon={<Receipt className="w-5 h-5" />}
             label={fournisseur}
             sub="Facture actuelle"
             value={fmt(result.factureInitiale.ttc)}
             tone="muted"
-          />
-          <Card
-            icon={<TrendingDown className="w-5 h-5" />}
-            label="Sobry seul"
-            sub={`-${fmt(economieSobry)} (${pctSobry.toFixed(1)}%)`}
-            value={fmt(result.sobry.ttc)}
-            tone="primary"
           />
           <Card
             icon={<Sparkles className="w-5 h-5" />}
