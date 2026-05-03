@@ -307,7 +307,7 @@ export default function Step5Animations() {
           </Panel>
         </div>
 
-        {/* Gain du jour */}
+        {/* Gain total du jour */}
         <motion.div
           key={day.date}
           initial={{ opacity: 0, scale: 0.95 }}
@@ -315,12 +315,17 @@ export default function Step5Animations() {
           className="glass rounded-3xl p-6 text-center mb-8"
         >
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            Gain pilotage ce jour
+            Gain Dynawatt ce jour
           </div>
-          <div className="font-black text-4xl text-gradient-gold font-mono mt-1">
-            +{fmt(day.gainJour, 2)} €
+          <div className="font-black text-4xl font-mono mt-1" style={{ color: "#10B981" }}>
+            +{fmt(econoDuJour.total, 2)} €
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
+          <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
+            <div>dont :</div>
+            <div>• Sobry vs {nomFournisseur} : <span className="font-semibold text-foreground">+{fmt(econoDuJour.sobry, 2)} €</span></div>
+            <div>• Pilotage batterie : <span className="font-semibold text-foreground">+{fmt(econoDuJour.pilotage, 2)} €</span></div>
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-2">
             {day.cycleCount} cycle{day.cycleCount > 1 ? "s" : ""} effectué{day.cycleCount > 1 ? "s" : ""}
           </div>
         </motion.div>
