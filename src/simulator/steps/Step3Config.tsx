@@ -5,6 +5,7 @@ import { WizardFooter } from "../components/WizardFooter";
 import {
   CONFIGS,
   ConfigKey,
+  CONSTANTES,
   executerSimulation,
   fmtEur,
   suggerConfig,
