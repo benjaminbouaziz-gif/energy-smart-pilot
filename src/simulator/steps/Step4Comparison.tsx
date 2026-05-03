@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import { Sparkles, Receipt } from "lucide-react";
 
 const fmt = (n: number) =>
