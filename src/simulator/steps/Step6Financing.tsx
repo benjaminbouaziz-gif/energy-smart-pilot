@@ -99,9 +99,11 @@ export default function Step6Financing() {
   const config = result.config;
   const fournisseur = facture?.fournisseur || "ancien fournisseur";
 
-  // Prix effectif : en mode interne, on respecte customPriceHT (custom prospect ou standard params).
-  // En mode public, on utilise TOUJOURS les prix standards de CONFIGS (ignore tout custom).
-  const prixHtEff = internalMode && customPriceHT != null ? customPriceHT : config.prix_ht;
+  // Prix effectif :
+  // - Public : customPriceHT = prix standard depuis parametres_globaux (chargé par StandardPriceLoader)
+  // - Interne : customPriceHT = prix_client_custom_ht du prospect si défini, sinon prix standard
+  // Fallback final : prix_ht hardcodé dans CONFIGS si rien n'est chargé
+  const prixHtEff = customPriceHT != null ? customPriceHT : config.prix_ht;
   const prixTtcEff = prixHtEff * (1 + CONSTANTES.TVA);
 
   // Les 2 économies cumulées (TTC)
