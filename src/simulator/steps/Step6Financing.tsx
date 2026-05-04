@@ -414,6 +414,26 @@ export default function Step6Financing() {
       </motion.section>
 
       <WizardFooter />
+
+      {/* Off-screen render du rapport pour capture html2canvas → PDF */}
+      {reportPayload && (
+        <div
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: "-100000px",
+            top: 0,
+            width: "210mm",
+            background: "#ffffff",
+            zIndex: -1,
+            pointerEvents: "none",
+          }}
+        >
+          <div ref={reportContainerRef}>
+            <RapportPDF payloadProp={reportPayload} embed />
+          </div>
+        </div>
+      )}
     </>
   );
 }
