@@ -99,6 +99,11 @@ export default function Step6Financing() {
   const config = result.config;
   const fournisseur = facture?.fournisseur || "ancien fournisseur";
 
+  // Prix effectif : en mode interne, on respecte customPriceHT (custom prospect ou standard params).
+  // En mode public, on utilise TOUJOURS les prix standards de CONFIGS (ignore tout custom).
+  const prixHtEff = internalMode && customPriceHT != null ? customPriceHT : config.prix_ht;
+  const prixTtcEff = prixHtEff * (1 + CONSTANTES.TVA);
+
   // Les 2 économies cumulées (TTC)
   const economieSobryTtc = result.factureInitiale.ttc - result.sobry.ttc;
   const economieBatterieTtc = result.roi.gainTtcAn;
@@ -109,7 +114,7 @@ export default function Step6Financing() {
 
   // Loyer mensuel HT = prix HT × coef × ajustement durée
   const coef = duree === 60 ? CONSTANTES.LEASING_COEF_MENSUEL : CONSTANTES.LEASING_COEF_MENSUEL * 0.78;
-  const loyerHt = config.prix_ht * coef;
+  const loyerHt = prixHtEff * coef;
   const loyerTtc = loyerHt * (1 + CONSTANTES.TVA);
 
   const cashflowMensuel = gainMensuelTtc - (mode === "leasing" ? loyerTtc : 0);
