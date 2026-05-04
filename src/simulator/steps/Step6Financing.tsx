@@ -16,7 +16,11 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId, client } = useSimulator();
+  const { result, facture, simulationId, client, internalMode, prospectId } = useSimulator();
+  const HT = internalMode;
+  const div = HT ? 1.2 : 1;
+  const fmtMode = (n: number) => fmt(n / div);
+  const suffix = HT ? "HT" : "TTC";
   const reportContainerRef = useRef<HTMLDivElement | null>(null);
   const [reportPayload, setReportPayload] = useState<any | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
