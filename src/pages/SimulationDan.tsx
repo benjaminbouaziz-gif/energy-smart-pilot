@@ -13,15 +13,14 @@ import Step5Animations from "@/simulator/steps/Step5Animations";
 import Step6Financing from "@/simulator/steps/Step6Financing";
 
 function PrefillFromProspect({ prospectId }: { prospectId: string }) {
-  const { setClient, setSobryDocs, setConfigChoisie, goToStep } = useSimulator();
+  const { setClient, setSobryDocs, setConfigChoisie, setCustomPriceHT, goToStep } = useSimulator();
 
   useEffect(() => {
     (async () => {
-      const { data: p, error } = await supabase
-        .from("prospects")
-        .select("*")
-        .eq("id", prospectId)
-        .single();
+      const [{ data: p, error }, { data: params }] = await Promise.all([
+        supabase.from("prospects").select("*").eq("id", prospectId).single(),
+        supabase.from("parametres_globaux").select("cle, valeur"),
+      ]);
       if (error || !p) {
         toast.error("Prospect introuvable");
         return;
@@ -34,6 +33,22 @@ function PrefillFromProspect({ prospectId }: { prospectId: string }) {
         adresse: p.adresse_pdl ?? "",
       });
       if (p.config_choisie) setConfigChoisie(p.config_choisie as any);
+
+      // Prix effectif HT en mode interne :
+      // 1) prix_client_custom_ht si défini
+      // 2) sinon prix standard depuis parametres_globaux
+      // 3) sinon null → fallback aux prix CONFIGS hardcodés
+      const paramsMap: Record<string, string> = {};
+      (params ?? []).forEach((r: any) => (paramsMap[r.cle] = r.valeur));
+      let prixHT: number | null = null;
+      if (p.prix_client_custom_ht != null) {
+        prixHT = Number(p.prix_client_custom_ht);
+      } else if (p.config_choisie === "PETIT" && paramsMap.prix_petit_conso_ht_standard) {
+        prixHT = Number(paramsMap.prix_petit_conso_ht_standard);
+      } else if (p.config_choisie === "MOYEN" && paramsMap.prix_moyen_conso_ht_standard) {
+        prixHT = Number(paramsMap.prix_moyen_conso_ht_standard);
+      }
+      setCustomPriceHT(prixHT);
 
       const { data: docs } = await supabase
         .from("documents")

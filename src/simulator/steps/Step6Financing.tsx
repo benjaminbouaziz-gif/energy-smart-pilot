@@ -16,7 +16,7 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId, client, internalMode, prospectId } = useSimulator();
+  const { result, facture, simulationId, client, internalMode, prospectId, customPriceHT } = useSimulator();
   const HT = internalMode;
   const div = HT ? 1.2 : 1;
   const fmtMode = (n: number) => fmt(n / div);
@@ -99,6 +99,13 @@ export default function Step6Financing() {
   const config = result.config;
   const fournisseur = facture?.fournisseur || "ancien fournisseur";
 
+  // Prix effectif :
+  // - Public : customPriceHT = prix standard depuis parametres_globaux (chargé par StandardPriceLoader)
+  // - Interne : customPriceHT = prix_client_custom_ht du prospect si défini, sinon prix standard
+  // Fallback final : prix_ht hardcodé dans CONFIGS si rien n'est chargé
+  const prixHtEff = customPriceHT != null ? customPriceHT : config.prix_ht;
+  const prixTtcEff = prixHtEff * (1 + CONSTANTES.TVA);
+
   // Les 2 économies cumulées (TTC)
   const economieSobryTtc = result.factureInitiale.ttc - result.sobry.ttc;
   const economieBatterieTtc = result.roi.gainTtcAn;
@@ -109,7 +116,7 @@ export default function Step6Financing() {
 
   // Loyer mensuel HT = prix HT × coef × ajustement durée
   const coef = duree === 60 ? CONSTANTES.LEASING_COEF_MENSUEL : CONSTANTES.LEASING_COEF_MENSUEL * 0.78;
-  const loyerHt = config.prix_ht * coef;
+  const loyerHt = prixHtEff * coef;
   const loyerTtc = loyerHt * (1 + CONSTANTES.TVA);
 
   const cashflowMensuel = gainMensuelTtc - (mode === "leasing" ? loyerTtc : 0);
@@ -118,7 +125,7 @@ export default function Step6Financing() {
   const horizon = 96;
   const cashflow = useMemo(() => {
     const arr: { mois: number; cumul: number; flux: number }[] = [];
-    let cumul = mode === "comptant" ? -config.prix_ttc : 0;
+    let cumul = mode === "comptant" ? -prixTtcEff : 0;
     for (let m = 1; m <= horizon; m++) {
       const flux =
         gainMensuelTtc - (mode === "leasing" && m <= duree ? loyerTtc : 0);
@@ -126,7 +133,7 @@ export default function Step6Financing() {
       arr.push({ mois: m, cumul, flux });
     }
     return arr;
-  }, [mode, duree, loyerTtc, gainMensuelTtc, config.prix_ttc]);
+  }, [mode, duree, loyerTtc, gainMensuelTtc, prixTtcEff]);
 
   // Mois où on devient rentable (cumul ≥ 0)
   const breakevenMois = cashflow.find((c) => c.cumul >= 0)?.mois ?? null;
@@ -236,7 +243,7 @@ export default function Step6Financing() {
         {/* Switch mode */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <Toggle active={mode === "comptant"} onClick={() => setMode("comptant")}>
-            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(config.prix_ttc)}
+            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(prixTtcEff)}
           </Toggle>
           <Toggle active={mode === "leasing"} onClick={() => setMode("leasing")}>
             <Banknote className="w-4 h-4" /> Leasing
@@ -282,7 +289,7 @@ export default function Step6Financing() {
           ) : (
             <Kpi
               label="Investissement"
-              value={fmtMode(config.prix_ttc)}
+              value={fmtMode(prixTtcEff)}
               sub="payé une seule fois"
               tone="muted"
             />

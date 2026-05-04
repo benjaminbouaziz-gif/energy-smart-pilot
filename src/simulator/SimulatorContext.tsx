@@ -23,6 +23,7 @@ interface SimulatorState {
   sobryDocs: SobryDoc[];
   configChoisie: ConfigKey | null;
   result: SimulationResult | null;
+  customPriceHT: number | null;
 }
 
 interface SimulatorContextValue extends SimulatorState {
@@ -31,6 +32,7 @@ interface SimulatorContextValue extends SimulatorState {
   setSobryDocs: (docs: SobryDoc[]) => void;
   setConfigChoisie: (c: ConfigKey | null) => void;
   setResult: (r: SimulationResult | null) => void;
+  setCustomPriceHT: (n: number | null) => void;
   goToStep: (n: number) => void;
   next: () => void;
   prev: () => void;
@@ -67,6 +69,7 @@ export function SimulatorProvider({
   const [sobryDocs, setSobryDocs] = useState<SobryDoc[]>([]);
   const [configChoisie, setConfigChoisie] = useState<ConfigKey | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [customPriceHT, setCustomPriceHT] = useState<number | null>(null);
 
   const saveStep1 = useCallback(async () => {
     if (simulationId) {
@@ -130,11 +133,13 @@ export function SimulatorProvider({
       sobryDocs,
       configChoisie,
       result,
+      customPriceHT,
       setClient,
       setFacture,
       setSobryDocs,
       setConfigChoisie,
       setResult,
+      setCustomPriceHT,
       goToStep,
       next,
       prev,
@@ -144,7 +149,7 @@ export function SimulatorProvider({
       internalMode,
       prospectId,
     }),
-    [simulationId, step, client, facture, sobryDocs, configChoisie, result, goToStep, next, prev, saveStep1, saveProgress, reset, internalMode, prospectId]
+    [simulationId, step, client, facture, sobryDocs, configChoisie, result, customPriceHT, goToStep, next, prev, saveStep1, saveProgress, reset, internalMode, prospectId]
   );
 
   return <SimulatorContext.Provider value={value}>{children}</SimulatorContext.Provider>;
