@@ -15,7 +15,28 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId } = useSimulator();
+  const { result, facture, simulationId, client } = useSimulator();
+
+  const handleDownloadReport = () => {
+    if (!result) {
+      toast.error("Aucune simulation à exporter");
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        "dynawatt_report_payload",
+        JSON.stringify({
+          client,
+          facture,
+          result,
+          date: new Date().toISOString(),
+        })
+      );
+      window.open("/rapport-pdf", "_blank");
+    } catch (e) {
+      toast.error("Impossible de préparer le rapport");
+    }
+  };
   const [mode, setMode] = useState<Mode>("leasing");
   const [duree, setDuree] = useState<60 | 84>(60); // mois
   const [saved, setSaved] = useState(false);
