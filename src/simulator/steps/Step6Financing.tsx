@@ -123,7 +123,7 @@ export default function Step6Financing() {
   const horizon = 96;
   const cashflow = useMemo(() => {
     const arr: { mois: number; cumul: number; flux: number }[] = [];
-    let cumul = mode === "comptant" ? -config.prix_ttc : 0;
+    let cumul = mode === "comptant" ? -prixTtcEff : 0;
     for (let m = 1; m <= horizon; m++) {
       const flux =
         gainMensuelTtc - (mode === "leasing" && m <= duree ? loyerTtc : 0);
@@ -131,7 +131,7 @@ export default function Step6Financing() {
       arr.push({ mois: m, cumul, flux });
     }
     return arr;
-  }, [mode, duree, loyerTtc, gainMensuelTtc, config.prix_ttc]);
+  }, [mode, duree, loyerTtc, gainMensuelTtc, prixTtcEff]);
 
   // Mois où on devient rentable (cumul ≥ 0)
   const breakevenMois = cashflow.find((c) => c.cumul >= 0)?.mois ?? null;
