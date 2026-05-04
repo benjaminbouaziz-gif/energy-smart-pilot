@@ -241,7 +241,7 @@ export default function Step6Financing() {
         {/* Switch mode */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <Toggle active={mode === "comptant"} onClick={() => setMode("comptant")}>
-            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(config.prix_ttc)}
+            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(prixTtcEff)}
           </Toggle>
           <Toggle active={mode === "leasing"} onClick={() => setMode("leasing")}>
             <Banknote className="w-4 h-4" /> Leasing
