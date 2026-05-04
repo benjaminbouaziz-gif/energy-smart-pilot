@@ -203,6 +203,7 @@ function CoutRevientTable({
   title,
   hardware,
   hardwareTotal,
+  margeDynawatt,
   transportLabel,
   installLabel,
   transport,
@@ -215,6 +216,7 @@ function CoutRevientTable({
   title: string;
   hardware: { nom: string; qte: number; pu: number }[];
   hardwareTotal: number;
+  margeDynawatt: number;
   transportLabel: string;
   installLabel: string;
   transport: string;
@@ -224,12 +226,13 @@ function CoutRevientTable({
   total: number;
   totalLabel: string;
 }) {
+  const sousTotalComposants = hardwareTotal + margeDynawatt;
   return (
     <Section title={`Coût de revient — ${title}`}>
-      {/* Hardware Tigo */}
+      {/* Composants */}
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-          Hardware Tigo (lecture seule)
+          Composants (lecture seule)
         </div>
         <div className="overflow-hidden rounded-md border">
           <table className="w-full text-sm">
@@ -254,12 +257,30 @@ function CoutRevientTable({
                   </td>
                 </tr>
               ))}
-              <tr className="border-t bg-muted/40 font-bold">
+              <tr className="border-t bg-muted/40 italic">
                 <td className="px-3 py-2" colSpan={3}>
                   Sous-total Hardware Tigo HT
                 </td>
                 <td className="px-3 py-2 text-right font-mono">
                   {fmt(hardwareTotal)} €
+                </td>
+              </tr>
+              <tr className="border-t bg-[#F3F4F6]">
+                <td className="px-3 py-2">Marge Dynawatt</td>
+                <td className="px-3 py-2 text-right font-mono">1</td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(margeDynawatt)} €
+                </td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(margeDynawatt)} €
+                </td>
+              </tr>
+              <tr className="border-t bg-muted/40 font-bold">
+                <td className="px-3 py-2" colSpan={3}>
+                  Sous-total Composants HT
+                </td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(sousTotalComposants)} €
                 </td>
               </tr>
             </tbody>
