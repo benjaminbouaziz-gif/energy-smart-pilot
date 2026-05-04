@@ -136,10 +136,17 @@ function aggregateByMonth(planJours: any[], facturePrixKwhHt: number, factureAbo
 }
 
 // ====== PAGE ======
-export default function RapportPDF() {
-  const [payload, setPayload] = useState<ReportPayload | null>(null);
+export default function RapportPDF({
+  payloadProp,
+  embed = false,
+}: {
+  payloadProp?: ReportPayload;
+  embed?: boolean;
+} = {}) {
+  const [payload, setPayload] = useState<ReportPayload | null>(payloadProp ?? null);
 
   useLayoutEffect(() => {
+    if (embed) return;
     const html = document.documentElement;
     const body = document.body;
     const prevHtmlClass = html.className;
@@ -167,23 +174,27 @@ export default function RapportPDF() {
       body.style.backgroundImage = prevBodyBgImage;
       body.style.color = prevBodyColor;
     };
-  }, []);
+  }, [embed]);
 
   useEffect(() => {
+    if (payloadProp) {
+      setPayload(payloadProp);
+      return;
+    }
     try {
       const raw = localStorage.getItem("dynawatt_report_payload") || sessionStorage.getItem("dynawatt_report_payload");
       if (raw) setPayload(JSON.parse(raw));
     } catch (e) {
       console.error(e);
     }
-  }, []);
+  }, [payloadProp]);
 
-  // Auto print
+  // Auto print (désactivé en mode embed)
   useEffect(() => {
-    if (!payload) return;
+    if (embed || !payload) return;
     const t = setTimeout(() => window.print(), 800);
     return () => clearTimeout(t);
-  }, [payload]);
+  }, [payload, embed]);
 
   const today = useMemo(
     () =>

@@ -1,13 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
 import { CONSTANTES } from "@/lib/dynawatt-engine";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Banknote, Wallet, TrendingUp, CheckCircle2, FileDown, Mail } from "lucide-react";
+import { Banknote, Wallet, TrendingUp, CheckCircle2, FileDown, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import RapportPDF from "@/pages/RapportPDF";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
@@ -16,25 +17,67 @@ type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
   const { result, facture, simulationId, client } = useSimulator();
+  const reportContainerRef = useRef<HTMLDivElement | null>(null);
+  const [reportPayload, setReportPayload] = useState<any | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
-  const handleDownloadReport = () => {
+  const handleDownloadReport = async () => {
     if (!result) {
       toast.error("Aucune simulation à exporter");
       return;
     }
+    if (generatingPdf) return;
+    setGeneratingPdf(true);
+    const payload = {
+      client,
+      facture,
+      result,
+      date: new Date().toISOString(),
+    };
+    setReportPayload(payload);
     try {
-      localStorage.setItem(
-        "dynawatt_report_payload",
-        JSON.stringify({
-          client,
-          facture,
-          result,
-          date: new Date().toISOString(),
-        })
-      );
-      window.open("/rapport-pdf", "_blank");
-    } catch (e) {
-      toast.error("Impossible de préparer le rapport");
+      // Attendre que React rende l'overlay et que recharts dessine ses SVG
+      await new Promise((r) => setTimeout(r, 1500));
+
+      const container = reportContainerRef.current;
+      if (!container) throw new Error("Conteneur du rapport introuvable");
+
+      const pages = Array.from(container.querySelectorAll<HTMLElement>(".page"));
+      if (pages.length === 0) throw new Error("Aucune page de rapport rendue");
+
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+
+      for (let i = 0; i < pages.length; i++) {
+        const canvas = await html2canvas(pages[i], {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          logging: false,
+        });
+        const imgData = canvas.toDataURL("image/jpeg", 0.92);
+        if (i > 0) pdf.addPage();
+        const ratio = canvas.height / canvas.width;
+        const imgHeight = pdfWidth * ratio;
+        const finalH = Math.min(imgHeight, pdfHeight);
+        pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, finalH);
+      }
+
+      const safeName = (client?.nom || "client").replace(/[^\w\-]+/g, "_");
+      pdf.save(`Rapport_Dynawatt_${safeName}.pdf`);
+      toast.success("Rapport PDF téléchargé");
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Erreur génération PDF : " + (e?.message ?? "inconnue"));
+    } finally {
+      setGeneratingPdf(false);
+      setReportPayload(null);
     }
   };
   const [mode, setMode] = useState<Mode>("leasing");
@@ -334,9 +377,18 @@ export default function Step6Financing() {
           <Button
             onClick={handleDownloadReport}
             variant="outline"
+            disabled={generatingPdf}
             className="h-12 px-6 gap-2 border-2 border-primary/40 hover:border-primary"
           >
-            <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+            {generatingPdf ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Génération en cours…
+              </>
+            ) : (
+              <>
+                <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+              </>
+            )}
           </Button>
           <Button
             onClick={() => toast.info("Envoi par email — disponible prochainement")}
@@ -362,6 +414,26 @@ export default function Step6Financing() {
       </motion.section>
 
       <WizardFooter />
+
+      {/* Off-screen render du rapport pour capture html2canvas → PDF */}
+      {reportPayload && (
+        <div
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: "-100000px",
+            top: 0,
+            width: "210mm",
+            background: "#ffffff",
+            zIndex: -1,
+            pointerEvents: "none",
+          }}
+        >
+          <div ref={reportContainerRef}>
+            <RapportPDF payloadProp={reportPayload} embed />
+          </div>
+        </div>
+      )}
     </>
   );
 }
