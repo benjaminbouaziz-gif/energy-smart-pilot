@@ -126,6 +126,20 @@ export default function Parametres() {
             <p className="text-xs text-muted-foreground mt-1">
               TTC : {fmt(petitHT * 1.2)} €
             </p>
+            <div className="mt-2 rounded-md bg-[#F5F3FF] border border-[#7C3AED]/30 px-3 py-2 text-xs">
+              <span className="font-bold uppercase tracking-wide text-[#7C3AED]">Marge vente :</span>{" "}
+              <span className="font-mono font-bold">
+                {fmt(petitHT - coutPetit)} € HT
+              </span>{" "}
+              {petitHT > 0 && (
+                <span className="text-muted-foreground">
+                  ({((petitHT - coutPetit) / petitHT * 100).toFixed(1)} %)
+                </span>
+              )}
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                = Prix client HT − Coût de revient ({fmt(coutPetit)} €)
+              </div>
+            </div>
           </div>
           <div>
             <Label>Moyen Conso HT (€)</Label>
@@ -137,17 +151,22 @@ export default function Parametres() {
             <p className="text-xs text-muted-foreground mt-1">
               TTC : {fmt(moyenHT * 1.2)} €
             </p>
+            <div className="mt-2 rounded-md bg-[#F5F3FF] border border-[#7C3AED]/30 px-3 py-2 text-xs">
+              <span className="font-bold uppercase tracking-wide text-[#7C3AED]">Marge vente :</span>{" "}
+              <span className="font-mono font-bold">
+                {fmt(moyenHT - coutMoyen)} € HT
+              </span>{" "}
+              {moyenHT > 0 && (
+                <span className="text-muted-foreground">
+                  ({((moyenHT - coutMoyen) / moyenHT * 100).toFixed(1)} %)
+                </span>
+              )}
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                = Prix client HT − Coût de revient ({fmt(coutMoyen)} €)
+              </div>
+            </div>
           </div>
         </div>
-      </Section>
-
-      <Section title="Marge Dynawatt par défaut">
-        <Label>Marge (€)</Label>
-        <Input
-          type="number"
-          value={params.marge_dynawatt_default ?? ""}
-          onChange={(e) => set("marge_dynawatt_default", e.target.value)}
-        />
       </Section>
 
       <CoutRevientTable
