@@ -26,6 +26,20 @@ export default function Step3Config() {
     customPriceHT,
   } = useSimulator();
 
+  // Prix standards depuis parametres_globaux (pour afficher sur les 2 cartes)
+  const [standardPrices, setStandardPrices] = useState<{ PETIT?: number; MOYEN?: number }>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("parametres_globaux").select("cle, valeur");
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((r: any) => (map[r.cle] = r.valeur));
+      setStandardPrices({
+        PETIT: map.prix_petit_conso_ht_standard ? Number(map.prix_petit_conso_ht_standard) : undefined,
+        MOYEN: map.prix_moyen_conso_ht_standard ? Number(map.prix_moyen_conso_ht_standard) : undefined,
+      });
+    })();
+  }, []);
+
   // Estimation conso annuelle pour pré-sélection
   const consoAnnuelle = useMemo(() => {
     const total = sobryDocs.reduce(
