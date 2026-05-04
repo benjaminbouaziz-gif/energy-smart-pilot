@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
@@ -25,6 +25,20 @@ export default function Step3Config() {
     internalMode,
     customPriceHT,
   } = useSimulator();
+
+  // Prix standards depuis parametres_globaux (pour afficher sur les 2 cartes)
+  const [standardPrices, setStandardPrices] = useState<{ PETIT?: number; MOYEN?: number }>({});
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("parametres_globaux").select("cle, valeur");
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((r: any) => (map[r.cle] = r.valeur));
+      setStandardPrices({
+        PETIT: map.prix_petit_conso_ht_standard ? Number(map.prix_petit_conso_ht_standard) : undefined,
+        MOYEN: map.prix_moyen_conso_ht_standard ? Number(map.prix_moyen_conso_ht_standard) : undefined,
+      });
+    })();
+  }, []);
 
   // Estimation conso annuelle pour pré-sélection
   const consoAnnuelle = useMemo(() => {
@@ -143,7 +157,7 @@ export default function Step3Config() {
                 </div>
 
                 <div className="text-3xl font-black text-foreground mb-1">
-                  {fmtEur((isSelected && customPriceHT != null ? customPriceHT : c.prix_ht) * 1.2)}
+                  {fmtEur(((isSelected && customPriceHT != null ? customPriceHT : (standardPrices[key] ?? c.prix_ht))) * 1.2)}
                   <span className="text-xs font-mono text-muted-foreground ml-2">{internalMode ? "TTC (HT en interne)" : "TTC"}</span>
                 </div>
 
