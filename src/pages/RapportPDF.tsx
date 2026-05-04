@@ -741,7 +741,53 @@ function Benefit({ num, title, text }: { num: string; title: string; text: strin
 const printStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-html, body { background: #ffffff !important; color: #1E1B3A !important; }
+html,
+body,
+#root,
+.rapport-pdf-page {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #1E1B3A !important;
+  color-scheme: light !important;
+}
+
+body.rapport-pdf-body,
+body.rapport-pdf-body::before,
+body.rapport-pdf-body::after {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  display: block !important;
+  opacity: 1 !important;
+  content: none !important;
+}
+
+.dark,
+.dark *,
+.rapport-pdf-page,
+.rapport-pdf-page * {
+  color-scheme: light !important;
+}
+
+.rapport-pdf-page,
+.rapport-pdf-page .page,
+.rapport-pdf-page .cover-card,
+.rapport-pdf-page .kpi,
+.rapport-pdf-page .chart-box,
+.rapport-pdf-page .analysis-box,
+.rapport-pdf-page .benefit,
+.rapport-pdf-page .leasing-note,
+.rapport-pdf-page .steps-list li,
+.rapport-empty-page {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+.rapport-empty-page,
+.rapport-empty-page * {
+  color: #1E1B3A !important;
+}
 
 .rapport-root, .rapport-root * {
   font-family: 'Manrope', system-ui, sans-serif;
