@@ -23,7 +23,7 @@ export default function Step6Financing() {
       return;
     }
     try {
-      sessionStorage.setItem(
+      localStorage.setItem(
         "dynawatt_report_payload",
         JSON.stringify({
           client,
