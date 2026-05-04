@@ -157,7 +157,7 @@ export default function Step3Config() {
                 </div>
 
                 <div className="text-3xl font-black text-foreground mb-1">
-                  {fmtEur((isSelected && customPriceHT != null ? customPriceHT : c.prix_ht) * 1.2)}
+                  {fmtEur(((isSelected && customPriceHT != null ? customPriceHT : (standardPrices[key] ?? c.prix_ht))) * 1.2)}
                   <span className="text-xs font-mono text-muted-foreground ml-2">{internalMode ? "TTC (HT en interne)" : "TTC"}</span>
                 </div>
 
