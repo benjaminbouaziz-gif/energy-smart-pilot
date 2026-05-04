@@ -141,7 +141,7 @@ export default function RapportPDF() {
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem("dynawatt_report_payload");
+      const raw = localStorage.getItem("dynawatt_report_payload") || sessionStorage.getItem("dynawatt_report_payload");
       if (raw) setPayload(JSON.parse(raw));
     } catch (e) {
       console.error(e);
