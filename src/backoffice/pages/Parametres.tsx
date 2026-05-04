@@ -154,6 +154,7 @@ export default function Parametres() {
         title="Petit Conso (18 kWh / 6 kW Tri / 5 modules)"
         hardware={HARDWARE_PETIT}
         hardwareTotal={HW_PETIT_TOTAL}
+        margeDynawatt={margeDynawatt}
         transportLabel="Transport (1 palette ~120 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_petit_conso_ht ?? ""}
@@ -168,6 +169,7 @@ export default function Parametres() {
         title="Moyen Conso (28,8 kWh / 10 kW Tri / 8 modules)"
         hardware={HARDWARE_MOYEN}
         hardwareTotal={HW_MOYEN_TOTAL}
+        margeDynawatt={margeDynawatt}
         transportLabel="Transport (2 palettes ~190 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_moyen_conso_ht ?? ""}
