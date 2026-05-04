@@ -61,9 +61,10 @@ export default function Parametres() {
     for (const [cle, valeur] of Object.entries(params)) {
       await supabase.from("parametres_globaux").update({ valeur }).eq("cle", cle);
     }
-    // Recompute and persist coûts de revient
-    const newCoutPetit = HW_PETIT_TOTAL + transportPetit + installPetit;
-    const newCoutMoyen = HW_MOYEN_TOTAL + transportMoyen + installMoyen;
+    // Recompute and persist coûts de revient (incluant marge Dynawatt)
+    const margeDw = Number(params.marge_dynawatt_default ?? 0);
+    const newCoutPetit = HW_PETIT_TOTAL + margeDw + transportPetit + installPetit;
+    const newCoutMoyen = HW_MOYEN_TOTAL + margeDw + transportMoyen + installMoyen;
     await supabase
       .from("parametres_globaux")
       .update({ valeur: String(newCoutPetit) })
@@ -87,13 +88,15 @@ export default function Parametres() {
   const transportMoyen = Number(params.transport_moyen_conso_ht ?? 0);
   const installMoyen = Number(params.install_moyen_conso_ht ?? 0);
 
+  const margeDynawatt = Number(params.marge_dynawatt_default ?? 0);
+
   const coutPetit = useMemo(
-    () => HW_PETIT_TOTAL + transportPetit + installPetit,
-    [transportPetit, installPetit],
+    () => HW_PETIT_TOTAL + margeDynawatt + transportPetit + installPetit,
+    [margeDynawatt, transportPetit, installPetit],
   );
   const coutMoyen = useMemo(
-    () => HW_MOYEN_TOTAL + transportMoyen + installMoyen,
-    [transportMoyen, installMoyen],
+    () => HW_MOYEN_TOTAL + margeDynawatt + transportMoyen + installMoyen,
+    [margeDynawatt, transportMoyen, installMoyen],
   );
 
   if (loading) {
@@ -151,6 +154,7 @@ export default function Parametres() {
         title="Petit Conso (18 kWh / 6 kW Tri / 5 modules)"
         hardware={HARDWARE_PETIT}
         hardwareTotal={HW_PETIT_TOTAL}
+        margeDynawatt={margeDynawatt}
         transportLabel="Transport (1 palette ~120 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_petit_conso_ht ?? ""}
@@ -165,6 +169,7 @@ export default function Parametres() {
         title="Moyen Conso (28,8 kWh / 10 kW Tri / 8 modules)"
         hardware={HARDWARE_MOYEN}
         hardwareTotal={HW_MOYEN_TOTAL}
+        margeDynawatt={margeDynawatt}
         transportLabel="Transport (2 palettes ~190 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_moyen_conso_ht ?? ""}
@@ -198,6 +203,7 @@ function CoutRevientTable({
   title,
   hardware,
   hardwareTotal,
+  margeDynawatt,
   transportLabel,
   installLabel,
   transport,
@@ -210,6 +216,7 @@ function CoutRevientTable({
   title: string;
   hardware: { nom: string; qte: number; pu: number }[];
   hardwareTotal: number;
+  margeDynawatt: number;
   transportLabel: string;
   installLabel: string;
   transport: string;
@@ -219,12 +226,13 @@ function CoutRevientTable({
   total: number;
   totalLabel: string;
 }) {
+  const sousTotalComposants = hardwareTotal + margeDynawatt;
   return (
     <Section title={`Coût de revient — ${title}`}>
-      {/* Hardware Tigo */}
+      {/* Composants */}
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-          Hardware Tigo (lecture seule)
+          Composants (lecture seule)
         </div>
         <div className="overflow-hidden rounded-md border">
           <table className="w-full text-sm">
@@ -249,12 +257,30 @@ function CoutRevientTable({
                   </td>
                 </tr>
               ))}
-              <tr className="border-t bg-muted/40 font-bold">
+              <tr className="border-t bg-muted/40 italic">
                 <td className="px-3 py-2" colSpan={3}>
                   Sous-total Hardware Tigo HT
                 </td>
                 <td className="px-3 py-2 text-right font-mono">
                   {fmt(hardwareTotal)} €
+                </td>
+              </tr>
+              <tr className="border-t bg-[#F3F4F6]">
+                <td className="px-3 py-2">Marge Dynawatt</td>
+                <td className="px-3 py-2 text-right font-mono">1</td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(margeDynawatt)} €
+                </td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(margeDynawatt)} €
+                </td>
+              </tr>
+              <tr className="border-t bg-muted/40 font-bold">
+                <td className="px-3 py-2" colSpan={3}>
+                  Sous-total Composants HT
+                </td>
+                <td className="px-3 py-2 text-right font-mono">
+                  {fmt(sousTotalComposants)} €
                 </td>
               </tr>
             </tbody>
