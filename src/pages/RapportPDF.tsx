@@ -722,13 +722,15 @@ function Benefit({ num, title, text }: { num: string; title: string; text: strin
 const printStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
+html, body { background: #ffffff !important; color: #1E1B3A !important; }
+
 .rapport-root, .rapport-root * {
   font-family: 'Manrope', system-ui, sans-serif;
   box-sizing: border-box;
 }
 .rapport-root {
-  background: #F3F4F6;
-  color: #1E1B3A;
+  background: #F3F4F6 !important;
+  color: #1E1B3A !important;
   min-height: 100vh;
   padding: 20px 0;
 }
