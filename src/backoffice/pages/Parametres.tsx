@@ -88,13 +88,15 @@ export default function Parametres() {
   const transportMoyen = Number(params.transport_moyen_conso_ht ?? 0);
   const installMoyen = Number(params.install_moyen_conso_ht ?? 0);
 
+  const margeDynawatt = Number(params.marge_dynawatt_default ?? 0);
+
   const coutPetit = useMemo(
-    () => HW_PETIT_TOTAL + transportPetit + installPetit,
-    [transportPetit, installPetit],
+    () => HW_PETIT_TOTAL + margeDynawatt + transportPetit + installPetit,
+    [margeDynawatt, transportPetit, installPetit],
   );
   const coutMoyen = useMemo(
-    () => HW_MOYEN_TOTAL + transportMoyen + installMoyen,
-    [transportMoyen, installMoyen],
+    () => HW_MOYEN_TOTAL + margeDynawatt + transportMoyen + installMoyen,
+    [margeDynawatt, transportMoyen, installMoyen],
   );
 
   if (loading) {
