@@ -16,6 +16,12 @@ import VsSolaire from "./pages/VsSolaire.tsx";
 import NotreModele from "./pages/NotreModele.tsx";
 import Simulation from "./pages/Simulation.tsx";
 import RapportPDF from "./pages/RapportPDF.tsx";
+import SimulationDan from "./pages/SimulationDan.tsx";
+import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
+import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
+import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
+import Distributeurs from "./backoffice/pages/Distributeurs.tsx";
+import Parametres from "./backoffice/pages/Parametres.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLayout from "./app/AppLayout.tsx";
 import AppLogin from "./app/pages/AppLogin.tsx";
@@ -52,6 +58,18 @@ const App = () => (
           <Route path="/simulation" element={<Simulation />} />
           <Route path="/Simulation" element={<Simulation />} />
           <Route path="/rapport-pdf" element={<RapportPDF />} />
+
+          {/* Simulateur interne */}
+          <Route path="/simulationdan" element={<SimulationDan />} />
+          <Route path="/simulationdan/:prospect_id" element={<SimulationDan />} />
+
+          {/* BackOffice interne */}
+          <Route path="/backoffdan" element={<BackofficeLayout />}>
+            <Route index element={<ProspectsList />} />
+            <Route path="prospect/:id" element={<ProspectDetail />} />
+            <Route path="distributeurs" element={<Distributeurs />} />
+            <Route path="parametres" element={<Parametres />} />
+          </Route>
 
           {/* Espace client /app */}
           <Route path="/app/login" element={<AppLogin />} />
