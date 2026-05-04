@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      distributeurs: {
+        Row: {
+          actif: boolean
+          created_at: string
+          email_contact: string | null
+          id: string
+          marge_moyen_conso_eur: number
+          marge_petit_conso_eur: number
+          nom: string
+          telephone_contact: string | null
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          created_at?: string
+          email_contact?: string | null
+          id?: string
+          marge_moyen_conso_eur?: number
+          marge_petit_conso_eur?: number
+          nom: string
+          telephone_contact?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          created_at?: string
+          email_contact?: string | null
+          id?: string
+          marge_moyen_conso_eur?: number
+          marge_petit_conso_eur?: number
+          nom?: string
+          telephone_contact?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      documents: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          mois_concerne: string | null
+          nom_fichier: string
+          prospect_id: string
+          storage_path: string | null
+          type: Database["public"]["Enums"]["document_type"]
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          mois_concerne?: string | null
+          nom_fichier: string
+          prospect_id: string
+          storage_path?: string | null
+          type: Database["public"]["Enums"]["document_type"]
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          mois_concerne?: string | null
+          nom_fichier?: string
+          prospect_id?: string
+          storage_path?: string | null
+          type?: Database["public"]["Enums"]["document_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           activity: string | null
@@ -103,6 +180,104 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      parametres_globaux: {
+        Row: {
+          cle: string
+          created_at: string
+          description: string | null
+          id: string
+          updated_at: string
+          valeur: string
+        }
+        Insert: {
+          cle: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          valeur: string
+        }
+        Update: {
+          cle?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          valeur?: string
+        }
+        Relationships: []
+      }
+      prospects: {
+        Row: {
+          adresse_pdl: string | null
+          config_choisie: Database["public"]["Enums"]["prospect_config"] | null
+          created_at: string
+          distributeur_id: string | null
+          email: string | null
+          facture_actuelle_data: Json | null
+          id: string
+          marge_distributeur_eur: number | null
+          marge_dynawatt_eur: number
+          nom_entreprise: string
+          notes_commerciales: string | null
+          pdl: string | null
+          prix_client_custom_ht: number | null
+          prix_client_custom_ttc: number | null
+          resultats_simulation: Json | null
+          statut: Database["public"]["Enums"]["prospect_statut"]
+          telephone: string | null
+          updated_at: string
+        }
+        Insert: {
+          adresse_pdl?: string | null
+          config_choisie?: Database["public"]["Enums"]["prospect_config"] | null
+          created_at?: string
+          distributeur_id?: string | null
+          email?: string | null
+          facture_actuelle_data?: Json | null
+          id?: string
+          marge_distributeur_eur?: number | null
+          marge_dynawatt_eur?: number
+          nom_entreprise: string
+          notes_commerciales?: string | null
+          pdl?: string | null
+          prix_client_custom_ht?: number | null
+          prix_client_custom_ttc?: number | null
+          resultats_simulation?: Json | null
+          statut?: Database["public"]["Enums"]["prospect_statut"]
+          telephone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          adresse_pdl?: string | null
+          config_choisie?: Database["public"]["Enums"]["prospect_config"] | null
+          created_at?: string
+          distributeur_id?: string | null
+          email?: string | null
+          facture_actuelle_data?: Json | null
+          id?: string
+          marge_distributeur_eur?: number | null
+          marge_dynawatt_eur?: number
+          nom_entreprise?: string
+          notes_commerciales?: string | null
+          pdl?: string | null
+          prix_client_custom_ht?: number | null
+          prix_client_custom_ttc?: number | null
+          resultats_simulation?: Json | null
+          statut?: Database["public"]["Enums"]["prospect_statut"]
+          telephone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_distributeur_id_fkey"
+            columns: ["distributeur_id"]
+            isOneToOne: false
+            referencedRelation: "distributeurs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       simulations: {
         Row: {
@@ -195,7 +370,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      document_type: "facture_pdf" | "json_sobry"
+      prospect_config: "PETIT" | "MOYEN"
+      prospect_statut:
+        | "brouillon"
+        | "en_cours"
+        | "devis_envoye"
+        | "vendu"
+        | "perdu"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -322,6 +504,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      document_type: ["facture_pdf", "json_sobry"],
+      prospect_config: ["PETIT", "MOYEN"],
+      prospect_statut: [
+        "brouillon",
+        "en_cours",
+        "devis_envoye",
+        "vendu",
+        "perdu",
+      ],
+    },
   },
 } as const
