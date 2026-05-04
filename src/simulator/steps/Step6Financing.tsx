@@ -213,21 +213,21 @@ export default function Step6Financing() {
               <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
                 Économie Sobry vs {fournisseur}
               </div>
-              <div className="text-2xl font-black text-primary-light">{fmt(economieSobryTtc)}</div>
+              <div className="text-2xl font-black text-primary-light">{fmtMode(economieSobryTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Dès le passage à Sobry</div>
             </div>
             <div className="rounded-2xl p-4 border border-border bg-card/40">
               <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
                 Pilotage batterie Dynawatt
               </div>
-              <div className="text-2xl font-black text-primary-light">{fmt(economieBatterieTtc)}</div>
+              <div className="text-2xl font-black text-primary-light">{fmtMode(economieBatterieTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Arbitrage horaire sur prix Sobry</div>
             </div>
             <div className="rounded-2xl p-4 border-2 border-gold/60 bg-gold/5 shadow-[var(--shadow-gold)]">
               <div className="text-xs font-mono uppercase tracking-widest mb-2 text-gold">
                 Économie totale annuelle
               </div>
-              <div className="text-3xl font-black text-gradient-gold">{fmt(economieTotaleTtc)}</div>
+              <div className="text-3xl font-black text-gradient-gold">{fmtMode(economieTotaleTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Base du cashflow ci-dessous</div>
             </div>
           </div>
