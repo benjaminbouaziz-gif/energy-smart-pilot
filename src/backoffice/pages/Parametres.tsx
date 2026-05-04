@@ -126,6 +126,20 @@ export default function Parametres() {
             <p className="text-xs text-muted-foreground mt-1">
               TTC : {fmt(petitHT * 1.2)} €
             </p>
+            <div className="mt-2 rounded-md bg-[#F5F3FF] border border-[#7C3AED]/30 px-3 py-2 text-xs">
+              <span className="font-bold uppercase tracking-wide text-[#7C3AED]">Marge vente :</span>{" "}
+              <span className="font-mono font-bold">
+                {fmt(petitHT - coutPetit)} € HT
+              </span>{" "}
+              {petitHT > 0 && (
+                <span className="text-muted-foreground">
+                  ({((petitHT - coutPetit) / petitHT * 100).toFixed(1)} %)
+                </span>
+              )}
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                = Prix client HT − Coût de revient ({fmt(coutPetit)} €)
+              </div>
+            </div>
           </div>
           <div>
             <Label>Moyen Conso HT (€)</Label>
@@ -137,24 +151,30 @@ export default function Parametres() {
             <p className="text-xs text-muted-foreground mt-1">
               TTC : {fmt(moyenHT * 1.2)} €
             </p>
+            <div className="mt-2 rounded-md bg-[#F5F3FF] border border-[#7C3AED]/30 px-3 py-2 text-xs">
+              <span className="font-bold uppercase tracking-wide text-[#7C3AED]">Marge vente :</span>{" "}
+              <span className="font-mono font-bold">
+                {fmt(moyenHT - coutMoyen)} € HT
+              </span>{" "}
+              {moyenHT > 0 && (
+                <span className="text-muted-foreground">
+                  ({((moyenHT - coutMoyen) / moyenHT * 100).toFixed(1)} %)
+                </span>
+              )}
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                = Prix client HT − Coût de revient ({fmt(coutMoyen)} €)
+              </div>
+            </div>
           </div>
         </div>
-      </Section>
-
-      <Section title="Marge Dynawatt par défaut">
-        <Label>Marge (€)</Label>
-        <Input
-          type="number"
-          value={params.marge_dynawatt_default ?? ""}
-          onChange={(e) => set("marge_dynawatt_default", e.target.value)}
-        />
       </Section>
 
       <CoutRevientTable
         title="Petit Conso (18 kWh / 6 kW Tri / 5 modules)"
         hardware={HARDWARE_PETIT}
         hardwareTotal={HW_PETIT_TOTAL}
-        margeDynawatt={margeDynawatt}
+        margeDynawatt={params.marge_dynawatt_default ?? ""}
+        onMargeDynawatt={(v) => set("marge_dynawatt_default", v)}
         transportLabel="Transport (1 palette ~120 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_petit_conso_ht ?? ""}
@@ -169,7 +189,8 @@ export default function Parametres() {
         title="Moyen Conso (28,8 kWh / 10 kW Tri / 8 modules)"
         hardware={HARDWARE_MOYEN}
         hardwareTotal={HW_MOYEN_TOTAL}
-        margeDynawatt={margeDynawatt}
+        margeDynawatt={params.marge_dynawatt_default ?? ""}
+        onMargeDynawatt={(v) => set("marge_dynawatt_default", v)}
         transportLabel="Transport (2 palettes ~190 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_moyen_conso_ht ?? ""}
@@ -204,6 +225,7 @@ function CoutRevientTable({
   hardware,
   hardwareTotal,
   margeDynawatt,
+  onMargeDynawatt,
   transportLabel,
   installLabel,
   transport,
@@ -216,7 +238,8 @@ function CoutRevientTable({
   title: string;
   hardware: { nom: string; qte: number; pu: number }[];
   hardwareTotal: number;
-  margeDynawatt: number;
+  margeDynawatt: string;
+  onMargeDynawatt: (v: string) => void;
   transportLabel: string;
   installLabel: string;
   transport: string;
@@ -226,13 +249,14 @@ function CoutRevientTable({
   total: number;
   totalLabel: string;
 }) {
-  const sousTotalComposants = hardwareTotal + margeDynawatt;
+  const margeNum = Number(margeDynawatt || 0);
+  const sousTotalComposants = hardwareTotal + margeNum;
   return (
     <Section title={`Coût de revient — ${title}`}>
       {/* Composants */}
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-          Composants (lecture seule)
+          Composants
         </div>
         <div className="overflow-hidden rounded-md border">
           <table className="w-full text-sm">
@@ -265,14 +289,19 @@ function CoutRevientTable({
                   {fmt(hardwareTotal)} €
                 </td>
               </tr>
-              <tr className="border-t bg-[#F3F4F6]">
-                <td className="px-3 py-2">Marge Dynawatt</td>
+              <tr className="border-t bg-white">
+                <td className="px-3 py-2 font-medium">Marge Dynawatt</td>
                 <td className="px-3 py-2 text-right font-mono">1</td>
-                <td className="px-3 py-2 text-right font-mono">
-                  {fmt(margeDynawatt)} €
+                <td className="px-3 py-2 text-right">
+                  <Input
+                    type="number"
+                    value={margeDynawatt}
+                    onChange={(e) => onMargeDynawatt(e.target.value)}
+                    className="h-8 text-right font-mono w-32 ml-auto focus-visible:ring-[#7C3AED] focus-visible:border-[#7C3AED]"
+                  />
                 </td>
                 <td className="px-3 py-2 text-right font-mono">
-                  {fmt(margeDynawatt)} €
+                  {fmt(margeNum)} €
                 </td>
               </tr>
               <tr className="border-t bg-muted/40 font-bold">
