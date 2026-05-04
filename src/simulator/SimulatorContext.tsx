@@ -37,6 +37,8 @@ interface SimulatorContextValue extends SimulatorState {
   saveStep1: () => Promise<void>;
   saveProgress: (patch: Record<string, any>) => Promise<void>;
   reset: () => void;
+  internalMode: boolean;
+  prospectId: string | null;
 }
 
 const SimulatorContext = createContext<SimulatorContextValue | null>(null);
@@ -49,7 +51,15 @@ const emptyClient: ClientInfo = {
   adresse: "",
 };
 
-export function SimulatorProvider({ children }: { children: ReactNode }) {
+export function SimulatorProvider({
+  children,
+  internalMode = false,
+  prospectId = null,
+}: {
+  children: ReactNode;
+  internalMode?: boolean;
+  prospectId?: string | null;
+}) {
   const [simulationId, setSimulationId] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [client, setClient] = useState<ClientInfo>(emptyClient);
@@ -131,8 +141,10 @@ export function SimulatorProvider({ children }: { children: ReactNode }) {
       saveStep1,
       saveProgress,
       reset,
+      internalMode,
+      prospectId,
     }),
-    [simulationId, step, client, facture, sobryDocs, configChoisie, result, goToStep, next, prev, saveStep1, saveProgress, reset]
+    [simulationId, step, client, facture, sobryDocs, configChoisie, result, goToStep, next, prev, saveStep1, saveProgress, reset, internalMode, prospectId]
   );
 
   return <SimulatorContext.Provider value={value}>{children}</SimulatorContext.Provider>;

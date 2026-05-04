@@ -16,7 +16,11 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId, client } = useSimulator();
+  const { result, facture, simulationId, client, internalMode, prospectId } = useSimulator();
+  const HT = internalMode;
+  const div = HT ? 1.2 : 1;
+  const fmtMode = (n: number) => fmt(n / div);
+  const suffix = HT ? "HT" : "TTC";
   const reportContainerRef = useRef<HTMLDivElement | null>(null);
   const [reportPayload, setReportPayload] = useState<any | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -135,33 +139,53 @@ export default function Step6Financing() {
   ];
 
   const handleSave = async () => {
-    if (!simulationId) {
-      toast.error("Aucune simulation en cours");
-      return;
+    const financementPayload = {
+      mode,
+      duree_mois: duree,
+      loyer_mensuel_ttc: loyerTtc,
+      cashflow_mensuel_ttc: cashflowMensuel,
+      breakeven_mois: breakevenMois,
+    };
+
+    // Sauvegarde dans simulations (parcours public)
+    if (simulationId) {
+      const { error } = await supabase
+        .from("simulations")
+        .update({
+          statut: "finalisee",
+          current_step: 6,
+          facture_actuelle: { ...(result as any), financement: financementPayload } as any,
+        })
+        .eq("id", simulationId);
+      if (error) {
+        toast.error("Erreur de sauvegarde : " + error.message);
+        return;
+      }
     }
-    const { error } = await supabase
-      .from("simulations")
-      .update({
-        statut: "finalisee",
-        current_step: 6,
-        facture_actuelle: {
-          ...(result as any),
-          financement: {
-            mode,
-            duree_mois: duree,
-            loyer_mensuel_ttc: loyerTtc,
-            cashflow_mensuel_ttc: cashflowMensuel,
-            breakeven_mois: breakevenMois,
-          },
-        } as any,
-      })
-      .eq("id", simulationId);
-    if (error) {
-      toast.error("Erreur de sauvegarde : " + error.message);
-      return;
+
+    // Sauvegarde dans le prospect (mode interne)
+    if (internalMode && prospectId) {
+      const { error } = await supabase
+        .from("prospects")
+        .update({
+          resultats_simulation: {
+            economie_annuelle: economieTotaleTtc,
+            economie_annuelle_ht: economieTotaleTtc / 1.2,
+            payback_annees: breakevenMois ? +(breakevenMois / 12).toFixed(1) : null,
+            gain_8ans: cashflow[cashflow.length - 1].cumul,
+            financement: financementPayload,
+            full: result,
+          } as any,
+        })
+        .eq("id", prospectId);
+      if (error) {
+        toast.error("Erreur sauvegarde prospect : " + error.message);
+        return;
+      }
     }
+
     setSaved(true);
-    toast.success("Simulation finalisée et enregistrée !");
+    toast.success("Simulation enregistrée !");
   };
 
   return (
@@ -182,28 +206,28 @@ export default function Step6Financing() {
         {/* Décomposition des 2 économies */}
         <div className="glass rounded-3xl p-5 md:p-7 mb-6">
           <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-3">
-            Vos économies annuelles (TTC)
+            Vos économies annuelles ({suffix})
           </div>
           <div className="grid md:grid-cols-3 gap-4 items-stretch">
             <div className="rounded-2xl p-4 border border-border bg-card/40">
               <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
                 Économie Sobry vs {fournisseur}
               </div>
-              <div className="text-2xl font-black text-primary-light">{fmt(economieSobryTtc)}</div>
+              <div className="text-2xl font-black text-primary-light">{fmtMode(economieSobryTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Dès le passage à Sobry</div>
             </div>
             <div className="rounded-2xl p-4 border border-border bg-card/40">
               <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
                 Pilotage batterie Dynawatt
               </div>
-              <div className="text-2xl font-black text-primary-light">{fmt(economieBatterieTtc)}</div>
+              <div className="text-2xl font-black text-primary-light">{fmtMode(economieBatterieTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Arbitrage horaire sur prix Sobry</div>
             </div>
             <div className="rounded-2xl p-4 border-2 border-gold/60 bg-gold/5 shadow-[var(--shadow-gold)]">
               <div className="text-xs font-mono uppercase tracking-widest mb-2 text-gold">
                 Économie totale annuelle
               </div>
-              <div className="text-3xl font-black text-gradient-gold">{fmt(economieTotaleTtc)}</div>
+              <div className="text-3xl font-black text-gradient-gold">{fmtMode(economieTotaleTtc)}</div>
               <div className="text-xs text-muted-foreground mt-1">Base du cashflow ci-dessous</div>
             </div>
           </div>
@@ -212,7 +236,7 @@ export default function Step6Financing() {
         {/* Switch mode */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <Toggle active={mode === "comptant"} onClick={() => setMode("comptant")}>
-            <Wallet className="w-4 h-4" /> Comptant — {fmt(config.prix_ttc)}
+            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(config.prix_ttc)}
           </Toggle>
           <Toggle active={mode === "leasing"} onClick={() => setMode("leasing")}>
             <Banknote className="w-4 h-4" /> Leasing
@@ -243,29 +267,29 @@ export default function Step6Financing() {
         {/* KPIs */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Kpi
-            label="Gain mensuel TTC"
-            value={fmt(gainMensuelTtc)}
+            label={`Gain mensuel ${suffix}`}
+            value={fmtMode(gainMensuelTtc)}
             sub="économies pilotage Dynawatt"
             tone="gold"
           />
           {mode === "leasing" ? (
             <Kpi
-              label="Loyer mensuel TTC"
-              value={fmt(loyerTtc)}
+              label={`Loyer mensuel ${suffix}`}
+              value={fmtMode(loyerTtc)}
               sub={`sur ${duree} mois`}
               tone="muted"
             />
           ) : (
             <Kpi
               label="Investissement"
-              value={fmt(config.prix_ttc)}
+              value={fmtMode(config.prix_ttc)}
               sub="payé une seule fois"
               tone="muted"
             />
           )}
           <Kpi
             label="Cashflow net mensuel"
-            value={fmt(cashflowMensuel)}
+            value={fmtMode(cashflowMensuel)}
             sub={cashflowMensuel >= 0 ? "Positif dès le 1er mois 🎉" : "Effort mensuel"}
             tone={cashflowMensuel >= 0 ? "primary" : "muted"}
             highlight
@@ -284,7 +308,7 @@ export default function Step6Financing() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.25} />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${v} €`} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmt(v), "Montant"]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmtMode(v), "Montant"]} />
                 <ReferenceLine y={0} stroke="hsl(var(--border))" />
                 <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   {barData.map((d, i) => (
@@ -330,7 +354,7 @@ export default function Step6Financing() {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(v: number) => [fmt(v), "Cumul"]}
+                  formatter={(v: number) => [fmtMode(v), "Cumul"]}
                   labelFormatter={(m) => `Mois ${m} (${(Number(m) / 12).toFixed(1)} ans)`}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--accent))" strokeDasharray="4 4" />
@@ -366,12 +390,18 @@ export default function Step6Financing() {
           />
           <TrendingUp className="w-7 h-7 text-gold mx-auto mb-2" />
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-            Gain net cumulé sur 8 ans
+            Gain net cumulé sur 8 ans ({suffix})
           </div>
           <div className="font-black text-5xl md:text-6xl text-gradient-gold font-mono">
-            {fmt(cashflow[cashflow.length - 1].cumul)}
+            {fmtMode(cashflow[cashflow.length - 1].cumul)}
           </div>
         </motion.div>
+
+        {HT && (
+          <p className="text-center text-xs text-muted-foreground -mt-4 mb-4">
+            Tous les montants sont indiqués HT (récupération TVA pour pros)
+          </p>
+        )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
           <Button
