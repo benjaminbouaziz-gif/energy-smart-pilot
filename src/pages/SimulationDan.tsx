@@ -70,6 +70,26 @@ function PrefillFromProspect({ prospectId }: { prospectId: string }) {
   return null;
 }
 
+function StandardPriceLoader() {
+  const { configChoisie, customPriceHT, setCustomPriceHT } = useSimulator();
+  useEffect(() => {
+    if (!configChoisie || customPriceHT != null) return;
+    (async () => {
+      const { data } = await supabase
+        .from("parametres_globaux")
+        .select("cle, valeur");
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((r: any) => (map[r.cle] = r.valeur));
+      const key =
+        configChoisie === "PETIT"
+          ? "prix_petit_conso_ht_standard"
+          : "prix_moyen_conso_ht_standard";
+      if (map[key]) setCustomPriceHT(Number(map[key]));
+    })();
+  }, [configChoisie, customPriceHT, setCustomPriceHT]);
+  return null;
+}
+
 function WizardBody({ prospectId }: { prospectId?: string }) {
   const { step } = useSimulator();
   return (
@@ -78,7 +98,7 @@ function WizardBody({ prospectId }: { prospectId?: string }) {
         <Lock className="w-4 h-4" />
         <span className="font-medium">Mode interne — Simulation commerciale Dynawatt</span>
       </div>
-      {prospectId && <PrefillFromProspect prospectId={prospectId} />}
+      {prospectId ? <PrefillFromProspect prospectId={prospectId} /> : <StandardPriceLoader />}
       <WizardHeader />
       {step === 1 && <Step1Client />}
       {step === 2 && <Step2Upload />}
