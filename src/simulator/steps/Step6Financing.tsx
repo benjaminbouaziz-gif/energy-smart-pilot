@@ -287,7 +287,7 @@ export default function Step6Financing() {
           ) : (
             <Kpi
               label="Investissement"
-              value={fmtMode(config.prix_ttc)}
+              value={fmtMode(prixTtcEff)}
               sub="payé une seule fois"
               tone="muted"
             />
