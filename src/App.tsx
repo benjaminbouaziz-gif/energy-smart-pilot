@@ -15,6 +15,7 @@ import QuiNestPasConcerne from "./pages/QuiNestPasConcerne.tsx";
 import VsSolaire from "./pages/VsSolaire.tsx";
 import NotreModele from "./pages/NotreModele.tsx";
 import Simulation from "./pages/Simulation.tsx";
+import RapportPDF from "./pages/RapportPDF.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLayout from "./app/AppLayout.tsx";
 import AppLogin from "./app/pages/AppLogin.tsx";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/comment-ca-marche" element={<NotreModele />} />
           <Route path="/simulation" element={<Simulation />} />
           <Route path="/Simulation" element={<Simulation />} />
+          <Route path="/rapport-pdf" element={<RapportPDF />} />
 
           {/* Espace client /app */}
           <Route path="/app/login" element={<AppLogin />} />

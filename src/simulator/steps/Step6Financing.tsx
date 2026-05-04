@@ -4,7 +4,7 @@ import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
 import { CONSTANTES } from "@/lib/dynawatt-engine";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Banknote, Wallet, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Banknote, Wallet, TrendingUp, CheckCircle2, FileDown, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,7 +15,28 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId } = useSimulator();
+  const { result, facture, simulationId, client } = useSimulator();
+
+  const handleDownloadReport = () => {
+    if (!result) {
+      toast.error("Aucune simulation à exporter");
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        "dynawatt_report_payload",
+        JSON.stringify({
+          client,
+          facture,
+          result,
+          date: new Date().toISOString(),
+        })
+      );
+      window.open("/rapport-pdf", "_blank");
+    } catch (e) {
+      toast.error("Impossible de préparer le rapport");
+    }
+  };
   const [mode, setMode] = useState<Mode>("leasing");
   const [duree, setDuree] = useState<60 | 84>(60); // mois
   const [saved, setSaved] = useState(false);
@@ -309,7 +330,21 @@ export default function Step6Financing() {
           </div>
         </motion.div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
+          <Button
+            onClick={handleDownloadReport}
+            variant="outline"
+            className="h-12 px-6 gap-2 border-2 border-primary/40 hover:border-primary"
+          >
+            <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+          </Button>
+          <Button
+            onClick={() => toast.info("Envoi par email — disponible prochainement")}
+            variant="outline"
+            className="h-12 px-6 gap-2 border-2 border-border"
+          >
+            <Mail className="w-5 h-5" /> Envoyer par email au client
+          </Button>
           <Button
             onClick={handleSave}
             disabled={saved}
