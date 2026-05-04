@@ -377,9 +377,18 @@ export default function Step6Financing() {
           <Button
             onClick={handleDownloadReport}
             variant="outline"
+            disabled={generatingPdf}
             className="h-12 px-6 gap-2 border-2 border-primary/40 hover:border-primary"
           >
-            <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+            {generatingPdf ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Génération en cours…
+              </>
+            ) : (
+              <>
+                <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+              </>
+            )}
           </Button>
           <Button
             onClick={() => toast.info("Envoi par email — disponible prochainement")}
