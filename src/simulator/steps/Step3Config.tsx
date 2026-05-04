@@ -22,6 +22,8 @@ export default function Step3Config() {
     setResult,
     simulationId,
     next,
+    internalMode,
+    customPriceHT,
   } = useSimulator();
 
   // Estimation conso annuelle pour pré-sélection
