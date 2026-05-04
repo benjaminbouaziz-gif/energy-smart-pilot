@@ -139,33 +139,53 @@ export default function Step6Financing() {
   ];
 
   const handleSave = async () => {
-    if (!simulationId) {
-      toast.error("Aucune simulation en cours");
-      return;
+    const financementPayload = {
+      mode,
+      duree_mois: duree,
+      loyer_mensuel_ttc: loyerTtc,
+      cashflow_mensuel_ttc: cashflowMensuel,
+      breakeven_mois: breakevenMois,
+    };
+
+    // Sauvegarde dans simulations (parcours public)
+    if (simulationId) {
+      const { error } = await supabase
+        .from("simulations")
+        .update({
+          statut: "finalisee",
+          current_step: 6,
+          facture_actuelle: { ...(result as any), financement: financementPayload } as any,
+        })
+        .eq("id", simulationId);
+      if (error) {
+        toast.error("Erreur de sauvegarde : " + error.message);
+        return;
+      }
     }
-    const { error } = await supabase
-      .from("simulations")
-      .update({
-        statut: "finalisee",
-        current_step: 6,
-        facture_actuelle: {
-          ...(result as any),
-          financement: {
-            mode,
-            duree_mois: duree,
-            loyer_mensuel_ttc: loyerTtc,
-            cashflow_mensuel_ttc: cashflowMensuel,
-            breakeven_mois: breakevenMois,
-          },
-        } as any,
-      })
-      .eq("id", simulationId);
-    if (error) {
-      toast.error("Erreur de sauvegarde : " + error.message);
-      return;
+
+    // Sauvegarde dans le prospect (mode interne)
+    if (internalMode && prospectId) {
+      const { error } = await supabase
+        .from("prospects")
+        .update({
+          resultats_simulation: {
+            economie_annuelle: economieTotaleTtc,
+            economie_annuelle_ht: economieTotaleTtc / 1.2,
+            payback_annees: breakevenMois ? +(breakevenMois / 12).toFixed(1) : null,
+            gain_8ans: cashflow[cashflow.length - 1].cumul,
+            financement: financementPayload,
+            full: result,
+          } as any,
+        })
+        .eq("id", prospectId);
+      if (error) {
+        toast.error("Erreur sauvegarde prospect : " + error.message);
+        return;
+      }
     }
+
     setSaved(true);
-    toast.success("Simulation finalisée et enregistrée !");
+    toast.success("Simulation enregistrée !");
   };
 
   return (
