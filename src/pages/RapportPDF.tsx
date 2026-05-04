@@ -146,6 +146,20 @@ export default function RapportPDF() {
     } catch (e) {
       console.error(e);
     }
+    // Force light theme for the report (override any dark mode)
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlClass = html.className;
+    const prevBodyBg = body.style.background;
+    const prevBodyColor = body.style.color;
+    html.classList.remove("dark");
+    body.style.background = "#ffffff";
+    body.style.color = "#1E1B3A";
+    return () => {
+      html.className = prevHtmlClass;
+      body.style.background = prevBodyBg;
+      body.style.color = prevBodyColor;
+    };
   }, []);
 
   // Auto print
