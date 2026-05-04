@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -139,6 +139,36 @@ function aggregateByMonth(planJours: any[], facturePrixKwhHt: number, factureAbo
 export default function RapportPDF() {
   const [payload, setPayload] = useState<ReportPayload | null>(null);
 
+  useLayoutEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlClass = html.className;
+    const prevColorScheme = html.style.colorScheme;
+    const prevBodyBg = body.style.background;
+    const prevBodyBgColor = body.style.backgroundColor;
+    const prevBodyBgImage = body.style.backgroundImage;
+    const prevBodyColor = body.style.color;
+
+    html.classList.remove("dark");
+    html.classList.add("light");
+    html.style.colorScheme = "light";
+    body.classList.add("rapport-pdf-body");
+    body.style.background = "#ffffff";
+    body.style.backgroundColor = "#ffffff";
+    body.style.backgroundImage = "none";
+    body.style.color = "#1E1B3A";
+
+    return () => {
+      html.className = prevHtmlClass;
+      html.style.colorScheme = prevColorScheme;
+      body.classList.remove("rapport-pdf-body");
+      body.style.background = prevBodyBg;
+      body.style.backgroundColor = prevBodyBgColor;
+      body.style.backgroundImage = prevBodyBgImage;
+      body.style.color = prevBodyColor;
+    };
+  }, []);
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("dynawatt_report_payload") || sessionStorage.getItem("dynawatt_report_payload");
@@ -146,20 +176,6 @@ export default function RapportPDF() {
     } catch (e) {
       console.error(e);
     }
-    // Force light theme for the report (override any dark mode)
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlClass = html.className;
-    const prevBodyBg = body.style.background;
-    const prevBodyColor = body.style.color;
-    html.classList.remove("dark");
-    body.style.background = "#ffffff";
-    body.style.color = "#1E1B3A";
-    return () => {
-      html.className = prevHtmlClass;
-      body.style.background = prevBodyBg;
-      body.style.color = prevBodyColor;
-    };
   }, []);
 
   // Auto print
@@ -181,13 +197,16 @@ export default function RapportPDF() {
 
   if (!payload) {
     return (
-      <div style={{ padding: 40, fontFamily: "Manrope, sans-serif" }}>
+      <>
+        <style>{printStyles}</style>
+        <div className="rapport-pdf-page rapport-empty-page" style={{ padding: 40, fontFamily: "Manrope, sans-serif" }}>
         <h1>Aucune simulation à imprimer</h1>
         <p>
           Cette page doit être ouverte depuis l'étape 6 du simulateur Dynawatt
           via le bouton "Télécharger le rapport PDF".
         </p>
-      </div>
+        </div>
+      </>
     );
   }
 
@@ -288,7 +307,7 @@ export default function RapportPDF() {
   return (
     <>
       <style>{printStyles}</style>
-      <div className="rapport-root">
+      <div className="rapport-root rapport-pdf-page">
         {/* ============ PAGE 1 — COUVERTURE ============ */}
         <section className="page page-cover">
           <header className="cover-header">
