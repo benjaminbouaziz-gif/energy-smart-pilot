@@ -26,9 +26,10 @@ export default function Step3Config() {
     customPriceHT,
   } = useSimulator();
 
-  // Prix standards depuis parametres_globaux (pour afficher sur les 2 cartes)
+  // Prix standards depuis parametres_globaux (uniquement en mode interne)
   const [standardPrices, setStandardPrices] = useState<{ PETIT?: number; MOYEN?: number }>({});
   useEffect(() => {
+    if (!internalMode) return;
     (async () => {
       const { data } = await supabase.from("parametres_globaux").select("cle, valeur");
       const map: Record<string, string> = {};
@@ -38,7 +39,7 @@ export default function Step3Config() {
         MOYEN: map.prix_moyen_conso_ht_standard ? Number(map.prix_moyen_conso_ht_standard) : undefined,
       });
     })();
-  }, []);
+  }, [internalMode]);
 
   // Estimation conso annuelle pour pré-sélection
   const consoAnnuelle = useMemo(() => {
