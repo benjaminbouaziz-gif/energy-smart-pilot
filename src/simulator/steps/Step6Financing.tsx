@@ -236,7 +236,7 @@ export default function Step6Financing() {
         {/* Switch mode */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <Toggle active={mode === "comptant"} onClick={() => setMode("comptant")}>
-            <Wallet className="w-4 h-4" /> Comptant — {fmt(config.prix_ttc)}
+            <Wallet className="w-4 h-4" /> Comptant — {fmtMode(config.prix_ttc)}
           </Toggle>
           <Toggle active={mode === "leasing"} onClick={() => setMode("leasing")}>
             <Banknote className="w-4 h-4" /> Leasing
@@ -267,29 +267,29 @@ export default function Step6Financing() {
         {/* KPIs */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Kpi
-            label="Gain mensuel TTC"
-            value={fmt(gainMensuelTtc)}
+            label={`Gain mensuel ${suffix}`}
+            value={fmtMode(gainMensuelTtc)}
             sub="économies pilotage Dynawatt"
             tone="gold"
           />
           {mode === "leasing" ? (
             <Kpi
-              label="Loyer mensuel TTC"
-              value={fmt(loyerTtc)}
+              label={`Loyer mensuel ${suffix}`}
+              value={fmtMode(loyerTtc)}
               sub={`sur ${duree} mois`}
               tone="muted"
             />
           ) : (
             <Kpi
               label="Investissement"
-              value={fmt(config.prix_ttc)}
+              value={fmtMode(config.prix_ttc)}
               sub="payé une seule fois"
               tone="muted"
             />
           )}
           <Kpi
             label="Cashflow net mensuel"
-            value={fmt(cashflowMensuel)}
+            value={fmtMode(cashflowMensuel)}
             sub={cashflowMensuel >= 0 ? "Positif dès le 1er mois 🎉" : "Effort mensuel"}
             tone={cashflowMensuel >= 0 ? "primary" : "muted"}
             highlight
