@@ -69,6 +69,7 @@ export function SimulatorProvider({
   const [sobryDocs, setSobryDocs] = useState<SobryDoc[]>([]);
   const [configChoisie, setConfigChoisie] = useState<ConfigKey | null>(null);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [customPriceHT, setCustomPriceHT] = useState<number | null>(null);
 
   const saveStep1 = useCallback(async () => {
     if (simulationId) {
