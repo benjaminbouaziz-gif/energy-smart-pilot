@@ -330,7 +330,21 @@ export default function Step6Financing() {
           </div>
         </motion.div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
+          <Button
+            onClick={handleDownloadReport}
+            variant="outline"
+            className="h-12 px-6 gap-2 border-2 border-primary/40 hover:border-primary"
+          >
+            <FileDown className="w-5 h-5" /> Télécharger le rapport PDF
+          </Button>
+          <Button
+            onClick={() => toast.info("Envoi par email — disponible prochainement")}
+            variant="outline"
+            className="h-12 px-6 gap-2 border-2 border-border"
+          >
+            <Mail className="w-5 h-5" /> Envoyer par email au client
+          </Button>
           <Button
             onClick={handleSave}
             disabled={saved}
