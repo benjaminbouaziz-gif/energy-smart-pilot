@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
