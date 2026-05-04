@@ -78,7 +78,7 @@ function WizardBody({ prospectId }: { prospectId?: string }) {
 export default function SimulationDan() {
   const { prospect_id } = useParams<{ prospect_id: string }>();
   return (
-    <SimulatorProvider>
+    <SimulatorProvider internalMode prospectId={prospect_id ?? null}>
       <WizardBody prospectId={prospect_id} />
     </SimulatorProvider>
   );
