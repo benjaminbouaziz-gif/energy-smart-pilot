@@ -133,11 +133,13 @@ export function SimulatorProvider({
       sobryDocs,
       configChoisie,
       result,
+      customPriceHT,
       setClient,
       setFacture,
       setSobryDocs,
       setConfigChoisie,
       setResult,
+      setCustomPriceHT,
       goToStep,
       next,
       prev,
@@ -147,7 +149,7 @@ export function SimulatorProvider({
       internalMode,
       prospectId,
     }),
-    [simulationId, step, client, facture, sobryDocs, configChoisie, result, goToStep, next, prev, saveStep1, saveProgress, reset, internalMode, prospectId]
+    [simulationId, step, client, facture, sobryDocs, configChoisie, result, customPriceHT, goToStep, next, prev, saveStep1, saveProgress, reset, internalMode, prospectId]
   );
 
   return <SimulatorContext.Provider value={value}>{children}</SimulatorContext.Provider>;
