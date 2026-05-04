@@ -4,7 +4,7 @@ import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
 import { CONSTANTES } from "@/lib/dynawatt-engine";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Banknote, Wallet, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Banknote, Wallet, TrendingUp, CheckCircle2, FileDown, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
