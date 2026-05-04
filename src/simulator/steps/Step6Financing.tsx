@@ -308,7 +308,7 @@ export default function Step6Financing() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.25} />
                 <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={11} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickFormatter={(v) => `${v} €`} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmt(v), "Montant"]} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [fmtMode(v), "Montant"]} />
                 <ReferenceLine y={0} stroke="hsl(var(--border))" />
                 <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                   {barData.map((d, i) => (
@@ -354,7 +354,7 @@ export default function Step6Financing() {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  formatter={(v: number) => [fmt(v), "Cumul"]}
+                  formatter={(v: number) => [fmtMode(v), "Cumul"]}
                   labelFormatter={(m) => `Mois ${m} (${(Number(m) / 12).toFixed(1)} ans)`}
                 />
                 <ReferenceLine y={0} stroke="hsl(var(--accent))" strokeDasharray="4 4" />
@@ -390,12 +390,18 @@ export default function Step6Financing() {
           />
           <TrendingUp className="w-7 h-7 text-gold mx-auto mb-2" />
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
-            Gain net cumulé sur 8 ans
+            Gain net cumulé sur 8 ans ({suffix})
           </div>
           <div className="font-black text-5xl md:text-6xl text-gradient-gold font-mono">
-            {fmt(cashflow[cashflow.length - 1].cumul)}
+            {fmtMode(cashflow[cashflow.length - 1].cumul)}
           </div>
         </motion.div>
+
+        {HT && (
+          <p className="text-center text-xs text-muted-foreground -mt-4 mb-4">
+            Tous les montants sont indiqués HT (récupération TVA pour pros)
+          </p>
+        )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 flex-wrap">
           <Button
