@@ -61,9 +61,10 @@ export default function Parametres() {
     for (const [cle, valeur] of Object.entries(params)) {
       await supabase.from("parametres_globaux").update({ valeur }).eq("cle", cle);
     }
-    // Recompute and persist coûts de revient
-    const newCoutPetit = HW_PETIT_TOTAL + transportPetit + installPetit;
-    const newCoutMoyen = HW_MOYEN_TOTAL + transportMoyen + installMoyen;
+    // Recompute and persist coûts de revient (incluant marge Dynawatt)
+    const margeDw = Number(params.marge_dynawatt_default ?? 0);
+    const newCoutPetit = HW_PETIT_TOTAL + margeDw + transportPetit + installPetit;
+    const newCoutMoyen = HW_MOYEN_TOTAL + margeDw + transportMoyen + installMoyen;
     await supabase
       .from("parametres_globaux")
       .update({ valeur: String(newCoutPetit) })
