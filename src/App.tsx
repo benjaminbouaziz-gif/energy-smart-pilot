@@ -21,7 +21,7 @@ import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
 import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
 import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
 import Distributeurs from "./backoffice/pages/Distributeurs.tsx";
-import Parametres from "./backoffice/pages/Parametres.tsx";
+import BackofficeParametres from "./backoffice/pages/Parametres.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import AppLayout from "./app/AppLayout.tsx";
 import AppLogin from "./app/pages/AppLogin.tsx";
@@ -68,7 +68,7 @@ const App = () => (
             <Route index element={<ProspectsList />} />
             <Route path="prospect/:id" element={<ProspectDetail />} />
             <Route path="distributeurs" element={<Distributeurs />} />
-            <Route path="parametres" element={<Parametres />} />
+            <Route path="parametres" element={<BackofficeParametres />} />
           </Route>
 
           {/* Espace client /app */}
