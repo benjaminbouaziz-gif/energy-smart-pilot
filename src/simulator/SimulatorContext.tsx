@@ -23,6 +23,7 @@ interface SimulatorState {
   sobryDocs: SobryDoc[];
   configChoisie: ConfigKey | null;
   result: SimulationResult | null;
+  customPriceHT: number | null;
 }
 
 interface SimulatorContextValue extends SimulatorState {
@@ -31,6 +32,7 @@ interface SimulatorContextValue extends SimulatorState {
   setSobryDocs: (docs: SobryDoc[]) => void;
   setConfigChoisie: (c: ConfigKey | null) => void;
   setResult: (r: SimulationResult | null) => void;
+  setCustomPriceHT: (n: number | null) => void;
   goToStep: (n: number) => void;
   next: () => void;
   prev: () => void;
