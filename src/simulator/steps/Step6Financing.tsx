@@ -206,7 +206,7 @@ export default function Step6Financing() {
         {/* Décomposition des 2 économies */}
         <div className="glass rounded-3xl p-5 md:p-7 mb-6">
           <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-3">
-            Vos économies annuelles (' + suffix + ')
+            Vos économies annuelles ({suffix})
           </div>
           <div className="grid md:grid-cols-3 gap-4 items-stretch">
             <div className="rounded-2xl p-4 border border-border bg-card/40">
