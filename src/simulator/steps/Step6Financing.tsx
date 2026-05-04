@@ -16,7 +16,7 @@ const fmt = (n: number) =>
 type Mode = "comptant" | "leasing";
 
 export default function Step6Financing() {
-  const { result, facture, simulationId, client, internalMode, prospectId } = useSimulator();
+  const { result, facture, simulationId, client, internalMode, prospectId, customPriceHT } = useSimulator();
   const HT = internalMode;
   const div = HT ? 1.2 : 1;
   const fmtMode = (n: number) => fmt(n / div);
