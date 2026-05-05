@@ -11,22 +11,22 @@ type Params = Record<string, string>;
 const fmt = (n: number) =>
   n.toLocaleString("fr-FR", { maximumFractionDigits: 0 });
 
-// Hardware Tigo (lecture seule)
-const HARDWARE_PETIT = [
-  { nom: "TSI-6K3D Onduleur 6 kW Tri", qte: 1, pu: 1238 },
-  { nom: "TSS-3PS Wirebox tri + ATS", qte: 1, pu: 259 },
-  { nom: "BMS Kit", qte: 1, pu: 479 },
-  { nom: "GO Battery 3,6 kWh", qte: 5, pu: 689 },
-];
-const HARDWARE_MOYEN = [
-  { nom: "TSI-10K3D Onduleur 10 kW Tri", qte: 1, pu: 1339 },
-  { nom: "TSS-3PS Wirebox tri + ATS", qte: 1, pu: 259 },
-  { nom: "BMS Kit (×2 pour 8 modules)", qte: 2, pu: 479 },
-  { nom: "GO Battery 3,6 kWh", qte: 8, pu: 689 },
-];
+// Prix unitaires Tigo (lecture seule)
+const PU = {
+  onduleur6: 1238,
+  onduleur10: 1339,
+  wirebox: 259,
+  bms: 479,
+  module: 689,
+};
 
-const HW_PETIT_TOTAL = HARDWARE_PETIT.reduce((s, l) => s + l.qte * l.pu, 0);
-const HW_MOYEN_TOTAL = HARDWARE_MOYEN.reduce((s, l) => s + l.qte * l.pu, 0);
+const KWH_PAR_MODULE = 3.6;
+
+// Garde-fous quantités
+const LIMITS = {
+  module: { min: 3, max: 26 },
+  bms: { min: 1, max: 2 },
+};
 
 export default function Parametres() {
   const [loading, setLoading] = useState(true);
@@ -56,33 +56,13 @@ export default function Parametres() {
     setParams((p) => ({ ...p, [cle]: valeur }));
   }
 
-  async function save() {
-    setSaving(true);
-    for (const [cle, valeur] of Object.entries(params)) {
-      await supabase.from("parametres_globaux").update({ valeur }).eq("cle", cle);
-    }
-    // Recompute and persist coûts de revient (incluant marge Dynawatt)
-    const margeDw = Number(params.marge_dynawatt_default ?? 0);
-    const newCoutPetit = HW_PETIT_TOTAL + margeDw + transportPetit + installPetit;
-    const newCoutMoyen = HW_MOYEN_TOTAL + margeDw + transportMoyen + installMoyen;
-    await supabase
-      .from("parametres_globaux")
-      .update({ valeur: String(newCoutPetit) })
-      .eq("cle", "cout_revient_petit_conso");
-    await supabase
-      .from("parametres_globaux")
-      .update({ valeur: String(newCoutMoyen) })
-      .eq("cle", "cout_revient_moyen_conso");
-    setParams((p) => ({
-      ...p,
-      cout_revient_petit_conso: String(newCoutPetit),
-      cout_revient_moyen_conso: String(newCoutMoyen),
-    }));
-    setSaving(false);
-    setSavedOk(true);
-    toast.success("Paramètres sauvegardés");
-  }
+  // Quantités
+  const qtyModulePetit = Number(params.qty_module_petit ?? 5);
+  const qtyBmsPetit = Number(params.qty_bms_petit ?? 1);
+  const qtyModuleMoyen = Number(params.qty_module_moyen ?? 8);
+  const qtyBmsMoyen = Number(params.qty_bms_moyen ?? 1);
 
+  // Coûts complémentaires
   const transportPetit = Number(params.transport_petit_conso_ht ?? 0);
   const installPetit = Number(params.install_petit_conso_ht ?? 0);
   const transportMoyen = Number(params.transport_moyen_conso_ht ?? 0);
@@ -90,14 +70,74 @@ export default function Parametres() {
 
   const margeDynawatt = Number(params.marge_dynawatt_default ?? 0);
 
-  const coutPetit = useMemo(
-    () => HW_PETIT_TOTAL + margeDynawatt + transportPetit + installPetit,
-    [margeDynawatt, transportPetit, installPetit],
+  const hardwarePetit = useMemo(
+    () => [
+      { nom: "TSI-6K3D Onduleur 6 kW Tri", qte: 1, pu: PU.onduleur6, key: "onduleur", locked: true },
+      { nom: "TSS-3PS Wirebox tri + ATS", qte: 1, pu: PU.wirebox, key: "wirebox", locked: true },
+      { nom: "BMS Kit", qte: qtyBmsPetit, pu: PU.bms, key: "qty_bms_petit", limits: LIMITS.bms },
+      { nom: "GO Battery 3,6 kWh", qte: qtyModulePetit, pu: PU.module, key: "qty_module_petit", limits: LIMITS.module },
+    ],
+    [qtyBmsPetit, qtyModulePetit],
   );
-  const coutMoyen = useMemo(
-    () => HW_MOYEN_TOTAL + margeDynawatt + transportMoyen + installMoyen,
-    [margeDynawatt, transportMoyen, installMoyen],
+  const hardwareMoyen = useMemo(
+    () => [
+      { nom: "TSI-10K3D Onduleur 10 kW Tri", qte: 1, pu: PU.onduleur10, key: "onduleur", locked: true },
+      { nom: "TSS-3PS Wirebox tri + ATS", qte: 1, pu: PU.wirebox, key: "wirebox", locked: true },
+      { nom: "BMS Kit", qte: qtyBmsMoyen, pu: PU.bms, key: "qty_bms_moyen", limits: LIMITS.bms },
+      { nom: "GO Battery 3,6 kWh", qte: qtyModuleMoyen, pu: PU.module, key: "qty_module_moyen", limits: LIMITS.module },
+    ],
+    [qtyBmsMoyen, qtyModuleMoyen],
   );
+
+  const hwPetitTotal = useMemo(
+    () => hardwarePetit.reduce((s, l) => s + l.qte * l.pu, 0),
+    [hardwarePetit],
+  );
+  const hwMoyenTotal = useMemo(
+    () => hardwareMoyen.reduce((s, l) => s + l.qte * l.pu, 0),
+    [hardwareMoyen],
+  );
+
+  const coutPetit = hwPetitTotal + margeDynawatt + transportPetit + installPetit;
+  const coutMoyen = hwMoyenTotal + margeDynawatt + transportMoyen + installMoyen;
+
+  async function save() {
+    // Validation
+    const errs: string[] = [];
+    if (qtyModulePetit < LIMITS.module.min || qtyModulePetit > LIMITS.module.max)
+      errs.push("Modules Petit hors limites");
+    if (qtyBmsPetit < LIMITS.bms.min || qtyBmsPetit > LIMITS.bms.max)
+      errs.push("BMS Petit hors limites");
+    if (qtyModuleMoyen < LIMITS.module.min || qtyModuleMoyen > LIMITS.module.max)
+      errs.push("Modules Moyen hors limites");
+    if (qtyBmsMoyen < LIMITS.bms.min || qtyBmsMoyen > LIMITS.bms.max)
+      errs.push("BMS Moyen hors limites");
+    if (errs.length) {
+      toast.error(errs.join(" — "));
+      return;
+    }
+
+    setSaving(true);
+    for (const [cle, valeur] of Object.entries(params)) {
+      await supabase.from("parametres_globaux").update({ valeur }).eq("cle", cle);
+    }
+    await supabase
+      .from("parametres_globaux")
+      .update({ valeur: String(coutPetit) })
+      .eq("cle", "cout_revient_petit_conso");
+    await supabase
+      .from("parametres_globaux")
+      .update({ valeur: String(coutMoyen) })
+      .eq("cle", "cout_revient_moyen_conso");
+    setParams((p) => ({
+      ...p,
+      cout_revient_petit_conso: String(coutPetit),
+      cout_revient_moyen_conso: String(coutMoyen),
+    }));
+    setSaving(false);
+    setSavedOk(true);
+    toast.success("✓ Paramètres sauvegardés");
+  }
 
   if (loading) {
     return (
@@ -170,11 +210,12 @@ export default function Parametres() {
       </Section>
 
       <CoutRevientTable
-        title="Petit Conso (18 kWh / 6 kW Tri / 5 modules)"
-        hardware={HARDWARE_PETIT}
-        hardwareTotal={HW_PETIT_TOTAL}
+        title={`Petit Conso (${(qtyModulePetit * KWH_PAR_MODULE).toFixed(1)} kWh / 6 kW Tri / ${qtyModulePetit} modules)`}
+        hardware={hardwarePetit}
+        hardwareTotal={hwPetitTotal}
         margeDynawatt={params.marge_dynawatt_default ?? ""}
         onMargeDynawatt={(v) => set("marge_dynawatt_default", v)}
+        onQty={(key, v) => set(key, v)}
         transportLabel="Transport (1 palette ~120 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_petit_conso_ht ?? ""}
@@ -186,11 +227,12 @@ export default function Parametres() {
       />
 
       <CoutRevientTable
-        title="Moyen Conso (28,8 kWh / 10 kW Tri / 8 modules)"
-        hardware={HARDWARE_MOYEN}
-        hardwareTotal={HW_MOYEN_TOTAL}
+        title={`Moyen Conso (${(qtyModuleMoyen * KWH_PAR_MODULE).toFixed(1)} kWh / 10 kW Tri / ${qtyModuleMoyen} modules)`}
+        hardware={hardwareMoyen}
+        hardwareTotal={hwMoyenTotal}
         margeDynawatt={params.marge_dynawatt_default ?? ""}
         onMargeDynawatt={(v) => set("marge_dynawatt_default", v)}
+        onQty={(key, v) => set(key, v)}
         transportLabel="Transport (2 palettes ~190 kg)"
         installLabel="Installation (1 jour électricien tri)"
         transport={params.transport_moyen_conso_ht ?? ""}
@@ -220,12 +262,22 @@ export default function Parametres() {
   );
 }
 
+type HwLine = {
+  nom: string;
+  qte: number;
+  pu: number;
+  key: string;
+  locked?: boolean;
+  limits?: { min: number; max: number };
+};
+
 function CoutRevientTable({
   title,
   hardware,
   hardwareTotal,
   margeDynawatt,
   onMargeDynawatt,
+  onQty,
   transportLabel,
   installLabel,
   transport,
@@ -236,10 +288,11 @@ function CoutRevientTable({
   totalLabel,
 }: {
   title: string;
-  hardware: { nom: string; qte: number; pu: number }[];
+  hardware: HwLine[];
   hardwareTotal: number;
   margeDynawatt: string;
   onMargeDynawatt: (v: string) => void;
+  onQty: (key: string, v: string) => void;
   transportLabel: string;
   installLabel: string;
   transport: string;
@@ -269,18 +322,39 @@ function CoutRevientTable({
               </tr>
             </thead>
             <tbody>
-              {hardware.map((l) => (
-                <tr key={l.nom} className="bg-[#F3F4F6] border-t">
-                  <td className="px-3 py-2">{l.nom}</td>
-                  <td className="px-3 py-2 text-right font-mono">{l.qte}</td>
-                  <td className="px-3 py-2 text-right font-mono">
-                    {fmt(l.pu)} €
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono">
-                    {fmt(l.qte * l.pu)} €
-                  </td>
-                </tr>
-              ))}
+              {hardware.map((l) => {
+                const outOfRange =
+                  l.limits && (l.qte < l.limits.min || l.qte > l.limits.max);
+                return (
+                  <tr key={l.nom} className="bg-[#F3F4F6] border-t align-top">
+                    <td className="px-3 py-2">{l.nom}</td>
+                    <td className="px-3 py-2 text-right">
+                      <Input
+                        type="number"
+                        value={l.qte}
+                        disabled={l.locked}
+                        min={l.limits?.min}
+                        max={l.limits?.max}
+                        onChange={(e) => onQty(l.key, e.target.value)}
+                        className={`h-8 text-right font-mono w-20 ml-auto focus-visible:ring-[#7C3AED] focus-visible:border-[#7C3AED] ${
+                          outOfRange ? "border-red-500 ring-1 ring-red-500" : ""
+                        }`}
+                      />
+                      {outOfRange && (
+                        <div className="text-[10px] text-red-600 mt-1 text-right">
+                          {l.limits!.min}–{l.limits!.max} max
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono">
+                      {fmt(l.pu)} €
+                    </td>
+                    <td className="px-3 py-2 text-right font-mono">
+                      {fmt(l.qte * l.pu)} €
+                    </td>
+                  </tr>
+                );
+              })}
               <tr className="border-t bg-muted/40 italic">
                 <td className="px-3 py-2" colSpan={3}>
                   Sous-total Hardware Tigo HT
