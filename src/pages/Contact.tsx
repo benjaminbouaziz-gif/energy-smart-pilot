@@ -83,8 +83,8 @@ const ContactPage = () => {
             <div className="space-y-4 lg:col-span-1">
               {[
                 { icon: Mail, label: "Email", value: "contact@dynawatt.fr" },
-                { icon: Phone, label: "Téléphone", value: "+33 1 23 45 67 89" },
-                { icon: MapPin, label: "Adresse", value: "Paris, France" },
+                { icon: Phone, label: "Téléphone", value: "06 62 12 24 67" },
+                { icon: MapPin, label: "Adresse", value: "15 Villa du Bel Air, 75012 Paris" },
               ].map((c) => (
                 <div key={c.label} className="glass rounded-2xl p-5">
                   <div className="flex items-center gap-3 mb-1">
