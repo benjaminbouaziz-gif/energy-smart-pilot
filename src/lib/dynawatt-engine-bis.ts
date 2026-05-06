@@ -226,10 +226,16 @@ export function parserJsonsSobry(jsons: any[]): SobryParsed {
   const fixedCostsAvgMonthly = monthsCount > 0 ? fixedCostsMonthlyHt / monthsCount : 0;
   const fixedCostsAnnualHt = fixedCostsAvgMonthly * 12;
 
-  // Couverture jours
   const dates = new Set(hours.map((h) => h.date));
   const daysCovered = dates.size || 1;
-  const extrapolationFactor = 365 / daysCovered;
+  const isFullYear = monthsCount >= 12 && daysCovered >= 360;
+  const extrapolationFactor = isFullYear ? 1 : 365 / daysCovered;
+
+  if (monthsCount > 0 && monthsCount < 6) {
+    console.warn(`[engine-bis] Données insuffisantes : ${monthsCount} mois (min 6 recommandé).`);
+  } else if (!isFullYear) {
+    console.warn(`[engine-bis] Simulation basée sur ${monthsCount} mois (${daysCovered} jours). Annualisation appliquée.`);
+  }
 
   return {
     prm,
@@ -243,6 +249,8 @@ export function parserJsonsSobry(jsons: any[]): SobryParsed {
     puissanceKva,
     daysCovered,
     extrapolationFactor,
+    monthsCount,
+    isFullYear,
   };
 }
 
