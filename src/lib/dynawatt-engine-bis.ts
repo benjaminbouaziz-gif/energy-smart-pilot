@@ -499,6 +499,102 @@ export function executerSimulation(
   const economieAnnuelleTtc = factureInitialeTtc - dynawattTtc;
   const economiePctTtc = (economieAnnuelleTtc / Math.max(factureInitialeTtc, 1)) * 100;
 
+  // ====== Calcul mensuel détaillé (12 mois) ======
+  const tva = 1 + CONSTANTES.TVA;
+  const fixedCostsMonthlyHt = parsed.fixedCostsMonthlyHt;
+  const aboAncienMensuelHt = facture.abonnement_mensuel_ht;
+  const prixAncienHt = facture.prix_kwh_ht;
+
+  // Conso & coût Sobry par mois calendaire à partir des heures parsées
+  const consoByMonth = new Array(12).fill(0);
+  const coutSobryVarHtByMonth = new Array(12).fill(0);
+  const gainPilotageByMonth = new Array(12).fill(0);
+  const daysByMonth = new Array(12).fill(0);
+
+  for (const h of parsed.hours) {
+    const m = Number(h.date.slice(5, 7)) - 1;
+    if (m < 0 || m > 11) continue;
+    consoByMonth[m] += h.conso_kwh;
+    coutSobryVarHtByMonth[m] += h.conso_kwh * h.prix_eur_kwh;
+  }
+
+  // Jours et gains pilotage par mois
+  const seenDays = new Set<string>();
+  for (const d of planJours) {
+    const m = Number(d.date.slice(5, 7)) - 1;
+    if (m < 0 || m > 11) continue;
+    if (!seenDays.has(d.date)) {
+      seenDays.add(d.date);
+      daysByMonth[m] += 1;
+    }
+    gainPilotageByMonth[m] += d.gainJour; // déjà TTC
+  }
+
+  // Si année non complète, extrapoler chaque mois proportionnellement
+  const factor = parsed.extrapolationFactor;
+  const totalDaysObs = daysByMonth.reduce((a, b) => a + b, 0) || 1;
+
+  // Distribution conso & coûts : si un mois n'a pas de données, on répartit l'extrapolation
+  // de manière à reconstituer une année complète. Quand isFullYear: factor=1, pas de correction.
+  const monthlyData: MonthlyData[] = [];
+  let economieSobryAnn = 0;
+  let economiePilotageAnn = 0;
+  let economieTotaleAnn = 0;
+  let moisFav = 0;
+  let moisDef = 0;
+
+  for (let m = 0; m < 12; m++) {
+    let consoMois = consoByMonth[m];
+    let coutSobryVarHt = coutSobryVarHtByMonth[m];
+    let gainPilotage = gainPilotageByMonth[m];
+
+    // Si mois absent et extrapolation active, on distribue la moyenne
+    if (consoMois === 0 && !parsed.isFullYear) {
+      const totalConso = consoByMonth.reduce((a, b) => a + b, 0);
+      const totalCout = coutSobryVarHtByMonth.reduce((a, b) => a + b, 0);
+      const totalGain = gainPilotageByMonth.reduce((a, b) => a + b, 0);
+      const moisAvecData = consoByMonth.filter((v) => v > 0).length || 1;
+      consoMois = (totalConso * factor - totalConso) / Math.max(12 - moisAvecData, 1);
+      coutSobryVarHt = (totalCout * factor - totalCout) / Math.max(12 - moisAvecData, 1);
+      gainPilotage = (totalGain * factor - totalGain) / Math.max(12 - moisAvecData, 1);
+    }
+
+    const coutAncienHt = consoMois * prixAncienHt + aboAncienMensuelHt;
+    const coutAncienTtc = coutAncienHt * tva;
+
+    const coutSobryHt = coutSobryVarHt + fixedCostsMonthlyHt;
+    const coutSobryTtc = coutSobryHt * tva;
+
+    const coutDynawattTtc = coutSobryTtc - gainPilotage;
+    const coutDynawattHt = coutDynawattTtc / tva;
+
+    const economieSobryTtc = coutAncienTtc - coutSobryTtc; // peut être négatif
+    const economiePilotageTtc = gainPilotage;
+    const economieTotaleTtc = coutAncienTtc - coutDynawattTtc;
+    const estMoisDefavorable = economieTotaleTtc < 0;
+
+    if (estMoisDefavorable) moisDef += 1; else moisFav += 1;
+    economieSobryAnn += economieSobryTtc;
+    economiePilotageAnn += economiePilotageTtc;
+    economieTotaleAnn += economieTotaleTtc;
+
+    monthlyData.push({
+      month: m + 1,
+      monthName: MONTH_NAMES[m],
+      consoMois,
+      coutAncienHt,
+      coutAncienTtc,
+      coutSobryHt,
+      coutSobryTtc,
+      coutDynawattHt,
+      coutDynawattTtc,
+      economieSobryTtc,
+      economiePilotageTtc,
+      economieTotaleTtc,
+      estMoisDefavorable,
+    });
+  }
+
   return {
     factureInitiale: { ht: coutFactureInitialeHt, ttc: factureInitialeTtc },
     sobry: { ht: sobryHt, ttc: sobryTtc },
@@ -510,6 +606,16 @@ export function executerSimulation(
     roi,
     config: CONFIGS[configKey],
     parsed,
+    monthlyData,
+    annualTotals: {
+      economieSobryAnnuelle: economieSobryAnn,
+      economiePilotageAnnuelle: economiePilotageAnn,
+      economieTotaleAnnuelle: economieTotaleAnn,
+      moisFavorables: moisFav,
+      moisDefavorables: moisDef,
+    },
+    coverageMonths: parsed.monthsCount,
+    isFullYear: parsed.isFullYear,
   };
 }
 
