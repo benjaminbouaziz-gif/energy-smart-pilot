@@ -317,12 +317,12 @@ export default function Step5Animations() {
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
             Gain Dynawatt ce jour
           </div>
-          <div className="font-black text-4xl font-mono mt-1" style={{ color: "#10B981" }}>
-            +{fmt(econoDuJour.total, 2)} €
+          <div className="font-black text-4xl font-mono mt-1" style={{ color: econoDuJour.total >= 0 ? "#10B981" : "#EF4444" }}>
+            {econoDuJour.total >= 0 ? "+" : ""}{fmt(econoDuJour.total, 2)} €
           </div>
           <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
             <div>dont :</div>
-            <div>• Sobry vs {nomFournisseur} : <span className="font-semibold text-foreground">+{fmt(econoDuJour.sobry, 2)} €</span></div>
+            <div>• Sobry vs {nomFournisseur} : <span className="font-semibold" style={{ color: econoDuJour.sobry >= 0 ? undefined : "#EF4444" }}>{econoDuJour.sobry >= 0 ? "+" : ""}{fmt(econoDuJour.sobry, 2)} €</span></div>
             <div>• Pilotage batterie : <span className="font-semibold text-foreground">+{fmt(econoDuJour.pilotage, 2)} €</span></div>
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
