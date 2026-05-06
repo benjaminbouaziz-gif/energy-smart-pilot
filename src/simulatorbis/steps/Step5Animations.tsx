@@ -56,17 +56,17 @@ export default function Step5Animations() {
   const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
 
   // Économie quotidienne : Sobry vs ancien fournisseur + pilotage batterie
+  // Pas de clamp : peut être négatif sur les jours défavorables
   const dayEconomies = useMemo(() => {
     return days.map((d) => {
       const consoJour = d.conso24h.reduce((s, c) => s + c, 0);
       const coutAncienTtc = consoJour * tarifAncienTtc + aboAncienTtcJour;
-      // coût Sobry variable HT du jour (somme prix*conso) + part fixe HT
       let coutSobryVarHt = 0;
       for (let h = 0; h < 24; h++) coutSobryVarHt += d.prix24h[h] * d.conso24h[h];
       const partFixeSobryHtJour = result.parsed.fixedCostsAnnualHt / 365;
       const coutSobryTtc = (coutSobryVarHt + partFixeSobryHtJour) * tva;
-      const economieSobry = Math.max(0, coutAncienTtc - coutSobryTtc);
-      const economiePilotage = d.gainJour; // déjà TTC (€)
+      const economieSobry = coutAncienTtc - coutSobryTtc; // peut être négatif
+      const economiePilotage = d.gainJour;
       return {
         sobry: economieSobry,
         pilotage: economiePilotage,
