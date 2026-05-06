@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, FileJson, FileText, Loader2, CheckCircle2, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { FactureActuelle } from "@/lib/dynawatt-engine";
+import type { FactureActuelle } from "@/lib/dynawatt-engine-bis";
 
 export default function Step2Upload() {
   const { facture, setFacture, sobryDocs, setSobryDocs, simulationId, next } = useSimulator();

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useSimulator } from "../SimulatorContext";
 import { WizardFooter } from "../components/WizardFooter";
-import { CONSTANTES } from "@/lib/dynawatt-engine";
+import { CONSTANTES } from "@/lib/dynawatt-engine-bis";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Banknote, Wallet, TrendingUp, CheckCircle2, FileDown, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

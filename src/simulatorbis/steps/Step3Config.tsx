@@ -9,7 +9,7 @@ import {
   executerSimulation,
   fmtEur,
   suggerConfig,
-} from "@/lib/dynawatt-engine";
+} from "@/lib/dynawatt-engine-bis";
 import { Battery, Sparkles, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 

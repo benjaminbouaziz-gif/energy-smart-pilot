@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ConfigKey, FactureActuelle, SimulationResult } from "@/lib/dynawatt-engine";
+import type { ConfigKey, FactureActuelle, SimulationResult } from "@/lib/dynawatt-engine-bis";
 
 export interface ClientInfo {
   nom: string;
