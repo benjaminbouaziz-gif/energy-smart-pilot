@@ -346,28 +346,29 @@ export default function Step5Animations() {
                   setAuto(false);
                   setDayIdx(i);
                 }}
-                title={`${h.date} : +${h.gain.toFixed(2)} €`}
+                title={`${h.date} : ${h.gain >= 0 ? "+" : ""}${h.gain.toFixed(2)} €`}
                 className="aspect-square rounded-sm transition-all hover:scale-125 hover:ring-2 hover:ring-gold"
                 style={{
-                  background: `hsl(43 96% 56% / ${0.15 + h.intensity * 0.85})`,
-                  outline:
-                    i === dayIdx ? "2px solid hsl(var(--accent))" : "none",
+                  background: h.color,
+                  outline: i === dayIdx ? "2px solid hsl(var(--accent))" : "none",
                 }}
               />
             ))}
           </div>
-          <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground mt-3">
-            <span>Moins de gains</span>
-            <div className="flex gap-1">
-              {[0.15, 0.4, 0.65, 0.85, 1].map((o) => (
-                <div
-                  key={o}
-                  className="w-3 h-3 rounded-sm"
-                  style={{ background: `hsl(43 96% 56% / ${o})` }}
-                />
-              ))}
-            </div>
-            <span>Plus de gains</span>
+          <div className="flex items-center justify-center gap-3 text-[10px] font-mono text-muted-foreground mt-3 flex-wrap">
+            {[
+              { c: "#15803D", l: "Forte économie" },
+              { c: "#22C55E", l: "Économie moyenne" },
+              { c: "#86EFAC", l: "Faible économie" },
+              { c: "#D1D5DB", l: "Neutre" },
+              { c: "#FDBA74", l: "Petit surcoût" },
+              { c: "#EF4444", l: "Gros surcoût" },
+            ].map((s) => (
+              <span key={s.c} className="flex items-center gap-1">
+                <span className="w-3 h-3 rounded-sm" style={{ background: s.c }} />
+                {s.l}
+              </span>
+            ))}
           </div>
         </div>
       </motion.section>
@@ -375,6 +376,17 @@ export default function Step5Animations() {
       <WizardFooter onNext={next} nextLabel="Voir le financement" />
     </>
   );
+}
+
+function getColorForDay(economieJour: number, moyenneAnnuelle: number): string {
+  const moyAbs = Math.abs(moyenneAnnuelle) || 0.01;
+  const seuilNeutre = moyAbs * 0.05;
+  if (economieJour > moyenneAnnuelle * 1.5) return "#15803D";
+  if (economieJour > moyenneAnnuelle * 0.5) return "#22C55E";
+  if (economieJour > seuilNeutre) return "#86EFAC";
+  if (economieJour >= -seuilNeutre) return "#D1D5DB";
+  if (economieJour > -moyAbs * 0.5) return "#FDBA74";
+  return "#EF4444";
 }
 
 const tooltipStyle = {
