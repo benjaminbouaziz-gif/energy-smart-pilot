@@ -114,13 +114,13 @@ export default function Step5Animations() {
     return arr.map((v, h) => ({ hour: `${h}h`, soc: v }));
   }, [hourly, day, result.config.capacite]);
 
-  // Heatmap : intensité = économie totale du jour
+  // Heatmap : couleur selon économie réelle (positif=vert, neutre=gris, négatif=orange/rouge)
   const heatmap = useMemo(() => {
-    const max = Math.max(...dayEconomies.map((e) => e.total), 0.0001);
+    const moyenne = dayEconomies.reduce((s, e) => s + e.total, 0) / Math.max(dayEconomies.length, 1);
     return days.map((d, i) => ({
       date: d.date,
       gain: dayEconomies[i].total,
-      intensity: dayEconomies[i].total / max,
+      color: getColorForDay(dayEconomies[i].total, moyenne),
     }));
   }, [days, dayEconomies]);
 
