@@ -64,6 +64,10 @@ const App = () => (
           <Route path="/simulationdan" element={<SimulationDan />} />
           <Route path="/simulationdan/:prospect_id" element={<SimulationDan />} />
 
+          {/* Simulateur version bis (test) */}
+          <Route path="/simulateurbis" element={<Simulateurbis />} />
+          <Route path="/simulateurbis/:prospect_id" element={<Simulateurbis />} />
+
           {/* BackOffice interne */}
           <Route path="/backoffdan" element={<BackofficeLayout />}>
             <Route index element={<ProspectsList />} />
