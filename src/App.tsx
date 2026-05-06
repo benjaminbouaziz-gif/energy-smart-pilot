@@ -17,6 +17,7 @@ import NotreModele from "./pages/NotreModele.tsx";
 import Simulation from "./pages/Simulation.tsx";
 import RapportPDF from "./pages/RapportPDF.tsx";
 import SimulationDan from "./pages/SimulationDan.tsx";
+import Simulateurbis from "./pages/Simulateurbis.tsx";
 import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
 import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
 import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
