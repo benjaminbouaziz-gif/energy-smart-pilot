@@ -107,6 +107,30 @@ export interface AnnualStats {
   coutSobryAnnuelTtc: number;
 }
 
+export interface MonthlyData {
+  month: number;
+  monthName: string;
+  consoMois: number;
+  coutAncienHt: number;
+  coutAncienTtc: number;
+  coutSobryHt: number;
+  coutSobryTtc: number;
+  coutDynawattHt: number;
+  coutDynawattTtc: number;
+  economieSobryTtc: number;
+  economiePilotageTtc: number;
+  economieTotaleTtc: number;
+  estMoisDefavorable: boolean;
+}
+
+export interface AnnualTotals {
+  economieSobryAnnuelle: number;
+  economiePilotageAnnuelle: number;
+  economieTotaleAnnuelle: number;
+  moisFavorables: number;
+  moisDefavorables: number;
+}
+
 export interface SimulationResult {
   factureInitiale: { ht: number; ttc: number };
   sobry: { ht: number; ttc: number };
@@ -123,7 +147,16 @@ export interface SimulationResult {
   };
   config: typeof CONFIGS[ConfigKey];
   parsed: SobryParsed;
+  monthlyData: MonthlyData[];
+  annualTotals: AnnualTotals;
+  coverageMonths: number;
+  isFullYear: boolean;
 }
+
+export const MONTH_NAMES = [
+  "Janvier","Février","Mars","Avril","Mai","Juin",
+  "Juillet","Août","Septembre","Octobre","Novembre","Décembre",
+];
 
 export interface FactureActuelle {
   fournisseur: string;
