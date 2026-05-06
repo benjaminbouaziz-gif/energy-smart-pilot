@@ -70,7 +70,9 @@ export interface SobryParsed {
   puissanceKva?: number;
   // extrapolation
   daysCovered: number;
-  extrapolationFactor: number; // 365 / daysCovered
+  extrapolationFactor: number; // 1 si année complète, sinon 365/daysCovered
+  monthsCount: number;
+  isFullYear: boolean;
 }
 
 export interface CycleResult {
