@@ -301,11 +301,19 @@ export default function Step2Upload() {
                   Conso totale&nbsp;: {consoTotale.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} kWh
                 </span>
               </div>
-              {sobryDocs.length > 0 && sobryDocs.length < 12 && (
-                <p className="text-[11px] text-gold/80 bg-gold/10 border border-gold/20 rounded-lg px-3 py-2">
-                  Estimation basée sur {sobryDocs.length} mois — extrapolation linéaire à l'année.
+              {sobryDocs.length === 12 ? (
+                <p className="text-[11px] text-emerald-700 bg-emerald-100 border border-emerald-300 rounded-lg px-3 py-2">
+                  ✓ 12 mois de données complets — pas d'extrapolation
                 </p>
-              )}
+              ) : sobryDocs.length >= 6 && sobryDocs.length < 12 ? (
+                <p className="text-[11px] text-orange-800 bg-orange-100 border border-orange-300 rounded-lg px-3 py-2">
+                  ⚠ Simulation basée sur {sobryDocs.length} mois seulement. La projection annuelle peut être imprécise.
+                </p>
+              ) : sobryDocs.length > 0 ? (
+                <p className="text-[11px] text-red-800 bg-red-100 border border-red-300 rounded-lg px-3 py-2">
+                  ⚠ Pas assez de données : {sobryDocs.length} mois. Minimum 6 mois recommandés.
+                </p>
+              ) : null}
               <ul className="space-y-1 max-h-48 overflow-y-auto pr-1">
                 {sobryDocs
                   .sort((a, b) => a.mois.localeCompare(b.mois))
