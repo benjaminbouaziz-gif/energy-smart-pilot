@@ -175,11 +175,16 @@ export default function Step6Financing() {
         .from("prospects")
         .update({
           resultats_simulation: {
+            version: "bis",
             economie_annuelle: economieTotaleTtc,
             economie_annuelle_ht: economieTotaleTtc / 1.2,
             payback_annees: breakevenMois ? +(breakevenMois / 12).toFixed(1) : null,
             gain_8ans: cashflow[cashflow.length - 1].cumul,
             financement: financementPayload,
+            monthlyData: result.monthlyData,
+            annualTotals: result.annualTotals,
+            coverageMonths: result.coverageMonths,
+            isFullYear: result.isFullYear,
             full: result,
           } as any,
         })
