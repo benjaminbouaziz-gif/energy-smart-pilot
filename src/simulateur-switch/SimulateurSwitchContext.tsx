@@ -134,8 +134,6 @@ export interface SimulateurSwitchData {
   simulationResult?: any;
   [k: string]: any;
 }
-  [k: string]: any;
-}
 
 interface PersistedState {
   step: number;
