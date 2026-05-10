@@ -79,12 +79,57 @@ export interface SimulateurSwitchFactureConcurrent {
   };
 }
 
+export interface SimulateurSwitchSobryParams {
+  kva: number;
+  variante: "CU4" | "MU4" | "CU" | "LU";
+  offre: "SoFlex" | "SoCap";
+  segment_client: "Particulier" | "Pro";
+  segment: "C5" | "C4";
+}
+
+export interface SimulateurSwitchFactureSobry {
+  annual: {
+    total_ht: number;
+    total_ttc: number;
+    cost_variable_ht: number;
+    cost_fixe_ht: number;
+    conso_kwh: number;
+    prix_moyen_eur_kwh_ttc: number;
+  };
+  monthly: {
+    month: string;
+    conso_kwh: number;
+    total_ht: number;
+    total_ttc: number;
+    cost_variable_ht: number;
+    cost_fixe_ht: { total: number };
+  }[];
+  details_horaires: any[];
+  metadata: any;
+}
+
+export interface SimulateurSwitchFactureSobryAvecBatterie {
+  configKey: "PETIT" | "MOYEN";
+  annual: {
+    total_ttc_apres_batterie: number;
+    economies_annuelles_ttc: number;
+    prix_batterie_ttc: number;
+    retour_sur_investissement_ans: number;
+    cycles_par_jour_moyen?: number;
+  };
+  monthly: { month: string; total_ttc_apres_batterie: number }[];
+  simulationResult: any;
+}
+
 export interface SimulateurSwitchData {
   identite?: SimulateurSwitchIdentite;
   switchgrid?: SimulateurSwitchSwitchgrid;
   loadCurve?: SimulateurSwitchLoadCurve;
   tarifConcurrent?: SimulateurSwitchTarifConcurrent;
   factureConcurrent?: SimulateurSwitchFactureConcurrent;
+  sobryParams?: SimulateurSwitchSobryParams;
+  factureSobry?: SimulateurSwitchFactureSobry;
+  factureSobryAvecBatterie?: SimulateurSwitchFactureSobryAvecBatterie;
   [k: string]: any;
 }
 
@@ -110,7 +155,7 @@ interface SimulateurSwitchContextValue {
 
 const SimulateurSwitchContext = createContext<SimulateurSwitchContextValue | null>(null);
 
-export const TOTAL_STEPS = 8;
+export const TOTAL_STEPS = 7;
 const STORAGE_KEY = "simulateur-switch-state";
 const INITIAL_STATE: PersistedState = { step: 1, data: {} };
 
