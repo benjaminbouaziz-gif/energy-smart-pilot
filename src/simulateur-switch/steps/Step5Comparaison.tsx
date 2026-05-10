@@ -43,17 +43,37 @@ type Phase = "form" | "loading" | "ready" | "error";
 export default function Step5Comparaison() {
   const { data, updateData, prev, next } = useSimulateurSwitch();
 
-  // Auto-detect profile from switchgrid + identite
-  const segmentRaw = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
-  const segment_client: "Particulier" | "Pro" = segmentRaw === "RES" ? "Particulier" : "Pro";
-  const segment: "C5" | "C4" =
-    segmentRaw === "RES" || segmentRaw === "PRO_C5" || segmentRaw === "C5" ? "C5" : "C4";
+  // Initial profil guess from Switchgrid (RES → Particulier, sinon Pro)
+  const segmentSwitchgrid = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
+  const profilAuto: "Particulier" | "Pro" = segmentSwitchgrid === "RES" ? "Particulier" : "Pro";
+
+  // Override manuel par le commercial si Switchgrid se trompe
+  const [profilOverride, setProfilOverride] = useState<"Particulier" | "Pro" | null>(
+    data.sobryParams?.segment_client && data.sobryParams.segment_client !== profilAuto
+      ? data.sobryParams.segment_client
+      : null
+  );
+  const segment_client: "Particulier" | "Pro" = profilOverride ?? profilAuto;
   const configBatterie: "PETIT" | "MOYEN" = segment_client === "Particulier" ? "PETIT" : "MOYEN";
 
-  // Form state
+  // Form state — kVA saisi par le commercial
   const [kva, setKva] = useState<number | "">(data.sobryParams?.kva ?? "");
-  const variantOptions = segment === "C5" ? (["CU4", "MU4"] as const) : (["CU", "LU"] as const);
+
+  // Segment Enedis déduit du kVA (plus fiable que Switchgrid)
+  const segment: "C5" | "C4" | null =
+    typeof kva === "number" && kva > 0 ? (kva <= 36 ? "C5" : "C4") : null;
+
+  const variantOptions = segment === "C4" ? (["CU", "LU"] as const) : (["CU4", "MU4"] as const);
   const [variante, setVariante] = useState<string>(data.sobryParams?.variante ?? variantOptions[0]);
+
+  // Reset variante au défaut quand le segment bascule (C5 ↔ C4)
+  useEffect(() => {
+    if (!segment) return;
+    const allowed = segment === "C4" ? ["CU", "LU"] : ["CU4", "MU4"];
+    if (!allowed.includes(variante)) {
+      setVariante(allowed[0]);
+    }
+  }, [segment]);
 
   const initialPhase: Phase = data.factureSobry && data.simulationResult ? "ready" : "form";
   const [phase, setPhase] = useState<Phase>(initialPhase);
@@ -64,7 +84,7 @@ export default function Step5Comparaison() {
     if (data.factureSobry && data.simulationResult && phase !== "ready") setPhase("ready");
   }, [data.factureSobry, data.simulationResult]);
 
-  const canSubmit = typeof kva === "number" && kva >= 3 && kva <= 249 && !!variante;
+  const canSubmit = typeof kva === "number" && kva >= 3 && kva <= 249 && !!variante && !!segment;
 
   async function lancerSimulation() {
     setError(null);
@@ -85,7 +105,7 @@ export default function Step5Comparaison() {
       variante: variante as any,
       offre: "SoFlex" as const,
       segment_client,
-      segment,
+      segment: segment as "C5" | "C4",
       configBatterie,
     };
     updateData({ sobryParams: params });
@@ -93,6 +113,14 @@ export default function Step5Comparaison() {
     try {
       // 1) Edge function (technical: sobry-calc-cost)
       setLoadingStep(1);
+      console.log("[Step5] invoking sobry-calc-cost", {
+        segment: params.segment,
+        kva: params.kva,
+        variante: params.variante,
+        segment_client: params.segment_client,
+        profilOverride,
+        hourlyKwh_length: lc.hourlyKwh.length,
+      });
       const { data: result, error: fnErr } = await supabase.functions.invoke("sobry-calc-cost", {
         body: {
           prm: sg.prm,
@@ -164,6 +192,8 @@ export default function Step5Comparaison() {
           variantOptions={variantOptions as any}
           segment={segment}
           segmentClient={segment_client}
+          profilOverride={profilOverride}
+          setProfilOverride={setProfilOverride}
           configBatterie={configBatterie}
           canSubmit={canSubmit}
           onPrev={prev}
@@ -207,14 +237,21 @@ function PhaseForm(props: {
   variante: string;
   setVariante: (v: string) => void;
   variantOptions: readonly string[];
-  segment: "C5" | "C4";
+  segment: "C5" | "C4" | null;
   segmentClient: "Particulier" | "Pro";
+  profilOverride: "Particulier" | "Pro" | null;
+  setProfilOverride: (v: "Particulier" | "Pro" | null) => void;
   configBatterie: "PETIT" | "MOYEN";
   canSubmit: boolean;
   onPrev: () => void;
   onSubmit: () => void;
 }) {
-  const { kva, setKva, variante, setVariante, variantOptions, segment, segmentClient, configBatterie, canSubmit, onPrev, onSubmit } = props;
+  const {
+    kva, setKva, variante, setVariante, variantOptions,
+    segment, segmentClient, profilOverride, setProfilOverride,
+    configBatterie, canSubmit, onPrev, onSubmit,
+  } = props;
+  const [showProfilToggle, setShowProfilToggle] = useState(false);
   const variantLabels: Record<string, { label: string; sub?: string }> = {
     CU4: { label: "Courte Utilisation 4 postes (CU4)" },
     MU4: { label: "Moyenne Utilisation 4 postes (MU4)" },
@@ -229,16 +266,67 @@ function PhaseForm(props: {
         <CardDescription>Quelques infos sur la facture du prospect pour finaliser le calcul.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-wrap gap-2">
-          <Badge className="bg-primary/15 text-primary border-primary/30">
-            Profil détecté : {segmentClient}
-          </Badge>
-          <Badge className="bg-gold/15 text-gold border-gold/30">
-            Segment Enedis : {segment}
-          </Badge>
-          <Badge variant="outline" className="border-primary/40">
-            Pack Batterie : {configBatterie}
-          </Badge>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-primary/15 text-primary border-primary/30">
+              Profil : {segmentClient}
+            </Badge>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[11px] text-muted-foreground hover:text-primary"
+              onClick={() => setShowProfilToggle((s) => !s)}
+            >
+              Pas le bon profil ?
+            </Button>
+            {segment ? (
+              <Badge className="bg-gold/15 text-gold border-gold/30">
+                Segment Enedis : {segment}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="border-muted-foreground/30 text-muted-foreground">
+                Segment Enedis : à déterminer après saisie kVA
+              </Badge>
+            )}
+            <Badge variant="outline" className="border-primary/40">
+              Pack Batterie : {configBatterie}
+            </Badge>
+          </div>
+          {showProfilToggle && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs text-muted-foreground">Forcer :</span>
+              <Button
+                type="button"
+                size="sm"
+                variant={segmentClient === "Particulier" ? "default" : "outline"}
+                onClick={() => setProfilOverride("Particulier")}
+                className="h-7"
+              >
+                Particulier
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={segmentClient === "Pro" ? "default" : "outline"}
+                onClick={() => setProfilOverride("Pro")}
+                className="h-7"
+              >
+                Pro
+              </Button>
+              {profilOverride !== null && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-[11px]"
+                  onClick={() => setProfilOverride(null)}
+                >
+                  Réinit. auto
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -257,25 +345,31 @@ function PhaseForm(props: {
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label>Variante tarifaire</Label>
-          <RadioGroup value={variante} onValueChange={setVariante}>
-            {variantOptions.map((v) => (
-              <div key={v} className="flex items-start gap-3 p-3 rounded-xl border bg-muted/20 hover:bg-muted/40 transition">
-                <RadioGroupItem value={v} id={`variant-${v}`} className="mt-0.5" />
-                <div className="space-y-0.5">
-                  <Label htmlFor={`variant-${v}`} className="font-medium cursor-pointer">{variantLabels[v]?.label ?? v}</Label>
-                  {variantLabels[v]?.sub && (
-                    <p className="text-xs text-muted-foreground">{variantLabels[v].sub}</p>
-                  )}
+        {segment ? (
+          <div className="space-y-2">
+            <Label>Variante tarifaire</Label>
+            <RadioGroup value={variante} onValueChange={setVariante}>
+              {variantOptions.map((v) => (
+                <div key={v} className="flex items-start gap-3 p-3 rounded-xl border bg-muted/20 hover:bg-muted/40 transition">
+                  <RadioGroupItem value={v} id={`variant-${v}`} className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <Label htmlFor={`variant-${v}`} className="font-medium cursor-pointer">{variantLabels[v]?.label ?? v}</Label>
+                    {variantLabels[v]?.sub && (
+                      <p className="text-xs text-muted-foreground">{variantLabels[v].sub}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </RadioGroup>
-          <p className="text-xs text-muted-foreground">
-            Visible sur la facture, mention « Courte Utilisation » ou « Longue Utilisation ».
+              ))}
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">
+              Visible sur la facture, mention « Courte Utilisation » ou « Longue Utilisation ».
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground italic">
+            Saisis le kVA pour afficher les variantes tarifaires disponibles.
           </p>
-        </div>
+        )}
 
         <div className="flex items-center justify-between pt-4 border-t">
           <Button variant="outline" onClick={onPrev} className="gap-2">
