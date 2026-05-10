@@ -195,6 +195,9 @@ export default function Step3AnalyseConso() {
               </div>
             </CardContent>
           </Card>
+
+          {/* SECTION 5 - Visualisation jour par jour */}
+          <DailyView hourlyKwh={safeHourly} windowStart={safeStart} windowEnd={lc.windowEnd} />
         </>
       )}
 
