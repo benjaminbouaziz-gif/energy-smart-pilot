@@ -269,17 +269,25 @@ Deno.serve(async (req: Request) => {
     const monthlyArr = Array.from(monthly.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, m]) => {
-        const total_ht = m.cost_variable_ht + total_fixe_mois;
+        const daysInMonth = new Date(m.year, m.month, 0).getDate();
+        const nb_heures_mois_complet = 24 * daysInMonth;
+        const ratio = m.nb_heures / nb_heures_mois_complet;
+        const acheminement = acheminement_mois * ratio;
+        const abo_sobry = abo_sobry_mois * ratio;
+        const cta = cta_mois * ratio;
+        const total_fixe = acheminement + abo_sobry + cta;
+        const total_ht = m.cost_variable_ht + total_fixe;
         return {
           month,
           conso_kwh: m.conso_kwh,
           cost_variable_ht: m.cost_variable_ht,
           cost_fixe_ht: {
-            acheminement: acheminement_mois,
-            abo_sobry: abo_sobry_mois,
-            cta: cta_mois,
-            total: total_fixe_mois,
+            acheminement,
+            abo_sobry,
+            cta,
+            total: total_fixe,
           },
+          prorata: { nb_heures: m.nb_heures, nb_heures_mois_complet, ratio },
           total_ht,
           total_ttc: total_ht * (1 + tva_ratio),
         };
