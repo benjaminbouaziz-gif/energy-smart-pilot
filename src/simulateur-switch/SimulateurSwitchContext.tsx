@@ -82,9 +82,10 @@ export interface SimulateurSwitchFactureConcurrent {
 export interface SimulateurSwitchSobryParams {
   kva: number;
   variante: "CU4" | "MU4" | "CU" | "LU";
-  offre: "SoFlex" | "SoCap";
+  offre: "SoFlex";
   segment_client: "Particulier" | "Pro";
   segment: "C5" | "C4";
+  configBatterie: "PETIT" | "MOYEN";
 }
 
 export interface SimulateurSwitchFactureSobry {
