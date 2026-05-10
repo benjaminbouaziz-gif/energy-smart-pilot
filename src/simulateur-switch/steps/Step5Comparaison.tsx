@@ -105,7 +105,7 @@ export default function Step5Comparaison() {
       variante: variante as any,
       offre: "SoFlex" as const,
       segment_client,
-      segment,
+      segment: segment as "C5" | "C4",
       configBatterie,
     };
     updateData({ sobryParams: params });
@@ -113,6 +113,14 @@ export default function Step5Comparaison() {
     try {
       // 1) Edge function (technical: sobry-calc-cost)
       setLoadingStep(1);
+      console.log("[Step5] invoking sobry-calc-cost", {
+        segment: params.segment,
+        kva: params.kva,
+        variante: params.variante,
+        segment_client: params.segment_client,
+        profilOverride,
+        hourlyKwh_length: lc.hourlyKwh.length,
+      });
       const { data: result, error: fnErr } = await supabase.functions.invoke("sobry-calc-cost", {
         body: {
           prm: sg.prm,
