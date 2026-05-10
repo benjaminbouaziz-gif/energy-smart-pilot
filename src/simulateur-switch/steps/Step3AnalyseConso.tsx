@@ -240,3 +240,153 @@ function StatTile({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   );
 }
+
+// ============================================================
+// SECTION 5 — Visualisation jour par jour
+// ============================================================
+const FR_WEEKDAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const FR_MONTHS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+];
+
+function pad2(n: number) { return String(n).padStart(2, "0"); }
+
+function formatDayFr(date: Date) {
+  return `${FR_WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()} ${FR_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+function DailyView({
+  hourlyKwh, windowStart, windowEnd,
+}: {
+  hourlyKwh: number[];
+  windowStart: string;
+  windowEnd: string;
+}) {
+  const totalDays = Math.max(1, Math.floor(hourlyKwh.length / 24));
+  const [dayIdx, setDayIdx] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [prices, setPrices] = useState<EpexPricesMap | null>(null);
+  const [pricesError, setPricesError] = useState<string | null>(null);
+  const playRef = useRef<number | null>(null);
+
+  // Load EPEX prices once on mount
+  useEffect(() => {
+    let cancelled = false;
+    loadEpexPricesForRange(windowStart, windowEnd)
+      .then((m) => { if (!cancelled) setPrices(m); })
+      .catch((e) => { if (!cancelled) setPricesError(String(e?.message ?? e)); });
+    return () => { cancelled = true; };
+  }, [windowStart, windowEnd]);
+
+  // Autoplay
+  useEffect(() => {
+    if (!playing) return;
+    playRef.current = window.setInterval(() => {
+      setDayIdx((d) => (d + 1) % totalDays);
+    }, 800);
+    return () => { if (playRef.current) window.clearInterval(playRef.current); };
+  }, [playing, totalDays]);
+
+  // Compute the date for current day
+  const startMs = new Date(windowStart).getTime();
+  const dayDate = new Date(startMs + dayIdx * 24 * 3600 * 1000);
+  const dayKey = `${dayDate.getUTCFullYear()}-${pad2(dayDate.getUTCMonth() + 1)}-${pad2(dayDate.getUTCDate())}`;
+
+  // Build chart data for selected day
+  const chartData = useMemo(() => {
+    return Array.from({ length: 24 }, (_, h) => {
+      const conso = Number(hourlyKwh[dayIdx * 24 + h] ?? 0);
+      const k = `${dayKey}-${pad2(h)}`;
+      const prix = prices ? prices.get(k) : undefined;
+      return {
+        hour: `${pad2(h)}h`,
+        conso: Number(conso.toFixed(3)),
+        prix: prix !== undefined ? Number(prix.toFixed(4)) : null,
+      };
+    });
+  }, [dayIdx, hourlyKwh, prices, dayKey]);
+
+  // Day stats
+  const totalDay = chartData.reduce((a, b) => a + b.conso, 0);
+  let peakConso = 0, peakHour = 0;
+  chartData.forEach((d, h) => { if (d.conso > peakConso) { peakConso = d.conso; peakHour = h; } });
+  const prixDay = chartData.map((d) => d.prix).filter((v): v is number => v !== null);
+  const prixMoyen = prixDay.length > 0 ? prixDay.reduce((a, b) => a + b, 0) / prixDay.length : null;
+
+  return (
+    <Card className="rounded-3xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><CalendarDays className="w-5 h-5 text-primary" /> Visualisation jour par jour</CardTitle>
+        <CardDescription>Parcours l'année jour par jour pour repérer les pics et les heures à prix bas</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPlaying((p) => !p)}
+            className="gap-2 shrink-0"
+          >
+            {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            {playing ? "Pause" : "Play"}
+          </Button>
+          <div className="flex-1">
+            <Slider
+              min={0}
+              max={Math.max(0, totalDays - 1)}
+              step={1}
+              value={[dayIdx]}
+              onValueChange={(v) => setDayIdx(v[0] ?? 0)}
+            />
+            <div className="text-xs text-muted-foreground text-right mt-1 font-mono">
+              Jour {dayIdx + 1} / {totalDays}
+            </div>
+          </div>
+          <div className="text-sm font-semibold whitespace-nowrap md:w-72 md:text-right">
+            {formatDayFr(dayDate)}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <StatTile label="Conso totale" value={<span>{fmtKwh1(totalDay)} <span className="text-sm text-muted-foreground">kWh</span></span>} />
+          <StatTile label="Pic horaire" value={<span>{peakConso.toFixed(2)} <span className="text-sm text-muted-foreground">kWh à {pad2(peakHour)}h</span></span>} />
+          <StatTile
+            label="Prix moyen EPEX"
+            value={prixMoyen !== null
+              ? <span>{prixMoyen.toFixed(3)} <span className="text-sm text-muted-foreground">€/kWh</span></span>
+              : <span className="text-base text-muted-foreground">—</span>}
+          />
+        </div>
+
+        {pricesError && (
+          <Alert>
+            <AlertDescription className="text-xs">Prix EPEX indisponibles : {pricesError}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={1} />
+              <YAxis yAxisId="kwh" tick={{ fontSize: 10 }} tickFormatter={(v) => `${v} kWh`} />
+              <YAxis yAxisId="prix" orientation="right" tick={{ fontSize: 10 }} tickFormatter={(v) => `${Number(v).toFixed(2)} €`} />
+              <Tooltip
+                contentStyle={{ borderRadius: 12, border: "1px solid hsl(var(--border))", background: "hsl(var(--popover))" }}
+                formatter={(v: any, name: string) => {
+                  if (v === null || v === undefined) return ["—", name];
+                  if (name === "Conso") return [`${Number(v).toFixed(2)} kWh`, name];
+                  return [`${Number(v).toFixed(3)} €/kWh`, name];
+                }}
+              />
+              <Legend />
+              <Bar yAxisId="kwh" dataKey="conso" name="Conso" fill={VIOLET} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+              <Line yAxisId="prix" type="monotone" dataKey="prix" name="Prix EPEX" stroke={GOLD} strokeWidth={2} dot={{ r: 3 }} connectNulls={false} isAnimationActive={false} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
