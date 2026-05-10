@@ -1,7 +1,7 @@
 import { corsHeaders } from "../_shared/cors.ts";
 
 const SWITCHGRID_BASE_URL = "https://app.switchgrid.tech/enedis/v2";
-const SWITCHGRID_TEST_MODE = "true";
+const SWITCHGRID_TEST_MODE = "false";
 
 function sgHeaders() {
   const h: Record<string, string> = {
