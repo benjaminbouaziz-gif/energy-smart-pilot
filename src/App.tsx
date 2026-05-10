@@ -22,6 +22,7 @@ import SwitchgridForm from "./pages/switchgrid/SwitchgridForm.tsx";
 import SwitchgridCallback from "./pages/switchgrid/SwitchgridCallback.tsx";
 import SwitchgridResults from "./pages/switchgrid/SwitchgridResults.tsx";
 import SwitchgridAttente from "./pages/switchgrid/SwitchgridAttente.tsx";
+import SimulateurSwitch from "./pages/SimulateurSwitch.tsx";
 import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
 import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
 import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
@@ -77,6 +78,10 @@ const App = () => (
           <Route path="/switchgrid/callback" element={<SwitchgridCallback />} />
           <Route path="/switchgrid/results" element={<SwitchgridResults />} />
           <Route path="/switchgrid/attente" element={<SwitchgridAttente />} />
+
+          {/* Simulateur Switch (nouveau parcours, en cours de construction) */}
+          <Route path="/simulateur-switch" element={<SimulateurSwitch />} />
+          <Route path="/simulateur-switch/:prospect_id" element={<SimulateurSwitch />} />
 
           {/* BackOffice interne */}
           <Route path="/backoffdan" element={<BackofficeLayout />}>
