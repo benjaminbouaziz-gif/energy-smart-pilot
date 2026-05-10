@@ -89,7 +89,7 @@ export default function Step4TarifConcurrent() {
       className="container mx-auto px-4 mt-10 max-w-5xl space-y-6"
     >
       <div className="text-center mb-2">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 4 / 8</div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 4 / 7</div>
         <h1 className="text-3xl md:text-4xl font-black mb-2">Tarif actuel du prospect</h1>
         <p className="text-sm text-muted-foreground">Saisis le contrat actuel pour calculer ce qu'il paie aujourd'hui.</p>
       </div>
