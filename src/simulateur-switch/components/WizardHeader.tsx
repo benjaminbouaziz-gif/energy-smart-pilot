@@ -6,10 +6,9 @@ const STEPS = [
   { n: 2, label: "Switchgrid" },
   { n: 3, label: "Analyse conso" },
   { n: 4, label: "Tarif concurrent" },
-  { n: 5, label: "Calcul Sobry" },
-  { n: 6, label: "Comparaison" },
-  { n: 7, label: "Animation" },
-  { n: 8, label: "Financement" },
+  { n: 5, label: "Comparaison" },
+  { n: 6, label: "Animation" },
+  { n: 7, label: "Leasing" },
 ];
 
 export function WizardHeader() {
