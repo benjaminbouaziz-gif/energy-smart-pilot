@@ -174,8 +174,19 @@ Deno.serve(async (req: Request) => {
     // 5) Iterate
     const start = new Date(input.windowStart);
     const details: any[] = [];
-    type MAgg = { conso_kwh: number; cost_variable_ht: number };
+    type MAgg = { conso_kwh: number; cost_variable_ht: number; nb_heures: number; year: number; month: number };
     const monthly = new Map<string, MAgg>();
+
+    function parisYearMonth(d: Date): { key: string; year: number; month: number } {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Europe/Paris", year: "numeric", month: "2-digit",
+      }).formatToParts(d);
+      const m: Record<string, string> = {};
+      for (const p of parts) m[p.type] = p.value;
+      const year = Number(m.year);
+      const month = Number(m.month);
+      return { key: `${m.year}-${m.month}`, year, month };
+    }
 
     const turpeKey = (per: Periode) => `turpe_var_${input.segment.toLowerCase()}_${per.toLowerCase()}`;
 
