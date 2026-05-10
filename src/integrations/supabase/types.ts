@@ -362,6 +362,57 @@ export type Database = {
           },
         ]
       }
+      switchgrid_sessions: {
+        Row: {
+          address: string | null
+          ask_id: string | null
+          consent_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          loadcurve_request_id: string | null
+          order_id: string | null
+          prm: string | null
+          signer_first_name: string | null
+          signer_genre: string | null
+          signer_last_name: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          ask_id?: string | null
+          consent_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          loadcurve_request_id?: string | null
+          order_id?: string | null
+          prm?: string | null
+          signer_first_name?: string | null
+          signer_genre?: string | null
+          signer_last_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          ask_id?: string | null
+          consent_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          loadcurve_request_id?: string | null
+          order_id?: string | null
+          prm?: string | null
+          signer_first_name?: string | null
+          signer_genre?: string | null
+          signer_last_name?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
