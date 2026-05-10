@@ -58,7 +58,7 @@ export default function SwitchgridCallback() {
         const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
         let consentId: string | null = null;
-        while (!cancelled && elapsed() < TIMEOUT_MS) {
+        while (!cancelled && elapsed() < ASK_TIMEOUT_MS) {
           const data = await withRetry(async () => {
             const r = await fetch(
               `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
@@ -88,7 +88,7 @@ export default function SwitchgridCallback() {
         // Phase 4 - poll order
         setPhase("fetch");
         const t1 = Date.now();
-        while (!cancelled && Date.now() - t1 < TIMEOUT_MS) {
+        while (!cancelled && Date.now() - t1 < ORDER_TIMEOUT_MS) {
           const url = `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(orderId)}&sessionId=${encodeURIComponent(sessionId)}`;
           const r = await fetch(url, { headers: authHeaders });
           const j = await r.json();
@@ -102,7 +102,10 @@ export default function SwitchgridCallback() {
           if (j.status === "FAILED") throw new Error(j.message || "Order failed");
           await sleep(3000);
         }
-        throw new Error("Délai dépassé pour la récupération des données");
+        if (!cancelled) {
+          toast.info("La récupération continue côté Enedis, suis l'avancement dans tes sessions en attente");
+          navigate("/switchgrid/attente");
+        }
       } catch (e: any) {
         if (!cancelled) { setError(e?.message ?? "Erreur"); setPhase("error"); }
       }
