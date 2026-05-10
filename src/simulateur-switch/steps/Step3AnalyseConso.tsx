@@ -74,7 +74,7 @@ export default function Step3AnalyseConso() {
       className="container mx-auto px-4 mt-10 max-w-5xl space-y-6"
     >
       <div className="text-center mb-2">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 3 / 8</div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 3 / 7</div>
         <h1 className="text-3xl md:text-4xl font-black mb-2">Analyse de la consommation</h1>
         <p className="text-sm text-muted-foreground">Profil de consommation à présenter au client</p>
       </div>
