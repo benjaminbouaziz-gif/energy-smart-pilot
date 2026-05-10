@@ -237,14 +237,21 @@ function PhaseForm(props: {
   variante: string;
   setVariante: (v: string) => void;
   variantOptions: readonly string[];
-  segment: "C5" | "C4";
+  segment: "C5" | "C4" | null;
   segmentClient: "Particulier" | "Pro";
+  profilOverride: "Particulier" | "Pro" | null;
+  setProfilOverride: (v: "Particulier" | "Pro" | null) => void;
   configBatterie: "PETIT" | "MOYEN";
   canSubmit: boolean;
   onPrev: () => void;
   onSubmit: () => void;
 }) {
-  const { kva, setKva, variante, setVariante, variantOptions, segment, segmentClient, configBatterie, canSubmit, onPrev, onSubmit } = props;
+  const {
+    kva, setKva, variante, setVariante, variantOptions,
+    segment, segmentClient, profilOverride, setProfilOverride,
+    configBatterie, canSubmit, onPrev, onSubmit,
+  } = props;
+  const [showProfilToggle, setShowProfilToggle] = useState(false);
   const variantLabels: Record<string, { label: string; sub?: string }> = {
     CU4: { label: "Courte Utilisation 4 postes (CU4)" },
     MU4: { label: "Moyenne Utilisation 4 postes (MU4)" },
@@ -259,16 +266,67 @@ function PhaseForm(props: {
         <CardDescription>Quelques infos sur la facture du prospect pour finaliser le calcul.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex flex-wrap gap-2">
-          <Badge className="bg-primary/15 text-primary border-primary/30">
-            Profil détecté : {segmentClient}
-          </Badge>
-          <Badge className="bg-gold/15 text-gold border-gold/30">
-            Segment Enedis : {segment}
-          </Badge>
-          <Badge variant="outline" className="border-primary/40">
-            Pack Batterie : {configBatterie}
-          </Badge>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-primary/15 text-primary border-primary/30">
+              Profil : {segmentClient}
+            </Badge>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[11px] text-muted-foreground hover:text-primary"
+              onClick={() => setShowProfilToggle((s) => !s)}
+            >
+              Pas le bon profil ?
+            </Button>
+            {segment ? (
+              <Badge className="bg-gold/15 text-gold border-gold/30">
+                Segment Enedis : {segment}
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="border-muted-foreground/30 text-muted-foreground">
+                Segment Enedis : à déterminer après saisie kVA
+              </Badge>
+            )}
+            <Badge variant="outline" className="border-primary/40">
+              Pack Batterie : {configBatterie}
+            </Badge>
+          </div>
+          {showProfilToggle && (
+            <div className="flex items-center gap-2 pt-1">
+              <span className="text-xs text-muted-foreground">Forcer :</span>
+              <Button
+                type="button"
+                size="sm"
+                variant={segmentClient === "Particulier" ? "default" : "outline"}
+                onClick={() => setProfilOverride("Particulier")}
+                className="h-7"
+              >
+                Particulier
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={segmentClient === "Pro" ? "default" : "outline"}
+                onClick={() => setProfilOverride("Pro")}
+                className="h-7"
+              >
+                Pro
+              </Button>
+              {profilOverride !== null && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-[11px]"
+                  onClick={() => setProfilOverride(null)}
+                >
+                  Réinit. auto
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">
