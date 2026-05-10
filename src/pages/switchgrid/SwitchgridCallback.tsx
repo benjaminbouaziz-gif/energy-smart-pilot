@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useSwitchgridStore } from "@/lib/switchgrid/store";
 import { CheckCircle2, Loader2, Circle, AlertTriangle } from "lucide-react";
@@ -12,7 +13,8 @@ const PHASES: { key: Phase; label: string }[] = [
   { key: "fetch", label: "Téléchargement de ta courbe" },
 ];
 
-const TIMEOUT_MS = 5 * 60 * 1000;
+const ASK_TIMEOUT_MS = 5 * 60 * 1000;
+const ORDER_TIMEOUT_MS = 15 * 60 * 1000;
 
 export default function SwitchgridCallback() {
   const [params] = useSearchParams();
