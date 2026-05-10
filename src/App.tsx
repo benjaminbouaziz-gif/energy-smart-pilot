@@ -21,6 +21,7 @@ import Simulateurbis from "./pages/Simulateurbis.tsx";
 import SwitchgridForm from "./pages/switchgrid/SwitchgridForm.tsx";
 import SwitchgridCallback from "./pages/switchgrid/SwitchgridCallback.tsx";
 import SwitchgridResults from "./pages/switchgrid/SwitchgridResults.tsx";
+import SwitchgridAttente from "./pages/switchgrid/SwitchgridAttente.tsx";
 import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
 import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
 import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
@@ -75,6 +76,7 @@ const App = () => (
           <Route path="/switchgrid" element={<SwitchgridForm />} />
           <Route path="/switchgrid/callback" element={<SwitchgridCallback />} />
           <Route path="/switchgrid/results" element={<SwitchgridResults />} />
+          <Route path="/switchgrid/attente" element={<SwitchgridAttente />} />
 
           {/* BackOffice interne */}
           <Route path="/backoffdan" element={<BackofficeLayout />}>

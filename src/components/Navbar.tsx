@@ -1,11 +1,28 @@
 import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadCount() {
+      const { count } = await supabase
+        .from("switchgrid_sessions")
+        .select("id", { count: "exact", head: true })
+        .not("status", "in", "(READY,FAILED)");
+      if (mounted) setPendingCount(count ?? 0);
+    }
+    loadCount();
+    const i = setInterval(loadCount, 30_000);
+    return () => { mounted = false; clearInterval(i); };
+  }, []);
+
   return (
     <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-background/60 border-b border-border/50">
       <nav className="container mx-auto flex items-center justify-between h-16 px-4">
