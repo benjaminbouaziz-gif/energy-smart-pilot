@@ -47,10 +47,44 @@ export interface SimulateurSwitchLoadCurve {
   kva?: number;
 }
 
+export interface SimulateurSwitchTarifConcurrent {
+  fournisseur?: string;
+  structure: "BASE" | "HC_HP" | "SUPER_CREUSES";
+  abonnementMensuelHt: number;
+  tvaPct: number;
+  prixKwhHt?: number;
+  prixHpHt?: number;
+  prixHcHt?: number;
+  plageHcDebut?: number;
+  plageHcFin?: number;
+  prixHscHt?: number;
+  plageHscDebut?: number;
+  plageHscFin?: number;
+}
+
+export interface SimulateurSwitchFactureConcurrent {
+  annual: {
+    total_ht: number;
+    total_ttc: number;
+    cost_variable_ht: number;
+    cost_fixe_ht: number;
+    conso_kwh: number;
+    prix_moyen_eur_kwh_ttc: number;
+  };
+  monthly: { month: string; conso_kwh: number; total_ht: number; total_ttc: number }[];
+  repartition_horaire: {
+    heures_hp_kwh: number;
+    heures_hc_kwh: number;
+    heures_hsc_kwh?: number;
+  };
+}
+
 export interface SimulateurSwitchData {
   identite?: SimulateurSwitchIdentite;
   switchgrid?: SimulateurSwitchSwitchgrid;
   loadCurve?: SimulateurSwitchLoadCurve;
+  tarifConcurrent?: SimulateurSwitchTarifConcurrent;
+  factureConcurrent?: SimulateurSwitchFactureConcurrent;
   [k: string]: any;
 }
 
