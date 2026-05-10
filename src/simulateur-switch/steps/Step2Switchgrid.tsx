@@ -187,14 +187,12 @@ export default function Step2Switchgrid() {
       setSg({ orderId, loadcurveRequestId: lcReqId ?? null });
 
       // Poll order
-      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-      const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const t1 = Date.now();
       let loadCurveRaw: LoadCurvePoint[] | null = null;
       while (!cancelRef.current && Date.now() - t1 < ORDER_TIMEOUT_MS) {
         const r = await fetch(
           `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(orderId)}&sessionId=${encodeURIComponent(sessionId)}`,
-          { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } }
+          { headers: authHeaders }
         );
         const j = await r.json();
         if (!r.ok) throw new Error(j?.error || "poll-order failed");
