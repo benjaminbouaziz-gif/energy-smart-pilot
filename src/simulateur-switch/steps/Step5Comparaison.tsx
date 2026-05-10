@@ -192,6 +192,8 @@ export default function Step5Comparaison() {
           variantOptions={variantOptions as any}
           segment={segment}
           segmentClient={segment_client}
+          profilOverride={profilOverride}
+          setProfilOverride={setProfilOverride}
           configBatterie={configBatterie}
           canSubmit={canSubmit}
           onPrev={prev}
