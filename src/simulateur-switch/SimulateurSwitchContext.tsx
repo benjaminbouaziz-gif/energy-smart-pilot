@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from "react";
 
 export interface SimulateurSwitchIdentite {
   civilite: "M" | "Mme";
@@ -44,7 +44,6 @@ export interface SimulateurSwitchLoadCurve {
   totalKwh: number;
   warnings: string[];
   source: "switchgrid" | "manual";
-  // Optional manual extras
   kva?: number;
 }
 
@@ -53,6 +52,11 @@ export interface SimulateurSwitchData {
   switchgrid?: SimulateurSwitchSwitchgrid;
   loadCurve?: SimulateurSwitchLoadCurve;
   [k: string]: any;
+}
+
+interface PersistedState {
+  step: number;
+  data: SimulateurSwitchData;
 }
 
 interface SimulateurSwitchContextValue {
@@ -64,6 +68,7 @@ interface SimulateurSwitchContextValue {
   goToStep: (n: number) => void;
   updateData: (patch: Partial<SimulateurSwitchData>) => void;
   reset: () => void;
+  resetSimulation: () => void;
   getIdentite: () => SimulateurSwitchIdentite | undefined;
   getSwitchgrid: () => SimulateurSwitchSwitchgrid | undefined;
   getLoadCurve: () => SimulateurSwitchLoadCurve | undefined;
@@ -72,6 +77,21 @@ interface SimulateurSwitchContextValue {
 const SimulateurSwitchContext = createContext<SimulateurSwitchContextValue | null>(null);
 
 export const TOTAL_STEPS = 8;
+const STORAGE_KEY = "simulateur-switch-state";
+const INITIAL_STATE: PersistedState = { step: 1, data: {} };
+
+function loadInitial(): PersistedState {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === "object" && typeof parsed.step === "number") {
+        return { step: parsed.step, data: parsed.data ?? {} };
+      }
+    }
+  } catch {}
+  return INITIAL_STATE;
+}
 
 export function SimulateurSwitchProvider({
   children,
@@ -80,18 +100,23 @@ export function SimulateurSwitchProvider({
   children: ReactNode;
   prospectId?: string | null;
 }) {
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState<SimulateurSwitchData>({});
+  const [state, setState] = useState<PersistedState>(() => loadInitial());
+  const { step, data } = state;
 
-  const next = useCallback(() => setStep((s) => Math.min(TOTAL_STEPS, s + 1)), []);
-  const prev = useCallback(() => setStep((s) => Math.max(1, s - 1)), []);
-  const goToStep = useCallback((n: number) => setStep(Math.max(1, Math.min(TOTAL_STEPS, n))), []);
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+  }, [state]);
+
+  const next = useCallback(() => setState((s) => ({ ...s, step: Math.min(TOTAL_STEPS, s.step + 1) })), []);
+  const prev = useCallback(() => setState((s) => ({ ...s, step: Math.max(1, s.step - 1) })), []);
+  const goToStep = useCallback((n: number) => setState((s) => ({ ...s, step: Math.max(1, Math.min(TOTAL_STEPS, n)) })), []);
   const updateData = useCallback((patch: Partial<SimulateurSwitchData>) => {
-    setData((d) => ({ ...d, ...patch }));
+    setState((s) => ({ ...s, data: { ...s.data, ...patch } }));
   }, []);
-  const reset = useCallback(() => {
-    setStep(1);
-    setData({});
+  const reset = useCallback(() => setState(INITIAL_STATE), []);
+  const resetSimulation = useCallback(() => {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    setState(INITIAL_STATE);
   }, []);
 
   const value = useMemo<SimulateurSwitchContextValue>(
@@ -104,11 +129,12 @@ export function SimulateurSwitchProvider({
       goToStep,
       updateData,
       reset,
+      resetSimulation,
       getIdentite: () => data.identite,
       getSwitchgrid: () => data.switchgrid,
       getLoadCurve: () => data.loadCurve,
     }),
-    [prospectId, step, data, next, prev, goToStep, updateData, reset]
+    [prospectId, step, data, next, prev, goToStep, updateData, reset, resetSimulation]
   );
 
   return (
