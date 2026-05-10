@@ -131,6 +131,9 @@ export interface SimulateurSwitchData {
   sobryParams?: SimulateurSwitchSobryParams;
   factureSobry?: SimulateurSwitchFactureSobry;
   factureSobryAvecBatterie?: SimulateurSwitchFactureSobryAvecBatterie;
+  simulationResult?: any;
+  [k: string]: any;
+}
   [k: string]: any;
 }
 
