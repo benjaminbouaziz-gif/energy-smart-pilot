@@ -172,8 +172,8 @@ export default function Step3AnalyseConso() {
                       </div>
                     ))}
                     {heatmap.map((row, w) => (
-                      <>
-                        <div key={`d${w}`} className="text-xs text-muted-foreground flex items-center justify-end pr-2">{DAYS[w]}</div>
+                      <Fragment key={`row-${w}`}>
+                        <div className="text-xs text-muted-foreground flex items-center justify-end pr-2">{DAYS[w]}</div>
                         {row.map((v, h) => {
                           const opacity = heatMax > 0 ? Math.max(0.05, v / heatMax) : 0;
                           return (
@@ -185,7 +185,7 @@ export default function Step3AnalyseConso() {
                             />
                           );
                         })}
-                      </>
+                      </Fragment>
                     ))}
                   </div>
                 </div>
