@@ -35,18 +35,21 @@ function formatPrm(s: string) {
   const d = s.replace(/\D/g, "").slice(0, 14);
   return [d.slice(0, 4), d.slice(4, 8), d.slice(8, 12), d.slice(12, 14)].filter(Boolean).join(" ");
 }
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export default function Step2Switchgrid() {
   const { data, updateData, prev, next } = useSimulateurSwitch();
   const identite = data.identite;
   const sg: SimulateurSwitchSwitchgrid = { ...DEFAULT_SG, ...(data.switchgrid ?? {}) };
 
+  // Ref to always read latest sg inside async loops
+  const sgRef = useRef(sg);
+  useEffect(() => { sgRef.current = sg; });
+
   const setSg = (patch: Partial<SimulateurSwitchSwitchgrid>) => {
-    updateData({ switchgrid: { ...sg, ...patch } });
+    updateData({ switchgrid: { ...sgRef.current, ...patch } });
   };
 
-  // ── Phase A state
+  // ── Phase A local UI state
   const [mode, setMode] = useState<"prm" | "search">("prm");
   const [prmInput, setPrmInput] = useState(sg.prm ? formatPrm(sg.prm) : "");
   const [contracts, setContracts] = useState<Contract[] | null>(null);
@@ -54,12 +57,14 @@ export default function Step2Switchgrid() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // ── Phase B state
+  // ── Phase B local UI state (visual only)
   const [phaseError, setPhaseError] = useState<string | null>(null);
   const [signFastClicked, setSignFastClicked] = useState(false);
   const fastRef = useRef(false);
   const cancelRef = useRef(false);
-  const runningRef = useRef(false);
+  const askLoopRunning = useRef(false);
+  const orderLoopRunning = useRef(false);
+  const wakeRef = useRef(0);
   const [askTimeoutHit, setAskTimeoutHit] = useState(false);
   const [orderTimeoutHit, setOrderTimeoutHit] = useState(false);
 
@@ -79,6 +84,21 @@ export default function Step2Switchgrid() {
 
   const prmDigits = prmInput.replace(/\D/g, "");
   const prmValid = /^\d{14}$/.test(prmDigits);
+
+  // Interruptible sleep — wakes when wakeRef bumps or cancelled
+  function sleepInterruptible(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      const start = Date.now();
+      const initialWake = wakeRef.current;
+      const tick = () => {
+        if (cancelRef.current) return resolve();
+        if (wakeRef.current !== initialWake) return resolve();
+        if (Date.now() - start >= ms) return resolve();
+        setTimeout(tick, 200);
+      };
+      tick();
+    });
+  }
 
   // ─────────── Phase A handlers ───────────
   async function handleSearch(byPrm: boolean) {
@@ -106,11 +126,117 @@ export default function Step2Switchgrid() {
     }
   }
 
-  // ─────────── Phase B: launch consent + polling ───────────
+  // ─────────── Poll ask loop (resumable) ───────────
+  async function runPollAsk(askId: string, sessionId: string, prm: string) {
+    if (askLoopRunning.current) return;
+    askLoopRunning.current = true;
+    setPhaseError(null);
+    setAskTimeoutHit(false);
+    cancelRef.current = false;
+    try {
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
+      const t0 = Date.now();
+      let consentId: string | null = null;
+      while (!cancelRef.current && Date.now() - t0 < ASK_TIMEOUT_MS) {
+        const r = await fetch(
+          `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
+          { headers: authHeaders }
+        );
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error || "poll-ask failed");
+        if (j.status === "ACCEPTED" && j.consentId) { consentId = j.consentId; break; }
+        if (j.status && ["ADDRESS_CHECK_FAILED", "EXPIRED", "REVOKED"].includes(j.status)) {
+          throw new Error(`Consentement ${j.status}`);
+        }
+        await sleepInterruptible(fastRef.current ? 500 : 2000);
+      }
+      if (cancelRef.current) return;
+      if (!consentId) {
+        setAskTimeoutHit(true);
+        throw new Error("Délai dépassé pour la signature");
+      }
+      setSg({ consentId, status: "FETCHING_DATA" });
+
+      const { data: orderData, error: orderErr } = await supabase.functions.invoke("switchgrid-create-order", {
+        body: { sessionId, consentId, prm },
+      });
+      if (orderErr) throw orderErr;
+      const orderId = orderData?.orderId;
+      const lcReqId = orderData?.loadcurveRequestId;
+      if (!orderId) throw new Error("orderId manquant");
+      setSg({ orderId, loadcurveRequestId: lcReqId ?? null });
+
+      askLoopRunning.current = false;
+      await runPollOrder(orderId, sessionId, prm);
+    } catch (e: any) {
+      if (!cancelRef.current) {
+        setPhaseError(e?.message ?? "Erreur");
+        setSg({ status: "FAILED" });
+      }
+    } finally {
+      askLoopRunning.current = false;
+    }
+  }
+
+  // ─────────── Poll order loop (resumable) ───────────
+  async function runPollOrder(orderId: string, sessionId: string, prm: string) {
+    if (orderLoopRunning.current) return;
+    orderLoopRunning.current = true;
+    setPhaseError(null);
+    setOrderTimeoutHit(false);
+    cancelRef.current = false;
+    try {
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
+      const t1 = Date.now();
+      let loadCurveRaw: LoadCurvePoint[] | null = null;
+      while (!cancelRef.current && Date.now() - t1 < ORDER_TIMEOUT_MS) {
+        const r = await fetch(
+          `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(orderId)}&sessionId=${encodeURIComponent(sessionId)}`,
+          { headers: authHeaders }
+        );
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error || "poll-order failed");
+        if (j.status === "READY") { loadCurveRaw = j.loadCurve as LoadCurvePoint[]; break; }
+        if (j.status === "FAILED") throw new Error(j.message || "Order failed");
+        await sleepInterruptible(3000);
+      }
+      if (cancelRef.current) return;
+      if (!loadCurveRaw) {
+        setOrderTimeoutHit(true);
+        throw new Error("Délai dépassé pour la récupération des données");
+      }
+
+      const result = switchgridToHourlyKwh(loadCurveRaw);
+      updateData({
+        switchgrid: { ...sgRef.current, status: "READY" },
+        loadCurve: {
+          hourlyKwh: result.hourlyKwh,
+          windowStart: result.windowStart,
+          windowEnd: result.windowEnd,
+          qualityScore: result.qualityScore,
+          totalKwh: result.totalKwh,
+          warnings: result.warnings,
+          source: "switchgrid",
+        },
+      });
+      setTimeout(() => { if (!cancelRef.current) next(); }, 1500);
+    } catch (e: any) {
+      if (!cancelRef.current) {
+        setPhaseError(e?.message ?? "Erreur");
+        setSg({ status: "FAILED" });
+      }
+    } finally {
+      orderLoopRunning.current = false;
+    }
+  }
+
+  // ─────────── Phase B kick-off ───────────
   async function handleContinueWithContract() {
     if (!selected || !identite) return;
-    cancelRef.current = false;
-    runningRef.current = true;
     setPhaseError(null);
     setAskTimeoutHit(false);
     setOrderTimeoutHit(false);
@@ -150,91 +276,42 @@ export default function Step2Switchgrid() {
       setSg({ askId });
       if (userUrl) window.open(userUrl, "_blank", "noopener,noreferrer");
 
-      // Poll ask (GET with query string)
-      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-      const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-      const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
-      const t0 = Date.now();
-      let consentId: string | null = null;
-      while (!cancelRef.current && Date.now() - t0 < ASK_TIMEOUT_MS) {
-        const r = await fetch(
-          `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
-          { headers: authHeaders }
-        );
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error || "poll-ask failed");
-        if (j.status === "ACCEPTED" && j.consentId) { consentId = j.consentId; break; }
-        if (j.status && ["ADDRESS_CHECK_FAILED", "EXPIRED", "REVOKED"].includes(j.status)) {
-          throw new Error(`Consentement ${j.status}`);
-        }
-        await sleep(fastRef.current ? 500 : 2000);
-      }
-      if (cancelRef.current) return;
-      if (!consentId) {
-        setAskTimeoutHit(true);
-        throw new Error("Délai dépassé pour la signature");
-      }
-      setSg({ consentId, status: "FETCHING_DATA" });
-
-      // Create order
-      const { data: orderData, error: orderErr } = await supabase.functions.invoke("switchgrid-create-order", {
-        body: { sessionId, consentId, prm: selected.prm },
-      });
-      if (orderErr) throw orderErr;
-      const orderId = orderData?.orderId;
-      const lcReqId = orderData?.loadcurveRequestId;
-      if (!orderId) throw new Error("orderId manquant");
-      setSg({ orderId, loadcurveRequestId: lcReqId ?? null });
-
-      // Poll order
-      const t1 = Date.now();
-      let loadCurveRaw: LoadCurvePoint[] | null = null;
-      while (!cancelRef.current && Date.now() - t1 < ORDER_TIMEOUT_MS) {
-        const r = await fetch(
-          `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(orderId)}&sessionId=${encodeURIComponent(sessionId)}`,
-          { headers: authHeaders }
-        );
-        const j = await r.json();
-        if (!r.ok) throw new Error(j?.error || "poll-order failed");
-        if (j.status === "READY") { loadCurveRaw = j.loadCurve as LoadCurvePoint[]; break; }
-        if (j.status === "FAILED") throw new Error(j.message || "Order failed");
-        await sleep(3000);
-      }
-      if (cancelRef.current) return;
-      if (!loadCurveRaw) {
-        setOrderTimeoutHit(true);
-        throw new Error("Délai dépassé pour la récupération des données");
-      }
-
-      // Transform
-      const result = switchgridToHourlyKwh(loadCurveRaw);
-      updateData({
-        switchgrid: { ...sg, sessionId, prm: selected.prm, askId, consentId, orderId, loadcurveRequestId: lcReqId ?? null, status: "READY", contractInfo: { signerName: selected.signerName, address: selected.address, segment: selected.segment } },
-        loadCurve: {
-          hourlyKwh: result.hourlyKwh,
-          windowStart: result.windowStart,
-          windowEnd: result.windowEnd,
-          qualityScore: result.qualityScore,
-          totalKwh: result.totalKwh,
-          warnings: result.warnings,
-          source: "switchgrid",
-        },
-      });
-
-      // Auto-advance
-      setTimeout(() => { if (!cancelRef.current) next(); }, 1500);
+      await runPollAsk(askId, sessionId, selected.prm);
     } catch (e: any) {
-      if (!cancelRef.current) {
-        setPhaseError(e?.message ?? "Erreur");
-        setSg({ status: "FAILED" });
-      }
-    } finally {
-      runningRef.current = false;
+      setPhaseError(e?.message ?? "Erreur");
+      setSg({ status: "FAILED" });
     }
   }
 
+  // ─────────── Resume polling on mount based on persisted status ───────────
   useEffect(() => {
+    const cur = sgRef.current;
+    if (cur.status === "AWAITING_SIGNATURE" && cur.askId && cur.sessionId && cur.prm) {
+      runPollAsk(cur.askId, cur.sessionId, cur.prm);
+    } else if (cur.status === "FETCHING_DATA" && cur.orderId && cur.sessionId && cur.prm) {
+      runPollOrder(cur.orderId, cur.sessionId, cur.prm);
+    }
     return () => { cancelRef.current = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─────────── Wake polling when tab becomes visible ───────────
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState !== "visible") return;
+      const cur = sgRef.current;
+      // Force immediate next iteration
+      wakeRef.current += 1;
+      // If a loop died (e.g. after a hot reload), restart it
+      if (cur.status === "AWAITING_SIGNATURE" && cur.askId && cur.sessionId && cur.prm && !askLoopRunning.current) {
+        runPollAsk(cur.askId, cur.sessionId, cur.prm);
+      } else if (cur.status === "FETCHING_DATA" && cur.orderId && cur.sessionId && cur.prm && !orderLoopRunning.current) {
+        runPollOrder(cur.orderId, cur.sessionId, cur.prm);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─────────── Phase reset / pause ───────────
@@ -269,7 +346,7 @@ export default function Step2Switchgrid() {
     const end = new Date();
     const start = new Date(end.getTime() - 365 * 24 * 3600 * 1000);
     updateData({
-      switchgrid: { ...sg, status: "READY" },
+      switchgrid: { ...sgRef.current, status: "READY" },
       loadCurve: {
         hourlyKwh: [],
         totalKwh: kwh,
@@ -285,13 +362,13 @@ export default function Step2Switchgrid() {
     setTimeout(() => next(), 600);
   }
 
-  // ─────────── UI ───────────
+  // ─────────── UI: phase derived ONLY from context status ───────────
   const status: SwitchgridStatus = sg.status;
+  const inPhaseA = ["INIT", "SEARCHING", "CONTRACTS_FOUND"].includes(status);
   const inPhaseB = ["AWAITING_SIGNATURE", "FETCHING_DATA", "READY"].includes(status);
   const failed = status === "FAILED";
   const paused = status === "PAUSED";
 
-  // Block: missing identite
   if (!identite) {
     return (
       <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="container mx-auto px-4 mt-10 max-w-3xl">
@@ -360,7 +437,7 @@ export default function Step2Switchgrid() {
           )}
 
           {/* ───── PHASE A ───── */}
-          {!inPhaseB && !paused && (
+          {inPhaseA && (
             <>
               <Tabs value={mode} onValueChange={(v) => { setMode(v as any); setContracts(null); setSelected(null); setSearchError(null); }}>
                 <TabsList className="grid grid-cols-2 w-full">
@@ -488,13 +565,13 @@ export default function Step2Switchgrid() {
           {inPhaseB && (
             <PhaseStepper
               status={status}
-              onSignedClick={() => { fastRef.current = true; setSignFastClicked(true); }}
+              onSignedClick={() => { fastRef.current = true; setSignFastClicked(true); wakeRef.current += 1; }}
               signFastClicked={signFastClicked}
               contract={sg.contractInfo}
             />
           )}
 
-          {/* ───── Errors / timeouts ───── */}
+          {/* ───── Errors / timeouts (Phase D) ───── */}
           {failed && (
             <div className="space-y-3">
               <Alert variant="destructive">
@@ -595,7 +672,6 @@ function PhaseStepper({
   signFastClicked: boolean;
   contract: SimulateurSwitchSwitchgrid["contractInfo"];
 }) {
-  // Order of phases
   const steps: { key: string; label: string; activeWhen: SwitchgridStatus[]; doneWhen: SwitchgridStatus[] }[] = [
     { key: "id", label: "Compteur identifié",
       activeWhen: [], doneWhen: ["AWAITING_SIGNATURE", "FETCHING_DATA", "READY"] },
