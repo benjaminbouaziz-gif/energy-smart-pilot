@@ -28,6 +28,21 @@ export default function Step3AnalyseConso() {
   const { data, prev, next } = useSimulateurSwitch();
   const lc = data.loadCurve;
 
+  const safeHourly = lc?.hourlyKwh ?? [];
+  const safeStart = lc?.windowStart ?? new Date().toISOString();
+  const isManual = lc?.source === "manual";
+
+  const daily = useMemo(() => (!lc || isManual) ? [] : computeDailyProfile(safeHourly, safeStart), [lc, isManual, safeHourly, safeStart]);
+  const monthly = useMemo(() => (!lc || isManual) ? [] : computeMonthly(safeHourly, safeStart), [lc, isManual, safeHourly, safeStart]);
+  const heatmap = useMemo(() => (!lc || isManual) ? [] : computeHeatmap(safeHourly, safeStart), [lc, isManual, safeHourly, safeStart]);
+  const stats = useMemo(() => computeStats(safeHourly, safeStart), [safeHourly, safeStart]);
+
+  const heatMax = useMemo(() => {
+    let m = 0;
+    heatmap.forEach((r) => r.forEach((v) => { if (v > m) m = v; }));
+    return m;
+  }, [heatmap]);
+
   if (!lc || lc.hourlyKwh.length === 0) {
     return (
       <div className="container mx-auto px-4 mt-10 max-w-3xl">
@@ -45,19 +60,6 @@ export default function Step3AnalyseConso() {
       </div>
     );
   }
-
-  const isManual = lc.source === "manual";
-
-  const daily = useMemo(() => isManual ? [] : computeDailyProfile(lc.hourlyKwh, lc.windowStart), [lc, isManual]);
-  const monthly = useMemo(() => isManual ? [] : computeMonthly(lc.hourlyKwh, lc.windowStart), [lc, isManual]);
-  const heatmap = useMemo(() => isManual ? [] : computeHeatmap(lc.hourlyKwh, lc.windowStart), [lc, isManual]);
-  const stats = useMemo(() => computeStats(lc.hourlyKwh, lc.windowStart), [lc]);
-
-  const heatMax = useMemo(() => {
-    let m = 0;
-    heatmap.forEach((r) => r.forEach((v) => { if (v > m) m = v; }));
-    return m;
-  }, [heatmap]);
 
   const prm = data.switchgrid?.prm ?? "—";
 
