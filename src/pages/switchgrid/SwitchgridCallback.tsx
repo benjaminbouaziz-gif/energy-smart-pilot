@@ -52,20 +52,20 @@ export default function SwitchgridCallback() {
 
         // Phase 2 - poll ask
         setPhase("sign");
+        const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
         let consentId: string | null = null;
         while (!cancelled && elapsed() < TIMEOUT_MS) {
-          const { data, error } = await withRetry(() => supabase.functions.invoke("switchgrid-poll-ask", {
-            method: "GET" as any, body: undefined,
-            headers: undefined as any,
-            // pass via query
-          } as any).then(async () => {
-            // supabase.functions.invoke ne gère pas bien le GET ; on fait fetch direct
-            const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`;
-            const r = await fetch(url, { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` } });
+          const data = await withRetry(async () => {
+            const r = await fetch(
+              `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
+              { headers: authHeaders }
+            );
             const j = await r.json();
-            return { data: j, error: r.ok ? null : new Error(j?.error || "poll-ask failed") };
-          }));
-          if (error) throw error;
+            if (!r.ok) throw new Error(j?.error || "poll-ask failed");
+            return j;
+          });
           if (data?.status === "ACCEPTED" && data.consentId) { consentId = data.consentId; break; }
           if (["ADDRESS_CHECK_FAILED", "EXPIRED", "REVOKED"].includes(data?.status)) {
             throw new Error(`Consentement ${data.status}`);
