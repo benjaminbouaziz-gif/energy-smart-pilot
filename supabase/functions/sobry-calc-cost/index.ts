@@ -250,11 +250,12 @@ Deno.serve(async (req: Request) => {
         ...(usedFallback ? { spot_fallback: true } : {}),
       });
 
-      const ymKey = `${ts.getUTCFullYear()}-${String(month).padStart(2, "0")}`;
-      const agg = monthly.get(ymKey) ?? { conso_kwh: 0, cost_variable_ht: 0 };
+      const pm = parisYearMonth(ts);
+      const agg = monthly.get(pm.key) ?? { conso_kwh: 0, cost_variable_ht: 0, nb_heures: 0, year: pm.year, month: pm.month };
       agg.conso_kwh += conso;
       agg.cost_variable_ht += cost_total_eur;
-      monthly.set(ymKey, agg);
+      agg.nb_heures += 1;
+      monthly.set(pm.key, agg);
     }
 
     // 6) Monthly + annual aggregation
