@@ -1,17 +1,20 @@
-import { useMemo, Fragment } from "react";
+import { useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays } from "lucide-react";
 import {
   Bar, BarChart, Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
+  ComposedChart, Line,
 } from "recharts";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useSimulateurSwitch } from "../SimulateurSwitchContext";
 import {
   computeDailyProfile, computeMonthly, computeHeatmap, computeStats,
   formatPrm, formatDateFr,
 } from "../lib/conso-analysis";
+import { loadEpexPricesForRange, type EpexPricesMap } from "../lib/epex-prices-loader";
 
 const VIOLET = "#7C3AED";
 const GOLD = "#FBBF24";
