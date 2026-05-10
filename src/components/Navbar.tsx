@@ -1,11 +1,28 @@
 import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Navbar = () => {
   const [open, setOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadCount() {
+      const { count } = await supabase
+        .from("switchgrid_sessions")
+        .select("id", { count: "exact", head: true })
+        .not("status", "in", "(READY,FAILED)");
+      if (mounted) setPendingCount(count ?? 0);
+    }
+    loadCount();
+    const i = setInterval(loadCount, 30_000);
+    return () => { mounted = false; clearInterval(i); };
+  }, []);
+
   return (
     <header className="fixed top-0 inset-x-0 z-50 backdrop-blur-xl bg-background/60 border-b border-border/50">
       <nav className="container mx-auto flex items-center justify-between h-16 px-4">
@@ -39,6 +56,14 @@ export const Navbar = () => {
           </div>
           <Link to="/about" className="hover:text-primary-light transition-colors">À propos</Link>
           <Link to="/contact" className="hover:text-primary-light transition-colors">Contact</Link>
+          <Link to="/switchgrid/attente" className="relative hover:text-primary-light transition-colors inline-flex items-center gap-1.5">
+            Mes sessions
+            {pendingCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-semibold">
+                {pendingCount}
+              </span>
+            )}
+          </Link>
         </div>
         <div className="hidden md:flex items-center gap-3">
           <Button asChild variant="ghost" size="sm" className="border border-border/60 hover:border-primary/50 hover:text-primary-light">
@@ -62,6 +87,14 @@ export const Navbar = () => {
           <Link to="/comprendre/vs-solaire" className="pl-3 text-sm" onClick={() => setOpen(false)}>Comparer avec le solaire</Link>
           <Link to="/about" onClick={() => setOpen(false)}>À propos</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
+          <Link to="/switchgrid/attente" onClick={() => setOpen(false)} className="inline-flex items-center gap-2">
+            Mes sessions
+            {pendingCount > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-semibold">
+                {pendingCount}
+              </span>
+            )}
+          </Link>
           <Button asChild variant="outline" className="mt-2">
             <Link to="/app/login" onClick={() => setOpen(false)}>Espace client</Link>
           </Button>
