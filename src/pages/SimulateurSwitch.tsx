@@ -5,7 +5,7 @@ import Step1Identite from "@/simulateur-switch/steps/Step1Identite";
 import Step2Switchgrid from "@/simulateur-switch/steps/Step2Switchgrid";
 import Step3AnalyseConso from "@/simulateur-switch/steps/Step3AnalyseConso";
 import Step4TarifConcurrent from "@/simulateur-switch/steps/Step4TarifConcurrent";
-import Step5SobryComparaison from "@/simulateur-switch/steps/Step5SobryComparaison";
+import Step5Comparaison from "@/simulateur-switch/steps/Step5Comparaison";
 import Step6Animation from "@/simulateur-switch/steps/Step6Animation";
 import Step7Financement from "@/simulateur-switch/steps/Step7Financement";
 
