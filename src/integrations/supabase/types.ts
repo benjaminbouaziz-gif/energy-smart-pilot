@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      battery_arbitrage_daily: {
+        Row: {
+          c1_charge_debut_h: number | null
+          c1_charge_fin_h: number | null
+          c1_decharge_debut_h: number | null
+          c1_decharge_fin_h: number | null
+          c1_duree_h: number | null
+          c1_prix_charge_eur_kwh: number | null
+          c1_prix_decharge_eur_kwh: number | null
+          c1_spread_eur_kwh: number | null
+          c2_charge_debut_h: number | null
+          c2_charge_fin_h: number | null
+          c2_decharge_debut_h: number | null
+          c2_decharge_fin_h: number | null
+          c2_duree_h: number | null
+          c2_prix_charge_eur_kwh: number | null
+          c2_prix_decharge_eur_kwh: number | null
+          c2_spread_eur_kwh: number | null
+          created_at: string
+          date: string
+          gain_jour_eur_par_kw: number
+          id: string
+          jour: string
+          nb_cycles: number
+        }
+        Insert: {
+          c1_charge_debut_h?: number | null
+          c1_charge_fin_h?: number | null
+          c1_decharge_debut_h?: number | null
+          c1_decharge_fin_h?: number | null
+          c1_duree_h?: number | null
+          c1_prix_charge_eur_kwh?: number | null
+          c1_prix_decharge_eur_kwh?: number | null
+          c1_spread_eur_kwh?: number | null
+          c2_charge_debut_h?: number | null
+          c2_charge_fin_h?: number | null
+          c2_decharge_debut_h?: number | null
+          c2_decharge_fin_h?: number | null
+          c2_duree_h?: number | null
+          c2_prix_charge_eur_kwh?: number | null
+          c2_prix_decharge_eur_kwh?: number | null
+          c2_spread_eur_kwh?: number | null
+          created_at?: string
+          date: string
+          gain_jour_eur_par_kw: number
+          id?: string
+          jour: string
+          nb_cycles: number
+        }
+        Update: {
+          c1_charge_debut_h?: number | null
+          c1_charge_fin_h?: number | null
+          c1_decharge_debut_h?: number | null
+          c1_decharge_fin_h?: number | null
+          c1_duree_h?: number | null
+          c1_prix_charge_eur_kwh?: number | null
+          c1_prix_decharge_eur_kwh?: number | null
+          c1_spread_eur_kwh?: number | null
+          c2_charge_debut_h?: number | null
+          c2_charge_fin_h?: number | null
+          c2_decharge_debut_h?: number | null
+          c2_decharge_fin_h?: number | null
+          c2_duree_h?: number | null
+          c2_prix_charge_eur_kwh?: number | null
+          c2_prix_decharge_eur_kwh?: number | null
+          c2_spread_eur_kwh?: number | null
+          created_at?: string
+          date?: string
+          gain_jour_eur_par_kw?: number
+          id?: string
+          jour?: string
+          nb_cycles?: number
+        }
+        Relationships: []
+      }
       distributeurs: {
         Row: {
           actif: boolean
