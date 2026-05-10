@@ -44,10 +44,10 @@ export default function Step5Comparaison() {
   const { data, updateData, prev, next } = useSimulateurSwitch();
 
   // Auto-detect profile from switchgrid + identite
-  const segmentSwitchgrid = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
-  const segment_client: "Particulier" | "Pro" = segmentSwitchgrid === "RES" ? "Particulier" : "Pro";
+  const segmentRaw = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
+  const segment_client: "Particulier" | "Pro" = segmentRaw === "RES" ? "Particulier" : "Pro";
   const segment: "C5" | "C4" =
-    segmentSwitchgrid === "RES" || segmentSwitchgrid === "PRO_C5" ? "C5" : "C4";
+    segmentRaw === "RES" || segmentRaw === "PRO_C5" || segmentRaw === "C5" ? "C5" : "C4";
   const configBatterie: "PETIT" | "MOYEN" = segment_client === "Particulier" ? "PETIT" : "MOYEN";
 
   // Form state
