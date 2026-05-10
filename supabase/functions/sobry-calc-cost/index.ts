@@ -174,8 +174,19 @@ Deno.serve(async (req: Request) => {
     // 5) Iterate
     const start = new Date(input.windowStart);
     const details: any[] = [];
-    type MAgg = { conso_kwh: number; cost_variable_ht: number };
+    type MAgg = { conso_kwh: number; cost_variable_ht: number; nb_heures: number; year: number; month: number };
     const monthly = new Map<string, MAgg>();
+
+    function parisYearMonth(d: Date): { key: string; year: number; month: number } {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Europe/Paris", year: "numeric", month: "2-digit",
+      }).formatToParts(d);
+      const m: Record<string, string> = {};
+      for (const p of parts) m[p.type] = p.value;
+      const year = Number(m.year);
+      const month = Number(m.month);
+      return { key: `${m.year}-${m.month}`, year, month };
+    }
 
     const turpeKey = (per: Periode) => `turpe_var_${input.segment.toLowerCase()}_${per.toLowerCase()}`;
 
@@ -239,11 +250,12 @@ Deno.serve(async (req: Request) => {
         ...(usedFallback ? { spot_fallback: true } : {}),
       });
 
-      const ymKey = `${ts.getUTCFullYear()}-${String(month).padStart(2, "0")}`;
-      const agg = monthly.get(ymKey) ?? { conso_kwh: 0, cost_variable_ht: 0 };
+      const pm = parisYearMonth(ts);
+      const agg = monthly.get(pm.key) ?? { conso_kwh: 0, cost_variable_ht: 0, nb_heures: 0, year: pm.year, month: pm.month };
       agg.conso_kwh += conso;
       agg.cost_variable_ht += cost_total_eur;
-      monthly.set(ymKey, agg);
+      agg.nb_heures += 1;
+      monthly.set(pm.key, agg);
     }
 
     // 6) Monthly + annual aggregation
@@ -257,17 +269,25 @@ Deno.serve(async (req: Request) => {
     const monthlyArr = Array.from(monthly.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([month, m]) => {
-        const total_ht = m.cost_variable_ht + total_fixe_mois;
+        const daysInMonth = new Date(m.year, m.month, 0).getDate();
+        const nb_heures_mois_complet = 24 * daysInMonth;
+        const ratio = m.nb_heures / nb_heures_mois_complet;
+        const acheminement = acheminement_mois * ratio;
+        const abo_sobry = abo_sobry_mois * ratio;
+        const cta = cta_mois * ratio;
+        const total_fixe = acheminement + abo_sobry + cta;
+        const total_ht = m.cost_variable_ht + total_fixe;
         return {
           month,
           conso_kwh: m.conso_kwh,
           cost_variable_ht: m.cost_variable_ht,
           cost_fixe_ht: {
-            acheminement: acheminement_mois,
-            abo_sobry: abo_sobry_mois,
-            cta: cta_mois,
-            total: total_fixe_mois,
+            acheminement,
+            abo_sobry,
+            cta,
+            total: total_fixe,
           },
+          prorata: { nb_heures: m.nb_heures, nb_heures_mois_complet, ratio },
           total_ht,
           total_ttc: total_ht * (1 + tva_ratio),
         };
