@@ -345,25 +345,31 @@ function PhaseForm(props: {
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label>Variante tarifaire</Label>
-          <RadioGroup value={variante} onValueChange={setVariante}>
-            {variantOptions.map((v) => (
-              <div key={v} className="flex items-start gap-3 p-3 rounded-xl border bg-muted/20 hover:bg-muted/40 transition">
-                <RadioGroupItem value={v} id={`variant-${v}`} className="mt-0.5" />
-                <div className="space-y-0.5">
-                  <Label htmlFor={`variant-${v}`} className="font-medium cursor-pointer">{variantLabels[v]?.label ?? v}</Label>
-                  {variantLabels[v]?.sub && (
-                    <p className="text-xs text-muted-foreground">{variantLabels[v].sub}</p>
-                  )}
+        {segment ? (
+          <div className="space-y-2">
+            <Label>Variante tarifaire</Label>
+            <RadioGroup value={variante} onValueChange={setVariante}>
+              {variantOptions.map((v) => (
+                <div key={v} className="flex items-start gap-3 p-3 rounded-xl border bg-muted/20 hover:bg-muted/40 transition">
+                  <RadioGroupItem value={v} id={`variant-${v}`} className="mt-0.5" />
+                  <div className="space-y-0.5">
+                    <Label htmlFor={`variant-${v}`} className="font-medium cursor-pointer">{variantLabels[v]?.label ?? v}</Label>
+                    {variantLabels[v]?.sub && (
+                      <p className="text-xs text-muted-foreground">{variantLabels[v].sub}</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </RadioGroup>
-          <p className="text-xs text-muted-foreground">
-            Visible sur la facture, mention « Courte Utilisation » ou « Longue Utilisation ».
+              ))}
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground">
+              Visible sur la facture, mention « Courte Utilisation » ou « Longue Utilisation ».
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground italic">
+            Saisis le kVA pour afficher les variantes tarifaires disponibles.
           </p>
-        </div>
+        )}
 
         <div className="flex items-center justify-between pt-4 border-t">
           <Button variant="outline" onClick={onPrev} className="gap-2">
