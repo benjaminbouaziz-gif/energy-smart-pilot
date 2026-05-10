@@ -208,6 +208,177 @@ export type Database = {
         }
         Relationships: []
       }
+      pricing_caps: {
+        Row: {
+          applies_to: string
+          created_at: string
+          date_debut: string
+          date_fin: string | null
+          id: string
+          offre: string
+          plafond_eur_kwh: number
+          saison: string
+          segment_client: string
+        }
+        Insert: {
+          applies_to: string
+          created_at?: string
+          date_debut: string
+          date_fin?: string | null
+          id?: string
+          offre: string
+          plafond_eur_kwh: number
+          saison: string
+          segment_client: string
+        }
+        Update: {
+          applies_to?: string
+          created_at?: string
+          date_debut?: string
+          date_fin?: string | null
+          id?: string
+          offre?: string
+          plafond_eur_kwh?: number
+          saison?: string
+          segment_client?: string
+        }
+        Relationships: []
+      }
+      pricing_constants: {
+        Row: {
+          accise_eur_kwh: number
+          capacite_eur_kwh: number
+          cee_eur_kwh: number
+          created_at: string
+          cta_ratio: number
+          date_debut: string
+          date_fin: string | null
+          id: string
+          marge_sobry_eur_kwh: number
+          notes: string | null
+          prime_socap_eur_kwh: number
+          prime_soflex_eur_kwh: number
+          turpe_var_c4_hcb: number
+          turpe_var_c4_hch: number
+          turpe_var_c4_hpb: number
+          turpe_var_c4_hph: number
+          turpe_var_c5_hcb: number
+          turpe_var_c5_hch: number
+          turpe_var_c5_hpb: number
+          turpe_var_c5_hph: number
+          tva_ratio: number
+          updated_at: string
+        }
+        Insert: {
+          accise_eur_kwh: number
+          capacite_eur_kwh: number
+          cee_eur_kwh: number
+          created_at?: string
+          cta_ratio: number
+          date_debut: string
+          date_fin?: string | null
+          id?: string
+          marge_sobry_eur_kwh: number
+          notes?: string | null
+          prime_socap_eur_kwh: number
+          prime_soflex_eur_kwh: number
+          turpe_var_c4_hcb: number
+          turpe_var_c4_hch: number
+          turpe_var_c4_hpb: number
+          turpe_var_c4_hph: number
+          turpe_var_c5_hcb: number
+          turpe_var_c5_hch: number
+          turpe_var_c5_hpb: number
+          turpe_var_c5_hph: number
+          tva_ratio?: number
+          updated_at?: string
+        }
+        Update: {
+          accise_eur_kwh?: number
+          capacite_eur_kwh?: number
+          cee_eur_kwh?: number
+          created_at?: string
+          cta_ratio?: number
+          date_debut?: string
+          date_fin?: string | null
+          id?: string
+          marge_sobry_eur_kwh?: number
+          notes?: string | null
+          prime_socap_eur_kwh?: number
+          prime_soflex_eur_kwh?: number
+          turpe_var_c4_hcb?: number
+          turpe_var_c4_hch?: number
+          turpe_var_c4_hpb?: number
+          turpe_var_c4_hph?: number
+          turpe_var_c5_hcb?: number
+          turpe_var_c5_hch?: number
+          turpe_var_c5_hpb?: number
+          turpe_var_c5_hph?: number
+          tva_ratio?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_hourly: {
+        Row: {
+          created_at: string
+          date: string
+          epex_spot: number
+          hour: number
+          id: string
+          periode_4_postes: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          epex_spot: number
+          hour: number
+          id?: string
+          periode_4_postes: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          epex_spot?: number
+          hour?: number
+          id?: string
+          periode_4_postes?: string
+        }
+        Relationships: []
+      }
+      pricing_subscriptions: {
+        Row: {
+          abo_sobry_eur_mois: number
+          acheminement_eur_mois: number
+          created_at: string
+          id: string
+          kva: number
+          segment: string
+          updated_at: string
+          variante: string
+        }
+        Insert: {
+          abo_sobry_eur_mois: number
+          acheminement_eur_mois: number
+          created_at?: string
+          id?: string
+          kva: number
+          segment: string
+          updated_at?: string
+          variante: string
+        }
+        Update: {
+          abo_sobry_eur_mois?: number
+          acheminement_eur_mois?: number
+          created_at?: string
+          id?: string
+          kva?: number
+          segment?: string
+          updated_at?: string
+          variante?: string
+        }
+        Relationships: []
+      }
       prospects: {
         Row: {
           adresse_pdl: string | null
