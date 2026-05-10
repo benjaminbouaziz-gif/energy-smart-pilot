@@ -43,17 +43,37 @@ type Phase = "form" | "loading" | "ready" | "error";
 export default function Step5Comparaison() {
   const { data, updateData, prev, next } = useSimulateurSwitch();
 
-  // Auto-detect profile from switchgrid + identite
-  const segmentRaw = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
-  const segment_client: "Particulier" | "Pro" = segmentRaw === "RES" ? "Particulier" : "Pro";
-  const segment: "C5" | "C4" =
-    segmentRaw === "RES" || segmentRaw === "PRO_C5" || segmentRaw === "C5" ? "C5" : "C4";
+  // Initial profil guess from Switchgrid (RES → Particulier, sinon Pro)
+  const segmentSwitchgrid = (data.switchgrid?.contractInfo?.segment ?? "RES") as string;
+  const profilAuto: "Particulier" | "Pro" = segmentSwitchgrid === "RES" ? "Particulier" : "Pro";
+
+  // Override manuel par le commercial si Switchgrid se trompe
+  const [profilOverride, setProfilOverride] = useState<"Particulier" | "Pro" | null>(
+    data.sobryParams?.segment_client && data.sobryParams.segment_client !== profilAuto
+      ? data.sobryParams.segment_client
+      : null
+  );
+  const segment_client: "Particulier" | "Pro" = profilOverride ?? profilAuto;
   const configBatterie: "PETIT" | "MOYEN" = segment_client === "Particulier" ? "PETIT" : "MOYEN";
 
-  // Form state
+  // Form state — kVA saisi par le commercial
   const [kva, setKva] = useState<number | "">(data.sobryParams?.kva ?? "");
-  const variantOptions = segment === "C5" ? (["CU4", "MU4"] as const) : (["CU", "LU"] as const);
+
+  // Segment Enedis déduit du kVA (plus fiable que Switchgrid)
+  const segment: "C5" | "C4" | null =
+    typeof kva === "number" && kva > 0 ? (kva <= 36 ? "C5" : "C4") : null;
+
+  const variantOptions = segment === "C4" ? (["CU", "LU"] as const) : (["CU4", "MU4"] as const);
   const [variante, setVariante] = useState<string>(data.sobryParams?.variante ?? variantOptions[0]);
+
+  // Reset variante au défaut quand le segment bascule (C5 ↔ C4)
+  useEffect(() => {
+    if (!segment) return;
+    const allowed = segment === "C4" ? ["CU", "LU"] : ["CU4", "MU4"];
+    if (!allowed.includes(variante)) {
+      setVariante(allowed[0]);
+    }
+  }, [segment]);
 
   const initialPhase: Phase = data.factureSobry && data.simulationResult ? "ready" : "form";
   const [phase, setPhase] = useState<Phase>(initialPhase);
@@ -64,7 +84,7 @@ export default function Step5Comparaison() {
     if (data.factureSobry && data.simulationResult && phase !== "ready") setPhase("ready");
   }, [data.factureSobry, data.simulationResult]);
 
-  const canSubmit = typeof kva === "number" && kva >= 3 && kva <= 249 && !!variante;
+  const canSubmit = typeof kva === "number" && kva >= 3 && kva <= 249 && !!variante && !!segment;
 
   async function lancerSimulation() {
     setError(null);
