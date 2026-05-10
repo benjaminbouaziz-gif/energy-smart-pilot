@@ -18,6 +18,9 @@ import Simulation from "./pages/Simulation.tsx";
 import RapportPDF from "./pages/RapportPDF.tsx";
 import SimulationDan from "./pages/SimulationDan.tsx";
 import Simulateurbis from "./pages/Simulateurbis.tsx";
+import SwitchgridForm from "./pages/switchgrid/SwitchgridForm.tsx";
+import SwitchgridCallback from "./pages/switchgrid/SwitchgridCallback.tsx";
+import SwitchgridResults from "./pages/switchgrid/SwitchgridResults.tsx";
 import BackofficeLayout from "./backoffice/BackofficeLayout.tsx";
 import ProspectsList from "./backoffice/pages/ProspectsList.tsx";
 import ProspectDetail from "./backoffice/pages/ProspectDetail.tsx";
@@ -67,6 +70,11 @@ const App = () => (
           {/* Simulateur version bis (test) */}
           <Route path="/simulateurbis" element={<Simulateurbis />} />
           <Route path="/simulateurbis/:prospect_id" element={<Simulateurbis />} />
+
+          {/* Brique Switchgrid (récup courbe Linky) */}
+          <Route path="/switchgrid" element={<SwitchgridForm />} />
+          <Route path="/switchgrid/callback" element={<SwitchgridCallback />} />
+          <Route path="/switchgrid/results" element={<SwitchgridResults />} />
 
           {/* BackOffice interne */}
           <Route path="/backoffdan" element={<BackofficeLayout />}>
