@@ -19,7 +19,7 @@ function WizardBody() {
         {step === 2 && <Step2Switchgrid />}
         {step === 3 && <Step3AnalyseConso />}
         {step === 4 && <Step4TarifConcurrent />}
-        {step === 5 && <Step5SobryComparaison />}
+        {step === 5 && <Step5Comparaison />}
         {step === 6 && <Step6Animation />}
         {step === 7 && <Step7Financement />}
       </div>
