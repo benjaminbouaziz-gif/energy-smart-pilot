@@ -150,35 +150,22 @@ export default function Step2Switchgrid() {
       setSg({ askId });
       if (userUrl) window.open(userUrl, "_blank", "noopener,noreferrer");
 
-      // Poll ask
+      // Poll ask (GET with query string)
+      const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
       const t0 = Date.now();
       let consentId: string | null = null;
       while (!cancelRef.current && Date.now() - t0 < ASK_TIMEOUT_MS) {
-        const { data: p, error } = await supabase.functions.invoke("switchgrid-poll-ask", {
-          body: undefined,
-          // GET via query — invoke supports method? fallback: build URL
-        }).catch(() => ({ data: null, error: { message: "fallback" } as any }));
-
-        let status: string | undefined;
-        let cId: string | undefined;
-        if (!error && p) {
-          status = p.status; cId = p.consentId;
-        } else {
-          // direct fetch fallback (poll-ask uses query string)
-          const SUPA_URL = import.meta.env.VITE_SUPABASE_URL;
-          const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-          const r = await fetch(
-            `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
-            { headers: { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` } }
-          );
-          const j = await r.json();
-          if (!r.ok) throw new Error(j?.error || "poll-ask failed");
-          status = j.status; cId = j.consentId;
-        }
-
-        if (status === "ACCEPTED" && cId) { consentId = cId; break; }
-        if (status && ["ADDRESS_CHECK_FAILED", "EXPIRED", "REVOKED"].includes(status)) {
-          throw new Error(`Consentement ${status}`);
+        const r = await fetch(
+          `${SUPA_URL}/functions/v1/switchgrid-poll-ask?askId=${encodeURIComponent(askId)}`,
+          { headers: authHeaders }
+        );
+        const j = await r.json();
+        if (!r.ok) throw new Error(j?.error || "poll-ask failed");
+        if (j.status === "ACCEPTED" && j.consentId) { consentId = j.consentId; break; }
+        if (j.status && ["ADDRESS_CHECK_FAILED", "EXPIRED", "REVOKED"].includes(j.status)) {
+          throw new Error(`Consentement ${j.status}`);
         }
         await sleep(fastRef.current ? 500 : 2000);
       }
