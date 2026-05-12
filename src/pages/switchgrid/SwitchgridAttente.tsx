@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { switchgridToHourlyKwh } from "@/lib/switchgrid/transformer";
 import {
-  Loader2, Plus, Download, RefreshCw, Trash2, CheckCircle2, AlertTriangle,
+  Loader2, Plus, Download, RefreshCw, Trash2, CheckCircle2, AlertTriangle, Play,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
