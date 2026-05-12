@@ -180,6 +180,85 @@ export default function SwitchgridAttente() {
     } finally { setRowBusy(s.id, null); }
   }
 
+  async function openInSimulateurSwitch(s: Session) {
+    if (!s.order_id || !s.prm) return;
+
+    const existingState = localStorage.getItem('simulateur-switch-state');
+    if (existingState) {
+      const ok = window.confirm(
+        "Une simulation Switch est déjà en cours dans ton navigateur. " +
+        "L'ouvrir avec cette courbe remplacera la simulation actuelle. " +
+        "Continuer ?"
+      );
+      if (!ok) return;
+    }
+
+    setRowBusy(s.id, "openinsimulator");
+    try {
+      const r = await fetch(
+        `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(s.order_id)}&sessionId=${encodeURIComponent(s.id)}`,
+        { headers: authHeaders }
+      );
+      const j = await r.json();
+      if (!r.ok || j.status !== "READY" || !j.loadCurve) {
+        throw new Error(j?.error || "Données indisponibles");
+      }
+      const result = switchgridToHourlyKwh(j.loadCurve);
+
+      const switchgridState = {
+        step: 3,
+        data: {
+          identite: {
+            nom: s.signer_last_name || "",
+            prenom: s.signer_first_name || "",
+            civilite: s.signer_genre || "M",
+            adresse: s.address || "",
+            email: "",
+            telephone: "",
+            estPro: false,
+          },
+          switchgrid: {
+            status: "READY",
+            prm: s.prm,
+            sessionId: s.id,
+            askId: s.ask_id,
+            consentId: s.consent_id,
+            orderId: s.order_id,
+            loadcurveRequestId: s.loadcurve_request_id,
+            contractInfo: {
+              signerName: `${s.signer_first_name ?? ""} ${s.signer_last_name ?? ""}`.trim(),
+              address: s.address,
+              segment: null,
+            },
+            error: null,
+          },
+          loadCurve: {
+            source: "switchgrid",
+            prm: s.prm,
+            windowStart: result.windowStart,
+            windowEnd: result.windowEnd,
+            hourlyKwh: result.hourlyKwh,
+            totalKwh: result.totalKwh,
+            qualityScore: result.qualityScore,
+          },
+        },
+      };
+
+      localStorage.setItem(
+        'simulateur-switch-state',
+        JSON.stringify(switchgridState)
+      );
+
+      toast.success("Courbe chargée, redirection vers le Simulateur Switch");
+
+      navigate('/simulateur-switch');
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur lors du chargement");
+    } finally {
+      setRowBusy(s.id, null);
+    }
+  }
+
   async function deleteSession(s: Session) {
     if (!confirm("Supprimer définitivement cette session ?")) return;
     setRowBusy(s.id, "delete");
