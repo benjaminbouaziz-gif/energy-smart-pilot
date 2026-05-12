@@ -345,6 +345,7 @@ export default function SwitchgridAttente() {
                   onCheckSig={() => checkSignature(s)}
                   onCheckData={() => checkData(s)}
                   onDownload={() => downloadJson(s)}
+                  onOpenSim={() => openInSimulateurSwitch(s)}
                   onDelete={() => deleteSession(s)}
                 />
               ))}
