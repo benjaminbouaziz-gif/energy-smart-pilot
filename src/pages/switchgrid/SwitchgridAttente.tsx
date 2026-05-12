@@ -468,10 +468,10 @@ function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onOpenSim, 
   );
 }
 
-function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onDelete }: {
+function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete }: {
   rows: Session[]; busy: Record<string, string | null>;
   onCheckSig: (s: Session) => void; onCheckData: (s: Session) => void;
-  onDownload: (s: Session) => void; onDelete: (s: Session) => void;
+  onDownload: (s: Session) => void; onOpenSim: (s: Session) => void; onDelete: (s: Session) => void;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
@@ -499,6 +499,7 @@ function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onDelet
                   onCheckSig={() => onCheckSig(s)}
                   onCheckData={() => onCheckData(s)}
                   onDownload={() => onDownload(s)}
+                  onOpenSim={() => onOpenSim(s)}
                   onDelete={() => onDelete(s)}
                 />
               </td>
