@@ -446,9 +446,9 @@ function CreatedAt({ iso }: { iso: string }) {
   );
 }
 
-function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onDelete }: {
+function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete }: {
   s: Session; busy: string | null | undefined;
-  onCheckSig: () => void; onCheckData: () => void; onDownload: () => void; onDelete: () => void;
+  onCheckSig: () => void; onCheckData: () => void; onDownload: () => void; onOpenSim: () => void; onDelete: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 flex-wrap">
@@ -463,7 +463,7 @@ function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onDelete }:
           <CreatedAt iso={s.created_at} />
         </div>
       </div>
-      <ActionButton s={s} busy={busy} onCheckSig={onCheckSig} onCheckData={onCheckData} onDownload={onDownload} onDelete={onDelete} />
+      <ActionButton s={s} busy={busy} onCheckSig={onCheckSig} onCheckData={onCheckData} onDownload={onDownload} onOpenSim={onOpenSim} onDelete={onDelete} />
     </div>
   );
 }
