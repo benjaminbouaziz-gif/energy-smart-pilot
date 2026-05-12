@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { switchgridToHourlyKwh } from "@/lib/switchgrid/transformer";
 import {
-  Loader2, Plus, Download, RefreshCw, Trash2, CheckCircle2, AlertTriangle,
+  Loader2, Plus, Download, RefreshCw, Trash2, CheckCircle2, AlertTriangle, Play,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -180,6 +180,85 @@ export default function SwitchgridAttente() {
     } finally { setRowBusy(s.id, null); }
   }
 
+  async function openInSimulateurSwitch(s: Session) {
+    if (!s.order_id || !s.prm) return;
+
+    const existingState = localStorage.getItem('simulateur-switch-state');
+    if (existingState) {
+      const ok = window.confirm(
+        "Une simulation Switch est déjà en cours dans ton navigateur. " +
+        "L'ouvrir avec cette courbe remplacera la simulation actuelle. " +
+        "Continuer ?"
+      );
+      if (!ok) return;
+    }
+
+    setRowBusy(s.id, "openinsimulator");
+    try {
+      const r = await fetch(
+        `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(s.order_id)}&sessionId=${encodeURIComponent(s.id)}`,
+        { headers: authHeaders }
+      );
+      const j = await r.json();
+      if (!r.ok || j.status !== "READY" || !j.loadCurve) {
+        throw new Error(j?.error || "Données indisponibles");
+      }
+      const result = switchgridToHourlyKwh(j.loadCurve);
+
+      const switchgridState = {
+        step: 3,
+        data: {
+          identite: {
+            nom: s.signer_last_name || "",
+            prenom: s.signer_first_name || "",
+            civilite: s.signer_genre || "M",
+            adresse: s.address || "",
+            email: "",
+            telephone: "",
+            estPro: false,
+          },
+          switchgrid: {
+            status: "READY",
+            prm: s.prm,
+            sessionId: s.id,
+            askId: s.ask_id,
+            consentId: s.consent_id,
+            orderId: s.order_id,
+            loadcurveRequestId: s.loadcurve_request_id,
+            contractInfo: {
+              signerName: `${s.signer_first_name ?? ""} ${s.signer_last_name ?? ""}`.trim(),
+              address: s.address,
+              segment: null,
+            },
+            error: null,
+          },
+          loadCurve: {
+            source: "switchgrid",
+            prm: s.prm,
+            windowStart: result.windowStart,
+            windowEnd: result.windowEnd,
+            hourlyKwh: result.hourlyKwh,
+            totalKwh: result.totalKwh,
+            qualityScore: result.qualityScore,
+          },
+        },
+      };
+
+      localStorage.setItem(
+        'simulateur-switch-state',
+        JSON.stringify(switchgridState)
+      );
+
+      toast.success("Courbe chargée, redirection vers le Simulateur Switch");
+
+      navigate('/simulateur-switch');
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur lors du chargement");
+    } finally {
+      setRowBusy(s.id, null);
+    }
+  }
+
   async function deleteSession(s: Session) {
     if (!confirm("Supprimer définitivement cette session ?")) return;
     setRowBusy(s.id, "delete");
@@ -253,6 +332,7 @@ export default function SwitchgridAttente() {
               onCheckSig={checkSignature}
               onCheckData={checkData}
               onDownload={downloadJson}
+              onOpenSim={openInSimulateurSwitch}
               onDelete={deleteSession}
             />
           ) : (
@@ -265,6 +345,7 @@ export default function SwitchgridAttente() {
                   onCheckSig={() => checkSignature(s)}
                   onCheckData={() => checkData(s)}
                   onDownload={() => downloadJson(s)}
+                  onOpenSim={() => openInSimulateurSwitch(s)}
                   onDelete={() => deleteSession(s)}
                 />
               ))}
@@ -313,11 +394,11 @@ function StatusBadge({ s }: { s: Session }) {
 }
 
 function ActionButton({
-  s, busy, onCheckSig, onCheckData, onDownload, onDelete,
+  s, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete,
 }: {
   s: Session; busy: string | null | undefined;
   onCheckSig: () => void; onCheckData: () => void;
-  onDownload: () => void; onDelete: () => void;
+  onDownload: () => void; onOpenSim: () => void; onDelete: () => void;
 }) {
   const isBusy = !!busy;
   const base = "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-50";
@@ -332,9 +413,16 @@ function ActionButton({
     </button>;
   }
   if (s.status === "READY") {
-    return <button disabled={isBusy} onClick={onDownload} className={`${base} bg-emerald-600 text-white hover:bg-emerald-700`}>
-      {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Télécharger JSON
-    </button>;
+    return (
+      <div className="flex items-center gap-2">
+        <button disabled={isBusy} onClick={onDownload} className={`${base} bg-emerald-600 text-white hover:bg-emerald-700`}>
+          {busy === "download" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Télécharger JSON
+        </button>
+        <button disabled={isBusy} onClick={onOpenSim} className={`${base} bg-violet-600 text-white hover:bg-violet-700`}>
+          {busy === "openinsimulator" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />} Ouvrir dans Simulateur Switch
+        </button>
+      </div>
+    );
   }
   if (s.status === "FAILED") {
     return <button disabled={isBusy} onClick={onDelete} className={`${base} bg-white border border-red-300 text-red-700 hover:bg-red-50`}>
@@ -358,9 +446,9 @@ function CreatedAt({ iso }: { iso: string }) {
   );
 }
 
-function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onDelete }: {
+function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete }: {
   s: Session; busy: string | null | undefined;
-  onCheckSig: () => void; onCheckData: () => void; onDownload: () => void; onDelete: () => void;
+  onCheckSig: () => void; onCheckData: () => void; onDownload: () => void; onOpenSim: () => void; onDelete: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex items-center justify-between gap-4 flex-wrap">
@@ -375,15 +463,15 @@ function SessionCard({ s, busy, onCheckSig, onCheckData, onDownload, onDelete }:
           <CreatedAt iso={s.created_at} />
         </div>
       </div>
-      <ActionButton s={s} busy={busy} onCheckSig={onCheckSig} onCheckData={onCheckData} onDownload={onDownload} onDelete={onDelete} />
+      <ActionButton s={s} busy={busy} onCheckSig={onCheckSig} onCheckData={onCheckData} onDownload={onDownload} onOpenSim={onOpenSim} onDelete={onDelete} />
     </div>
   );
 }
 
-function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onDelete }: {
+function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete }: {
   rows: Session[]; busy: Record<string, string | null>;
   onCheckSig: (s: Session) => void; onCheckData: (s: Session) => void;
-  onDownload: (s: Session) => void; onDelete: (s: Session) => void;
+  onDownload: (s: Session) => void; onOpenSim: (s: Session) => void; onDelete: (s: Session) => void;
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
@@ -411,6 +499,7 @@ function SessionTable({ rows, busy, onCheckSig, onCheckData, onDownload, onDelet
                   onCheckSig={() => onCheckSig(s)}
                   onCheckData={() => onCheckData(s)}
                   onDownload={() => onDownload(s)}
+                  onOpenSim={() => onOpenSim(s)}
                   onDelete={() => onDelete(s)}
                 />
               </td>
