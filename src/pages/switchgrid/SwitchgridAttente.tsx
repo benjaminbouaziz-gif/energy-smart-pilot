@@ -394,11 +394,11 @@ function StatusBadge({ s }: { s: Session }) {
 }
 
 function ActionButton({
-  s, busy, onCheckSig, onCheckData, onDownload, onDelete,
+  s, busy, onCheckSig, onCheckData, onDownload, onOpenSim, onDelete,
 }: {
   s: Session; busy: string | null | undefined;
   onCheckSig: () => void; onCheckData: () => void;
-  onDownload: () => void; onDelete: () => void;
+  onDownload: () => void; onOpenSim: () => void; onDelete: () => void;
 }) {
   const isBusy = !!busy;
   const base = "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors disabled:opacity-50";
@@ -413,9 +413,16 @@ function ActionButton({
     </button>;
   }
   if (s.status === "READY") {
-    return <button disabled={isBusy} onClick={onDownload} className={`${base} bg-emerald-600 text-white hover:bg-emerald-700`}>
-      {isBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Télécharger JSON
-    </button>;
+    return (
+      <div className="flex items-center gap-2">
+        <button disabled={isBusy} onClick={onDownload} className={`${base} bg-emerald-600 text-white hover:bg-emerald-700`}>
+          {busy === "download" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} Télécharger JSON
+        </button>
+        <button disabled={isBusy} onClick={onOpenSim} className={`${base} bg-violet-600 text-white hover:bg-violet-700`}>
+          {busy === "openinsimulator" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Play className="w-3 h-3" />} Ouvrir dans Simulateur Switch
+        </button>
+      </div>
+    );
   }
   if (s.status === "FAILED") {
     return <button disabled={isBusy} onClick={onDelete} className={`${base} bg-white border border-red-300 text-red-700 hover:bg-red-50`}>
