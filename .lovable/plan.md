@@ -1,26 +1,60 @@
-## Passage en Mode Réel Switchgrid
+# Plan — Fix TVA + Forçage MOYEN + Fusion économies Step 6/7
 
-Actuellement, les 5 edge functions Switchgrid envoient toutes le header `switchgrid-test-env: true` car la constante `SWITCHGRID_TEST_MODE` est hardcodée à `"true"` dans chaque fichier. En mode réel, ce header ne doit plus être envoyé du tout.
+Modifications sur **4 fichiers** (Step5 ajouté après ta validation, 1 ligne seulement).
 
-### Changements
+## 1. `src/lib/dynawatt-engine-bis.ts` — Fix bug HT/TTC
 
-Dans chacune des 5 edge functions :
-- `supabase/functions/switchgrid-search-contract/index.ts`
-- `supabase/functions/switchgrid-create-ask/index.ts`
-- `supabase/functions/switchgrid-poll-ask/index.ts`
-- `supabase/functions/switchgrid-create-order/index.ts`
-- `supabase/functions/switchgrid-poll-order/index.ts`
+Dans `simulerJournee`, helper `gainCycle` (~ligne 230) :
+- Multiplier le retour par `(1 + CONSTANTES.TVA)` pour cohérence avec `executerSimulation` qui traite `gainJour` comme TTC.
 
-Passer `const SWITCHGRID_TEST_MODE = "true"` à `"false"`. Le code existant n'ajoute le header `switchgrid-test-env` que si la valeur est `"true"`, donc le simple basculement suffit — aucune autre logique à modifier.
+Idem dans `gainOfSecondCycle` (~ligne 280) : multiplier par `(1 + CONSTANTES.TVA)`.
 
-### Points d'attention (à confirmer)
+Aucune autre modification de l'engine (suggerConfig inchangé).
 
-1. **Données réelles** : une fois en mode réel, chaque consentement déclenchera de vrais appels Enedis facturés. Le PDL `21329667109093` utilisé jusqu'ici est un PDL de test fictif et **ne fonctionnera pas en réel**. Il faudra refaire un test avec un vrai compteur Linky et signer un vrai consentement Enedis.
+## 2. `src/simulateur-switch/steps/Step5Comparaison.tsx` — Forçage MOYEN (1 ligne)
 
-2. **Redéploiement** : les 5 fonctions seront redéployées automatiquement.
+Avant la ligne 149 (`executerSimulation(monthlyJsons, configBatterie, facture)`), forcer :
+```ts
+// FORCE: produit MOYEN imposé pour le Simulateur Switch (décision commerciale)
+const configKeyForce: ConfigKey = "MOYEN";
+const simulationResult = executerSimulation(monthlyJsons, configKeyForce, facture);
+```
+(Import `ConfigKey` ajouté si nécessaire — il est probablement déjà tiré du même module.)
 
-3. **RGPD** : aucun changement, on continue à ne rien persister de la courbe.
+Aucune autre ligne du fichier modifiée.
 
-### Hors scope
+## 3. `src/simulateur-switch/steps/Step6Animation.tsx` — Fusion économies
 
-- Pas de bascule dynamique test/réel via secret (on hardcode `"false"`). Si tu veux un toggle propre via le secret `SWITCHGRID_TEST_MODE` déjà mentionné dans le plan initial, dis-le et je le branche sur `Deno.env.get` à la place.
+Bloc `motion.div` "Gain Dynawatt ce jour" (~ligne 235) :
+- Remplacer le label par "Économies Dynawatt"
+- Supprimer la décomposition Sobry / Pilotage
+- Garder le total + le compteur de cycles
+
+Le calcul `econoDuJour` reste inchangé.
+
+## 4. `src/simulateur-switch/steps/Step7Financement.tsx` — Section économies unique
+
+(a) Remplacer le calcul (~ligne 105) :
+```ts
+const economieTotaleTtc = result.economieAnnuelleTtc; // source unique 12 mois réels
+const gainAnnuelTtc = economieTotaleTtc;
+const gainMensuelTtc = gainAnnuelTtc / 12;
+```
+Supprimer `economieSobryTtc` et `economieBatterieTtc`.
+
+(b) Remplacer le bloc "Vos économies annuelles" (3 cartes) par une seule carte centrée gold, label "Économies Dynawatt", sous-titre "sur les 12 derniers mois — base du cashflow ci-dessous".
+
+(c) `handleSave` : `economie_annuelle: economieTotaleTtc` reste valide (pointe maintenant sur `result.economieAnnuelleTtc`). Reste inchangé.
+
+## Vérifications
+
+- TypeScript compile (build auto)
+- Step 6 : un seul bloc total sans décomposition
+- Step 7 : une seule carte gold centrée
+- PDF + sauvegarde Supabase non cassés (structures conservées)
+
+## Notes
+
+- `suggerConfig` non modifiée (utilisée potentiellement ailleurs).
+- `battery-simulation.ts` non modifié (utilise déjà `suggerConfig` mais n'est pas dans le flow actif Step5→Step7).
+- Aucun autre fichier touché.
