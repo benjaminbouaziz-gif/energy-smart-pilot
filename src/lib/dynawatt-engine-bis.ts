@@ -361,7 +361,10 @@ export function simulerJournee(
     const energieRestituable = Math.min(capaciteKwh, consoDecharge);
     const spreadNet =
       (c.spread) * CONSTANTES.RTE_BATTERIE * CONSTANTES.DEGRADATION;
-    return Math.max(0, spreadNet * energieRestituable);
+    // FIX: prix_eur_kwh vient des JSON Sobry en HT, on convertit en TTC
+    // pour rester cohérent avec executerSimulation qui traite gainJour
+    // comme du TTC dans gainPilotageByMonth et coutDynawattTtc.
+    return Math.max(0, spreadNet * energieRestituable * (1 + CONSTANTES.TVA));
   };
   const gain1 = gainCycle(cycle1);
   const gain2 = gainCycle(cycle2);
