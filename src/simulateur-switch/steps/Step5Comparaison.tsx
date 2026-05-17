@@ -54,7 +54,8 @@ export default function Step5Comparaison() {
       : null
   );
   const segment_client: "Particulier" | "Pro" = profilOverride ?? profilAuto;
-  const configBatterie: "PETIT" | "MOYEN" = segment_client === "Particulier" ? "PETIT" : "MOYEN";
+  // FORCE: produit MOYEN imposé pour le Simulateur Switch (décision commerciale)
+  const configBatterie: "PETIT" | "MOYEN" = "MOYEN";
 
   // Form state — kVA saisi par le commercial
   const [kva, setKva] = useState<number | "">(data.sobryParams?.kva ?? "");
