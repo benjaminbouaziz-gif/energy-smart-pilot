@@ -413,7 +413,8 @@ function gainOfSecondCycle(p: DayPlan): number {
     .slice(c.dechargeStart, c.dechargeEnd + 1)
     .reduce((a, b) => a + b, 0);
   const spreadNet = c.spread * CONSTANTES.RTE_BATTERIE * CONSTANTES.DEGRADATION;
-  return Math.max(0, spreadNet * Math.min(consoDecharge, 18));
+  // FIX: cohérence TTC avec gainCycle
+  return Math.max(0, spreadNet * Math.min(consoDecharge, 18) * (1 + CONSTANTES.TVA));
 }
 
 // ====== SIMULATION ANNUELLE ======
