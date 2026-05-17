@@ -146,7 +146,8 @@ export default function Step5Comparaison() {
 
       // 3) Convert and run simulation
       const monthlyJsons = convertSobryFactureToMonthlyJsons(factureSobry, sg.prm, { kva: params.kva });
-      const simulationResult = executerSimulation(monthlyJsons, configBatterie, facture);
+      // FORCE: produit MOYEN imposé pour le Simulateur Switch (décision commerciale)
+      const simulationResult = executerSimulation(monthlyJsons, "MOYEN", facture);
       setLoadingStep(4);
 
       updateData({ factureSobry, simulationResult });
