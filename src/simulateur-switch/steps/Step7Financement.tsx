@@ -102,10 +102,9 @@ export default function Step7Financement() {
   const prixHtEff = config.prix_ht;
   const prixTtcEff = config.prix_ttc;
 
-  const economieSobryTtc = result.factureInitiale.ttc - result.sobry.ttc;
-  const economieBatterieTtc = result.roi.gainTtcAn;
-  const economieTotaleTtc = economieSobryTtc + economieBatterieTtc;
-
+  // SOURCE UNIQUE : économie totale Dynawatt sur 12 mois réels du client
+  // (agrège Sobry + Pilotage, calculée dans executerSimulation, opaque pour le prospect)
+  const economieTotaleTtc = result.economieAnnuelleTtc;
   const gainAnnuelTtc = economieTotaleTtc;
   const gainMensuelTtc = gainAnnuelTtc / 12;
 
