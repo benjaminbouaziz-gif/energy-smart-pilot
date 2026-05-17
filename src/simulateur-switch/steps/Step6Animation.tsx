@@ -239,15 +239,10 @@ export default function Step6Animation() {
           className="glass rounded-3xl p-6 text-center mb-8"
         >
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            Gain Dynawatt ce jour
+            Économies Dynawatt
           </div>
           <div className="font-black text-4xl font-mono mt-1" style={{ color: econoDuJour.total >= 0 ? "#10B981" : "#EF4444" }}>
             {econoDuJour.total >= 0 ? "+" : ""}{fmt(econoDuJour.total, 2)} €
-          </div>
-          <div className="text-xs text-muted-foreground mt-2 space-y-0.5">
-            <div>dont :</div>
-            <div>• Sobry vs {nomFournisseur} : <span className="font-semibold" style={{ color: econoDuJour.sobry >= 0 ? undefined : "#EF4444" }}>{econoDuJour.sobry >= 0 ? "+" : ""}{fmt(econoDuJour.sobry, 2)} €</span></div>
-            <div>• Pilotage batterie : <span className="font-semibold text-foreground">+{fmt(econoDuJour.pilotage, 2)} €</span></div>
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
             {day.cycleCount} cycle{day.cycleCount > 1 ? "s" : ""} effectué{day.cycleCount > 1 ? "s" : ""}
