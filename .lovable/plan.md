@@ -1,60 +1,46 @@
-# Plan — Fix TVA + Forçage MOYEN + Fusion économies Step 6/7
+## Analyse du prompt — 3 choses qui clochent
 
-Modifications sur **4 fichiers** (Step5 ajouté après ta validation, 1 ligne seulement).
-
-## 1. `src/lib/dynawatt-engine-bis.ts` — Fix bug HT/TTC
-
-Dans `simulerJournee`, helper `gainCycle` (~ligne 230) :
-- Multiplier le retour par `(1 + CONSTANTES.TVA)` pour cohérence avec `executerSimulation` qui traite `gainJour` comme TTC.
-
-Idem dans `gainOfSecondCycle` (~ligne 280) : multiplier par `(1 + CONSTANTES.TVA)`.
-
-Aucune autre modification de l'engine (suggerConfig inchangé).
-
-## 2. `src/simulateur-switch/steps/Step5Comparaison.tsx` — Forçage MOYEN (1 ligne)
-
-Avant la ligne 149 (`executerSimulation(monthlyJsons, configBatterie, facture)`), forcer :
-```ts
-// FORCE: produit MOYEN imposé pour le Simulateur Switch (décision commerciale)
-const configKeyForce: ConfigKey = "MOYEN";
-const simulationResult = executerSimulation(monthlyJsons, configKeyForce, facture);
+### 🔴 Bloquant : le contenu JSX du fichier (B) est cassé
+Le bloc `---DEBUT FICHIER--- … ---FIN FICHIER---` pour `Step7AnimationTRV.tsx` a été collé depuis un rendu markdown : toutes les balises JSX (`<div>`, `<p>`, `<button>`, `<ResponsiveContainer>`, `<AreaChart>`, etc.) ont été supprimées. Il reste des fragments comme :
 ```
-(Import `ConfigKey` ajouté si nécessaire — il est probablement déjà tiré du même module.)
-
-Aucune autre ligne du fichier modifiée.
-
-## 3. `src/simulateur-switch/steps/Step6Animation.tsx` — Fusion économies
-
-Bloc `motion.div` "Gain Dynawatt ce jour" (~ligne 235) :
-- Remplacer le label par "Économies Dynawatt"
-- Supprimer la décomposition Sobry / Pilotage
-- Garder le total + le compteur de cycles
-
-Le calcul `econoDuJour` reste inchangé.
-
-## 4. `src/simulateur-switch/steps/Step7Financement.tsx` — Section économies unique
-
-(a) Remplacer le calcul (~ligne 105) :
-```ts
-const economieTotaleTtc = result.economieAnnuelleTtc; // source unique 12 mois réels
-const gainAnnuelTtc = economieTotaleTtc;
-const gainMensuelTtc = gainAnnuelTtc / 12;
+          
+            Étape 7 / 8
+          
+            Économies Dynawatt face aux Tarifs EDF
 ```
-Supprimer `economieSobryTtc` et `economieBatterieTtc`.
+Impossible à utiliser tel quel — ça ne compile pas.
 
-(b) Remplacer le bloc "Vos économies annuelles" (3 cartes) par une seule carte centrée gold, label "Économies Dynawatt", sous-titre "sur les 12 derniers mois — base du cashflow ci-dessous".
+**Solution** : je vais **cloner `Step6Animation.tsx` réel** (353 lignes, déjà en context) et l'adapter point par point selon ta spec (filtre TRV, `prixTRV_TTC`, badges worst/best, init worst case via `useState(() => ...)`, titre, bouton "Voir le financement"). C'est ce que tu voulais — j'utilise juste la vraie source comme base.
 
-(c) `handleSave` : `economie_annuelle: economieTotaleTtc` reste valide (pointe maintenant sur `result.economieAnnuelleTtc`). Reste inchangé.
+### 🟡 Note (pas un bug, conséquence attendue) : Step1/Step2 vont aussi passer en "/8"
+Step1Identite et Step2Switchgrid utilisent déjà `Étape X / {TOTAL_STEPS}` (dynamique). Quand on passe `TOTAL_STEPS` à 8, ils afficheront automatiquement "1 / 8" et "2 / 8". C'est cohérent avec ton objectif (sinon ça serait incohérent visuellement). Je le mentionne car ta liste "NE PAS toucher" inclut Step1/Step2 — pas besoin de les toucher, mais leur affichage change *gratuitement*. OK ?
 
-## Vérifications
+### 🟡 Mineur : typage du `useState` initializer
+```ts
+const [selectedTRV, setSelectedTRV] = useState(() => {
+  if (!days.length) return isC4 ? "JAUNE_CU" : "BLEU_BASE";
+  return findWorstCaseTRV(days, CONSTANTES.TVA);
+});
+```
+Sans annotation, TS l'infère en `string`, ce qui cassera `setSelectedTRV(t)` où `t: TarifTRVType`. À typer explicitement : `useState<TarifTRVType>(() => ...)`.
 
-- TypeScript compile (build auto)
-- Step 6 : un seul bloc total sans décomposition
-- Step 7 : une seule carte gold centrée
-- PDF + sauvegarde Supabase non cassés (structures conservées)
+---
 
-## Notes
+## Plan d'exécution (une fois validé)
 
-- `suggerConfig` non modifiée (utilisée potentiellement ailleurs).
-- `battery-simulation.ts` non modifié (utilise déjà `suggerConfig` mais n'est pas dans le flow actif Step5→Step7).
-- Aucun autre fichier touché.
+1. **CRÉER** `src/lib/tarifs-trv.ts` — verbatim depuis le prompt (ce fichier-là est sain).
+2. **CRÉER** `src/simulateur-switch/steps/Step7AnimationTRV.tsx` — clone réel de `Step6Animation.tsx` avec ces diffs :
+   - Imports : remplacer `buildFactureActuelle` par les helpers de `@/lib/tarifs-trv`.
+   - Retirer `facture`, `tarifAncienTtc`, `aboAncienTtcJour`.
+   - Ajouter `kvaClient`, `isC4`, `selectedTRV` (typé `TarifTRVType`, init = `findWorstCaseTRV`), `worstCaseTarif`, `bestCaseTarif`.
+   - Remplacer dans `dayEconomies` / `hourly` / `econoTotale` les références à `tarifAncienTtc`/`aboAncienTtcJour` par `prixTRV_TTC(d.date, h, selectedTRV, CONSTANTES.TVA)` (avec gestion `null` → on skip cette heure ; pas d'abonnement TRV).
+   - Ajouter le bloc UI "Filtre TRV + kVA" (3 toggles avec badges worst/best/non-appli).
+   - Badge `Étape 7 / 8`, titre `Économies Dynawatt face aux Tarifs EDF`.
+   - Bouton next : `Voir le financement` (Step 8 = Financement).
+3. **MODIFIER** `SimulateurSwitchContext.tsx` : `TOTAL_STEPS = 7` → `8`.
+4. **MODIFIER** `WizardHeader.tsx` : ajouter `{ n: 7, label: "TRV EDF" }`, renuméroter Leasing en 8.
+5. **MODIFIER** `Step6Animation.tsx` : `"Étape 6 / 7"` → `"Étape 6 / 8"`, `"Voir le financement"` → `"Voir vs Tarifs EDF"`.
+6. **MODIFIER** `Step7Financement.tsx` : `"Étape 7 / 7"` → `"Étape 8 / 8"` (pas de rename).
+7. **MODIFIER** `src/pages/SimulateurSwitch.tsx` : ajouter import + `step === 7 && <Step7AnimationTRV />` et `step === 8 && <Step7Financement />`.
+
+Confirme et je l'implémente — surtout sur le point 🔴 (je clone Step6 réel au lieu du blob cassé).
