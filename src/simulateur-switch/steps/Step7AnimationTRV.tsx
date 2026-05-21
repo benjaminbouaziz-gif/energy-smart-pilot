@@ -72,6 +72,13 @@ export default function Step7AnimationTRV() {
     });
   }, [days, selectedTRV, tva]);
 
+  const { economieAnnuelle, economieMensuelle } = useMemo(() => {
+    const totalPeriode = dayEconomies.reduce((s, e) => s + e.total, 0);
+    const nbJours = dayEconomies.length || 1;
+    const annuelle = (totalPeriode / nbJours) * 365;
+    return { economieAnnuelle: annuelle, economieMensuelle: annuelle / 12 };
+  }, [dayEconomies]);
+
   const day = days[dayIdx];
 
   const hourly = useMemo(() => {
@@ -157,6 +164,32 @@ export default function Step7AnimationTRV() {
               <div className="text-[11px] text-muted-foreground mt-1">
                 Contrat client : <span className="font-mono font-bold">{kvaClient} kVA</span> →{" "}
                 {isC4 ? "C4 (> 36 kVA)" : "C5 (≤ 36 kVA)"}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <div
+                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
+                  economieMensuelle >= 0
+                    ? "bg-green-50 border-green-300 text-green-900"
+                    : "bg-red-50 border-red-300 text-red-900"
+                }`}
+              >
+                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / mois</div>
+                <div className="text-base font-bold">
+                  {economieMensuelle >= 0 ? "+" : ""}{fmt(economieMensuelle, 0)} €
+                </div>
+              </div>
+              <div
+                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
+                  economieAnnuelle >= 0
+                    ? "bg-green-50 border-green-300 text-green-900"
+                    : "bg-red-50 border-red-300 text-red-900"
+                }`}
+              >
+                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / an</div>
+                <div className="text-base font-bold">
+                  {economieAnnuelle >= 0 ? "+" : ""}{fmt(economieAnnuelle, 0)} €
+                </div>
               </div>
             </div>
           </div>
