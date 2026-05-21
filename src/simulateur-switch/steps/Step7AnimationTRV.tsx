@@ -166,6 +166,32 @@ export default function Step7AnimationTRV() {
                 {isC4 ? "C4 (> 36 kVA)" : "C5 (≤ 36 kVA)"}
               </div>
             </div>
+            <div className="flex flex-wrap gap-2">
+              <div
+                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
+                  economieMensuelle >= 0
+                    ? "bg-green-50 border-green-300 text-green-900"
+                    : "bg-red-50 border-red-300 text-red-900"
+                }`}
+              >
+                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / mois</div>
+                <div className="text-base font-bold">
+                  {economieMensuelle >= 0 ? "+" : ""}{fmt(economieMensuelle, 0)} €
+                </div>
+              </div>
+              <div
+                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
+                  economieAnnuelle >= 0
+                    ? "bg-green-50 border-green-300 text-green-900"
+                    : "bg-red-50 border-red-300 text-red-900"
+                }`}
+              >
+                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / an</div>
+                <div className="text-base font-bold">
+                  {economieAnnuelle >= 0 ? "+" : ""}{fmt(economieAnnuelle, 0)} €
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {(["BLEU_BASE", "BLEU_HPHC", "JAUNE_CU"] as TarifTRVType[]).map((t) => {
