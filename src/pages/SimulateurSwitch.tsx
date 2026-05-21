@@ -7,6 +7,7 @@ import Step3AnalyseConso from "@/simulateur-switch/steps/Step3AnalyseConso";
 import Step4TarifConcurrent from "@/simulateur-switch/steps/Step4TarifConcurrent";
 import Step5Comparaison from "@/simulateur-switch/steps/Step5Comparaison";
 import Step6Animation from "@/simulateur-switch/steps/Step6Animation";
+import Step7AnimationTRV from "@/simulateur-switch/steps/Step7AnimationTRV";
 import Step7Financement from "@/simulateur-switch/steps/Step7Financement";
 
 function WizardBody() {
@@ -21,7 +22,8 @@ function WizardBody() {
         {step === 4 && <Step4TarifConcurrent />}
         {step === 5 && <Step5Comparaison />}
         {step === 6 && <Step6Animation />}
-        {step === 7 && <Step7Financement />}
+        {step === 7 && <Step7AnimationTRV />}
+        {step === 8 && <Step7Financement />}
       </div>
     </div>
   );

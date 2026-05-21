@@ -157,7 +157,7 @@ interface SimulateurSwitchContextValue {
 
 const SimulateurSwitchContext = createContext<SimulateurSwitchContextValue | null>(null);
 
-export const TOTAL_STEPS = 7;
+export const TOTAL_STEPS = 8;
 const STORAGE_KEY = "simulateur-switch-state";
 const INITIAL_STATE: PersistedState = { step: 1, data: {} };
 

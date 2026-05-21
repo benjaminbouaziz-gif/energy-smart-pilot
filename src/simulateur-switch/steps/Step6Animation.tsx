@@ -118,7 +118,7 @@ export default function Step6Animation() {
         className="container mx-auto px-4 mt-10 max-w-6xl"
       >
         <div className="text-center mb-8">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 6 / 7</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 6 / 8</div>
           <h1 className="text-3xl md:text-4xl font-black mb-2">L'algorithme Dynawatt en action</h1>
           <p className="text-sm text-muted-foreground">
             Visualisez heure par heure comment la batterie achète bas et restitue cher.
@@ -292,7 +292,7 @@ export default function Step6Animation() {
           onClick={next}
           className="gap-2 bg-gradient-to-r from-primary to-primary-light text-primary-foreground hover:opacity-90 shadow-[var(--shadow-glow)] font-semibold"
         >
-          Voir le financement <ChevronRight className="w-4 h-4" />
+          Voir vs Tarifs EDF <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
     </>
