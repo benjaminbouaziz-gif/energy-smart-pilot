@@ -72,6 +72,13 @@ export default function Step7AnimationTRV() {
     });
   }, [days, selectedTRV, tva]);
 
+  const { economieAnnuelle, economieMensuelle } = useMemo(() => {
+    const totalPeriode = dayEconomies.reduce((s, e) => s + e.total, 0);
+    const nbJours = dayEconomies.length || 1;
+    const annuelle = (totalPeriode / nbJours) * 365;
+    return { economieAnnuelle: annuelle, economieMensuelle: annuelle / 12 };
+  }, [dayEconomies]);
+
   const day = days[dayIdx];
 
   const hourly = useMemo(() => {
