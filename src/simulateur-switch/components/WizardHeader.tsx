@@ -21,7 +21,8 @@ const STEPS = [
   { n: 4, label: "Tarif concurrent" },
   { n: 5, label: "Comparaison" },
   { n: 6, label: "Animation" },
-  { n: 7, label: "Leasing" },
+  { n: 7, label: "TRV EDF" },
+  { n: 8, label: "Leasing" },
 ];
 
 export function WizardHeader() {

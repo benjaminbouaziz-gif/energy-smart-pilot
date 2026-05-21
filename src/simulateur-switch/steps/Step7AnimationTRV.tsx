@@ -9,22 +9,40 @@ import {
 } from "recharts";
 import { Activity, Battery, Euro, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import { CONSTANTES } from "@/lib/dynawatt-engine-bis";
-import { buildFactureActuelle } from "../lib/facture-actuelle";
+import {
+  prixTRV_TTC, tarifApplicable, libelleTarifTRV,
+  findWorstCaseTRV, findBestCaseTRV, TarifTRVType,
+} from "@/lib/tarifs-trv";
 
 const fmt = (n: number, d = 0) =>
   new Intl.NumberFormat("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d }).format(n);
 
-export default function Step6Animation() {
+export default function Step7AnimationTRV() {
   const { data, prev, next } = useSimulateurSwitch();
   const result = data.simulationResult;
-  const facture = data.tarifConcurrent
-    ? buildFactureActuelle(data.tarifConcurrent, data.factureConcurrent)
-    : null;
+
+  const kvaClient = data.sobryParams?.kva ?? data.loadCurve?.kva ?? 36;
+  const isC4 = kvaClient > 36;
 
   const [dayIdx, setDayIdx] = useState(0);
   const [auto, setAuto] = useState(true);
 
   const days = result?.planJours ?? [];
+
+  // Worst case calculé à l'init pour éviter tout flash visuel.
+  const [selectedTRV, setSelectedTRV] = useState<TarifTRVType>(() => {
+    if (!days.length) return isC4 ? "JAUNE_CU" : "BLEU_BASE";
+    return findWorstCaseTRV(days, CONSTANTES.TVA);
+  });
+
+  const worstCaseTarif = useMemo<TarifTRVType>(
+    () => (days.length ? findWorstCaseTRV(days, CONSTANTES.TVA) : "BLEU_BASE"),
+    [days]
+  );
+  const bestCaseTarif = useMemo<TarifTRVType>(
+    () => (days.length ? findBestCaseTRV(days, CONSTANTES.TVA) : "BLEU_BASE"),
+    [days]
+  );
 
   useEffect(() => {
     if (!auto || days.length === 0) return;
@@ -32,29 +50,19 @@ export default function Step6Animation() {
     return () => clearInterval(id);
   }, [auto, days.length]);
 
-  if (!result || !days.length) {
-    return (
-      <div className="container mx-auto px-4 mt-10 max-w-3xl text-center text-muted-foreground">
-        Aucun planning. Reviens à l'étape précédente.
-      </div>
-    );
-  }
-
-  const day = days[dayIdx];
   const tva = 1 + CONSTANTES.TVA;
-  const tarifAncienTtc = (facture?.prix_kwh_ht || 0) * tva;
-  const aboAncienTtcJour = ((facture?.abonnement_mensuel_ht || 0) * 12 / 365) * tva;
-  const nomFournisseur = facture?.fournisseur || "Ancien fournisseur";
 
   const dayEconomies = useMemo(() => {
-    return days.map((d) => {
-      const consoJour = d.conso24h.reduce((s, c) => s + c, 0);
-      const coutAncienTtc = consoJour * tarifAncienTtc + aboAncienTtcJour;
-      let coutSobryVarHt = 0;
-      for (let h = 0; h < 24; h++) coutSobryVarHt += d.prix24h[h] * d.conso24h[h];
-      const partFixeSobryHtJour = result.parsed.fixedCostsAnnualHt / 365;
-      const coutSobryTtc = (coutSobryVarHt + partFixeSobryHtJour) * tva;
-      const economieSobry = coutAncienTtc - coutSobryTtc;
+    return days.map((d: any) => {
+      let coutTRVTtc = 0;
+      let coutSobryTtc = 0;
+      for (let h = 0; h < 24; h++) {
+        const prixH = prixTRV_TTC(d.date, h, selectedTRV, CONSTANTES.TVA);
+        if (prixH === null) continue;
+        coutTRVTtc += prixH * d.conso24h[h];
+        coutSobryTtc += d.prix24h[h] * d.conso24h[h] * tva;
+      }
+      const economieSobry = coutTRVTtc - coutSobryTtc;
       const economiePilotage = d.gainJour;
       return {
         sobry: economieSobry,
@@ -62,11 +70,12 @@ export default function Step6Animation() {
         total: economieSobry + economiePilotage,
       };
     });
-  }, [days, tarifAncienTtc, aboAncienTtcJour, tva, result.parsed.fixedCostsAnnualHt]);
+  }, [days, selectedTRV, tva]);
 
-  const econoDuJour = dayEconomies[dayIdx];
+  const day = days[dayIdx];
 
   const hourly = useMemo(() => {
+    if (!day) return [];
     const c1 = day.cycle1;
     const c2 = day.cycle2;
     return Array.from({ length: 24 }, (_, h) => {
@@ -76,39 +85,52 @@ export default function Step6Animation() {
       else if (c2 && h >= c2.chargeStart && h <= c2.chargeEnd) action = "charge";
       else if (c2 && h >= c2.dechargeStart && h <= c2.dechargeEnd) action = "decharge";
       const sobryTtc = day.prix24h[h] * tva;
+      const prixTRVh = prixTRV_TTC(day.date, h, selectedTRV, CONSTANTES.TVA) ?? 0;
       return {
         hour: `${h.toString().padStart(2, "0")}h`,
         prix: day.prix24h[h] * 1000,
         sobry: +sobryTtc.toFixed(4),
-        ancien: +tarifAncienTtc.toFixed(4),
-        ecart: +(tarifAncienTtc - sobryTtc).toFixed(4),
+        ancien: +prixTRVh.toFixed(4),
+        ecart: +(prixTRVh - sobryTtc).toFixed(4),
         conso: day.conso24h[h],
         action,
       };
     });
-  }, [day, tarifAncienTtc, tva]);
+  }, [day, selectedTRV, tva]);
 
   const soc = useMemo(() => {
+    if (!day || !result) return [];
     const cap = result.config.capacite;
     const arr: number[] = [];
     let s = 0;
     for (let h = 0; h < 24; h++) {
-      const a = hourly[h].action;
+      const a = hourly[h]?.action;
       if (a === "charge") s = Math.min(cap, s + cap / Math.max((day.cycle1?.duree || 2), 1));
       else if (a === "decharge") s = Math.max(0, s - cap / Math.max((day.cycle1?.duree || 2), 1));
       arr.push(s);
     }
     return arr.map((v, h) => ({ hour: `${h}h`, soc: v }));
-  }, [hourly, day, result.config.capacite]);
+  }, [hourly, day, result]);
 
   const heatmap = useMemo(() => {
     const moyenne = dayEconomies.reduce((s, e) => s + e.total, 0) / Math.max(dayEconomies.length, 1);
-    return days.map((d, i) => ({
+    return days.map((d: any, i: number) => ({
       date: d.date,
       gain: dayEconomies[i].total,
       color: getColorForDay(dayEconomies[i].total, moyenne),
     }));
   }, [days, dayEconomies]);
+
+  if (!result || !days.length) {
+    return (
+      <div className="container mx-auto px-4 mt-10 max-w-3xl text-center text-muted-foreground">
+        Aucun planning. Reviens à l'étape précédente.
+      </div>
+    );
+  }
+
+  const econoDuJour = dayEconomies[dayIdx];
+  const nomFournisseur = "EDF " + libelleTarifTRV(selectedTRV);
 
   return (
     <>
@@ -118,11 +140,62 @@ export default function Step6Animation() {
         className="container mx-auto px-4 mt-10 max-w-6xl"
       >
         <div className="text-center mb-8">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 6 / 8</div>
-          <h1 className="text-3xl md:text-4xl font-black mb-2">L'algorithme Dynawatt en action</h1>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 7 / 8</div>
+          <h1 className="text-3xl md:text-4xl font-black mb-2">Économies Dynawatt face aux Tarifs EDF</h1>
           <p className="text-sm text-muted-foreground">
-            Visualisez heure par heure comment la batterie achète bas et restitue cher.
+            Comparez Dynawatt aux Tarifs Réglementés EDF. Énergie + taxes uniquement, hors abonnement.
           </p>
+        </div>
+
+        {/* Filtre TRV + indicateur kVA */}
+        <div className="glass rounded-2xl p-5 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div>
+              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                Comparer Dynawatt face à
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Contrat client : <span className="font-mono font-bold">{kvaClient} kVA</span> →{" "}
+                {isC4 ? "C4 (> 36 kVA)" : "C5 (≤ 36 kVA)"}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(["BLEU_BASE", "BLEU_HPHC", "JAUNE_CU"] as TarifTRVType[]).map((t) => {
+              const applicable = tarifApplicable(t, kvaClient);
+              const isWorst = t === worstCaseTarif;
+              const isBest = t === bestCaseTarif;
+              const isSelected = selectedTRV === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setSelectedTRV(t)}
+                  className={`px-4 py-2 rounded-xl text-xs font-mono transition-all border-2 flex items-center gap-2 ${
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border text-muted-foreground hover:border-primary"
+                  } ${!applicable ? "opacity-60" : ""}`}
+                >
+                  {libelleTarifTRV(t)}
+                  {!applicable && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-yellow-200 text-yellow-900 uppercase tracking-widest">
+                      non appli.
+                    </span>
+                  )}
+                  {isWorst && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-red-200 text-red-900 uppercase tracking-widest">
+                      worst
+                    </span>
+                  )}
+                  {isBest && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-green-200 text-green-900 uppercase tracking-widest">
+                      best
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="glass rounded-2xl p-5 mb-6">
@@ -233,13 +306,13 @@ export default function Step6Animation() {
         </div>
 
         <motion.div
-          key={day.date}
+          key={day.date + selectedTRV}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="glass rounded-3xl p-6 text-center mb-8"
         >
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-            Économies Dynawatt
+            Économies Dynawatt vs {nomFournisseur}
           </div>
           <div className="font-black text-4xl font-mono mt-1" style={{ color: econoDuJour.total >= 0 ? "#10B981" : "#EF4444" }}>
             {econoDuJour.total >= 0 ? "+" : ""}{fmt(econoDuJour.total, 2)} €
@@ -292,7 +365,7 @@ export default function Step6Animation() {
           onClick={next}
           className="gap-2 bg-gradient-to-r from-primary to-primary-light text-primary-foreground hover:opacity-90 shadow-[var(--shadow-glow)] font-semibold"
         >
-          Voir vs Tarifs EDF <ChevronRight className="w-4 h-4" />
+          Voir le financement <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
     </>

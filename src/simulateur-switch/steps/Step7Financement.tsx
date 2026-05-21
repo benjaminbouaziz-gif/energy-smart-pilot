@@ -180,7 +180,7 @@ export default function Step7Financement() {
         className="container mx-auto px-4 mt-10 max-w-5xl"
       >
         <div className="text-center mb-8">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 7 / 7</div>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-2">Étape 8 / 8</div>
           <h1 className="text-3xl md:text-4xl font-black mb-2">Financement & cashflow</h1>
           <p className="text-sm text-muted-foreground">
             Comparez achat comptant et leasing. Visualisez le cashflow net mois par mois.
