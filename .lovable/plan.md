@@ -1,35 +1,16 @@
-## Ajouter Économies mensuelle et annuelle sur Step 7 (TRV)
+## Objectif
+Mettre à jour le fichier `src/lib/tarifs-trv.ts` avec la nouvelle grille Tarif Jaune CU applicable au 01/02/2026.
 
-Dans le bloc "Comparer Dynawatt face à" du Step 7, ajouter deux indicateurs sous la ligne "Contrat client" :
+## Modifications
+1. Dans `TRV_JAUNE_CU` :
+   - Fermer `dateFin` de l'entrée du 2025-08-01 : `null` → `"2026-01-31"`
+   - Ajouter nouvelle entrée 2026-02-01 avec les composantes officielles : `HPH: 0.18808`, `HCH: 0.12751`, `HPE: 0.08839`, `HCE: 0.08056`
 
-- **Économie estimée / mois** : moyenne mensuelle calculée à partir de la somme totale annuelle divisée par 12
-- **Économie estimée / an** : somme totale des `dayEconomies[i].total` sur tous les jours du planning, extrapolée à 365 jours si la période simulée est plus courte
+## Verrous respectés
+- Aucune modification des grilles Bleu Base / Bleu HPHC
+- Aucune modification des helpers, types, ou fonctions
+- Aucune modification d'autres fichiers
 
-### Détail technique
-
-Dans `src/simulateur-switch/steps/Step7AnimationTRV.tsx`, juste après le `useMemo` de `dayEconomies`, ajouter :
-
-```ts
-const { economieAnnuelle, economieMensuelle } = useMemo(() => {
-  const totalPeriode = dayEconomies.reduce((s, e) => s + e.total, 0);
-  const nbJours = dayEconomies.length || 1;
-  const annuelle = (totalPeriode / nbJours) * 365;
-  return { economieAnnuelle: annuelle, economieMensuelle: annuelle / 12 };
-}, [dayEconomies]);
-```
-
-Puis dans le bloc filtre TRV (lignes 151-162), ajouter à droite du label "Contrat client" deux pastilles affichant les montants, recalculées à chaque changement de `selectedTRV` :
-
-```text
-[Comparer Dynawatt face à]            [+ X €/mois]  [+ Y €/an]
-[Contrat client : 36 kVA → C5]
-[boutons TRV...]
-```
-
-Style : pastilles arrondies, vertes si > 0, rouges si < 0, format `+1 234 € / mois` et `+14 800 € / an` (via `fmt(..., 0)`).
-
-### Fichiers modifiés
-
-- `src/simulateur-switch/steps/Step7AnimationTRV.tsx` (un seul fichier)
-
-Aucun changement de calcul backend, aucune autre étape touchée.
+## Validation
+- Vérification compilation TypeScript sans erreur
+- Vérification manuelle que prixTRV_TTC retourne les bonnes valeurs aux dates clés (15/01/2026 → ancienne grille, 01/03/2026 → nouvelle grille)

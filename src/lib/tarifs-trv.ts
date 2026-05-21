@@ -27,7 +27,8 @@ export const TRV_BLEU_HPHC: GrilleTRVPeriode[] = [
 // Jaune CU disponible uniquement depuis 01/02/2025
 export const TRV_JAUNE_CU: GrilleTRVPeriode[] = [
   { dateDebut: "2025-02-01", dateFin: "2025-07-31", composantes: { HPH: 0.2086, HCH: 0.1437, HPE: 0.1182, HCE: 0.0970 } },
-  { dateDebut: "2025-08-01", dateFin: null,         composantes: { HPH: 0.2147, HCH: 0.1541, HPE: 0.1105, HCE: 0.1071 } },
+  { dateDebut: "2025-08-01", dateFin: "2026-01-31", composantes: { HPH: 0.2147, HCH: 0.1541, HPE: 0.1105, HCE: 0.1071 } },
+  { dateDebut: "2026-02-01", dateFin: null,         composantes: { HPH: 0.18808, HCH: 0.12751, HPE: 0.08839, HCE: 0.08056 } },
 ];
 
 /**
