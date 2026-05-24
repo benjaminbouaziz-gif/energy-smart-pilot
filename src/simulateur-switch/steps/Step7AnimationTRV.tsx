@@ -74,11 +74,23 @@ export default function Step7AnimationTRV() {
     });
   }, [days, selectedTRV, tva]);
 
-  const { economieAnnuelle, economieMensuelle } = useMemo(() => {
-    const totalPeriode = dayEconomies.reduce((s, e) => s + e.total, 0);
-    const nbJours = dayEconomies.length || 1;
-    const annuelle = (totalPeriode / nbJours) * 365;
-    return { economieAnnuelle: annuelle, economieMensuelle: annuelle / 12 };
+  const {
+    economieAnnuelle, economieMensuelle,
+    ecoContratAnnuelle, ecoContratMensuelle,
+    ecoBatterieAnnuelle, ecoBatterieMensuelle,
+  } = useMemo(() => {
+    const totalP = dayEconomies.reduce((s, e) => s + e.total, 0);
+    const sobryP = dayEconomies.reduce((s, e) => s + e.sobry, 0);
+    const pilotP = dayEconomies.reduce((s, e) => s + e.pilotage, 0);
+    const n = dayEconomies.length || 1;
+    const annT = (totalP / n) * 365;
+    const annS = (sobryP / n) * 365;
+    const annP = (pilotP / n) * 365;
+    return {
+      economieAnnuelle: annT, economieMensuelle: annT / 12,
+      ecoContratAnnuelle: annS, ecoContratMensuelle: annS / 12,
+      ecoBatterieAnnuelle: annP, ecoBatterieMensuelle: annP / 12,
+    };
   }, [dayEconomies]);
 
   const day = days[dayIdx];
@@ -355,31 +367,30 @@ export default function Step7AnimationTRV() {
                 {isC4 ? "C4 (> 36 kVA)" : "C5 (≤ 36 kVA)"}
               </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <div
-                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
-                  economieMensuelle >= 0
-                    ? "bg-green-50 border-green-300 text-green-900"
-                    : "bg-red-50 border-red-300 text-red-900"
-                }`}
-              >
-                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / mois</div>
-                <div className="text-base font-bold">
-                  {economieMensuelle >= 0 ? "+" : ""}{fmt(economieMensuelle, 0)} €
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Contrat", mois: ecoContratMensuelle, an: ecoContratAnnuelle, hint: `vs ${libelleTarifTRV(selectedTRV)}` },
+                { label: "Batterie", mois: ecoBatterieMensuelle, an: ecoBatterieAnnuelle, hint: "pilotage = Step 6" },
+                { label: "Total", mois: economieMensuelle, an: economieAnnuelle, hint: "contrat + batterie" },
+              ].map((c) => (
+                <div
+                  key={c.label}
+                  className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
+                    c.an >= 0
+                      ? "bg-green-50 border-green-300 text-green-900"
+                      : "bg-red-50 border-red-300 text-red-900"
+                  }`}
+                >
+                  <div className="text-[9px] uppercase tracking-widest opacity-70">{c.label}</div>
+                  <div className="text-base font-bold leading-tight">
+                    {c.mois >= 0 ? "+" : ""}{fmt(c.mois, 0)} €<span className="text-[9px] opacity-70"> /mois</span>
+                  </div>
+                  <div className="text-[11px] font-bold leading-tight">
+                    {c.an >= 0 ? "+" : ""}{fmt(c.an, 0)} €<span className="text-[9px] opacity-70"> /an</span>
+                  </div>
+                  <div className="text-[8px] opacity-60 mt-0.5">{c.hint}</div>
                 </div>
-              </div>
-              <div
-                className={`px-3 py-2 rounded-xl text-xs font-mono border-2 ${
-                  economieAnnuelle >= 0
-                    ? "bg-green-50 border-green-300 text-green-900"
-                    : "bg-red-50 border-red-300 text-red-900"
-                }`}
-              >
-                <div className="text-[9px] uppercase tracking-widest opacity-70">Économie / an</div>
-                <div className="text-base font-bold">
-                  {economieAnnuelle >= 0 ? "+" : ""}{fmt(economieAnnuelle, 0)} €
-                </div>
-              </div>
+              ))}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -540,6 +551,9 @@ export default function Step7AnimationTRV() {
             {econoDuJour.total >= 0 ? "+" : ""}{fmt(econoDuJour.total, 2)} €
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
+            Contrat&nbsp;: {econoDuJour.sobry >= 0 ? "+" : ""}{fmt(econoDuJour.sobry, 2)} € · Batterie&nbsp;: {econoDuJour.pilotage >= 0 ? "+" : ""}{fmt(econoDuJour.pilotage, 2)} €
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-1">
             {day.cycleCount} cycle{day.cycleCount > 1 ? "s" : ""} effectué{day.cycleCount > 1 ? "s" : ""}
           </div>
         </motion.div>
