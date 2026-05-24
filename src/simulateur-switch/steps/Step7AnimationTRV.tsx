@@ -74,11 +74,23 @@ export default function Step7AnimationTRV() {
     });
   }, [days, selectedTRV, tva]);
 
-  const { economieAnnuelle, economieMensuelle } = useMemo(() => {
-    const totalPeriode = dayEconomies.reduce((s, e) => s + e.total, 0);
-    const nbJours = dayEconomies.length || 1;
-    const annuelle = (totalPeriode / nbJours) * 365;
-    return { economieAnnuelle: annuelle, economieMensuelle: annuelle / 12 };
+  const {
+    economieAnnuelle, economieMensuelle,
+    ecoContratAnnuelle, ecoContratMensuelle,
+    ecoBatterieAnnuelle, ecoBatterieMensuelle,
+  } = useMemo(() => {
+    const totalP = dayEconomies.reduce((s, e) => s + e.total, 0);
+    const sobryP = dayEconomies.reduce((s, e) => s + e.sobry, 0);
+    const pilotP = dayEconomies.reduce((s, e) => s + e.pilotage, 0);
+    const n = dayEconomies.length || 1;
+    const annT = (totalP / n) * 365;
+    const annS = (sobryP / n) * 365;
+    const annP = (pilotP / n) * 365;
+    return {
+      economieAnnuelle: annT, economieMensuelle: annT / 12,
+      ecoContratAnnuelle: annS, ecoContratMensuelle: annS / 12,
+      ecoBatterieAnnuelle: annP, ecoBatterieMensuelle: annP / 12,
+    };
   }, [dayEconomies]);
 
   const day = days[dayIdx];
