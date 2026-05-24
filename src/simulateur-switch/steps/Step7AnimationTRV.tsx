@@ -551,6 +551,9 @@ export default function Step7AnimationTRV() {
             {econoDuJour.total >= 0 ? "+" : ""}{fmt(econoDuJour.total, 2)} €
           </div>
           <div className="text-[11px] text-muted-foreground mt-2">
+            Contrat&nbsp;: {econoDuJour.sobry >= 0 ? "+" : ""}{fmt(econoDuJour.sobry, 2)} € · Batterie&nbsp;: {econoDuJour.pilotage >= 0 ? "+" : ""}{fmt(econoDuJour.pilotage, 2)} €
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-1">
             {day.cycleCount} cycle{day.cycleCount > 1 ? "s" : ""} effectué{day.cycleCount > 1 ? "s" : ""}
           </div>
         </motion.div>
