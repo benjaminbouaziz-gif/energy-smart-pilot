@@ -579,10 +579,20 @@ export default function Step7AnimationTRV() {
         </div>
       </motion.section>
 
-      <div className="container mx-auto px-4 mt-6 mb-10 max-w-6xl flex justify-between">
-        <Button variant="outline" onClick={prev} className="gap-2">
-          <ChevronLeft className="w-4 h-4" /> Précédent
-        </Button>
+      <div className="container mx-auto px-4 mt-6 mb-10 max-w-6xl flex justify-between gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={prev} className="gap-2">
+            <ChevronLeft className="w-4 h-4" /> Précédent
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={!canExport}
+            className="gap-2"
+          >
+            <Download className="w-4 h-4" /> Exporter calcul exhaustif heure par heure
+          </Button>
+        </div>
         <Button
           onClick={next}
           className="gap-2 bg-gradient-to-r from-primary to-primary-light text-primary-foreground hover:opacity-90 shadow-[var(--shadow-glow)] font-semibold"
