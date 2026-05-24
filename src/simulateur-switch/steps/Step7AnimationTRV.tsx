@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import * as XLSX from "xlsx";
 import { useSimulateurSwitch } from "../SimulateurSwitchContext";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -7,11 +8,12 @@ import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Line, LineChart,
   Legend as RLegend, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { Activity, Battery, Euro, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Activity, Battery, Euro, Zap, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { CONSTANTES } from "@/lib/dynawatt-engine-bis";
 import {
   prixTRV_TTC, tarifApplicable, libelleTarifTRV,
   findWorstCaseTRV, findBestCaseTRV, TarifTRVType,
+  TRV_BLEU_BASE, TRV_BLEU_HPHC, TRV_JAUNE_CU, GrilleTRVPeriode,
 } from "@/lib/tarifs-trv";
 
 const fmt = (n: number, d = 0) =>
