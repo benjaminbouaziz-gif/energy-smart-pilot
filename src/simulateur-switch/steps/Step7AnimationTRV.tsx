@@ -130,6 +130,193 @@ export default function Step7AnimationTRV() {
     }));
   }, [days, dayEconomies]);
 
+  const dayMap = useMemo(
+    () => new Map<string, any>(days.map((d: any) => [d.date, d])),
+    [days]
+  );
+
+  const factureSobry = data.factureSobry;
+  const canExport = !!factureSobry?.details_horaires?.length && !!result;
+
+  const handleExport = () => {
+    if (!canExport) return;
+    const tvaMul = 1 + CONSTANTES.TVA;
+    const capacite = result.config.capacite as number;
+    const details = factureSobry!.details_horaires as any[];
+
+    type CycleGain = { perHour: Map<number, number> };
+    const cycleGainsByDate = new Map<string, CycleGain[]>();
+    for (const d of days) {
+      const cycles: CycleGain[] = [];
+      for (const c of [d.cycle1, d.cycle2]) {
+        if (!c) continue;
+        const dechHours: number[] = [];
+        for (let h = c.dechargeStart; h <= c.dechargeEnd; h++) dechHours.push(h);
+        const consoSur = dechHours.reduce((s, h) => s + (d.conso24h[h] || 0), 0);
+        const energieRestituable = Math.min(capacite, consoSur);
+        const spreadNet = c.spread * CONSTANTES.RTE_BATTERIE * CONSTANTES.DEGRADATION;
+        const gainCycle = Math.max(0, spreadNet * energieRestituable * tvaMul);
+        const perHour = new Map<number, number>();
+        if (consoSur > 0) {
+          for (const h of dechHours) {
+            perHour.set(h, gainCycle * ((d.conso24h[h] || 0) / consoSur));
+          }
+        }
+        cycles.push({ perHour });
+      }
+      cycleGainsByDate.set(d.date, cycles);
+    }
+
+    const plageTRV = (date: string, hour: number, type: TarifTRVType): string => {
+      if (type === "BLEU_BASE") return "BASE";
+      if (type === "BLEU_HPHC") return (hour >= 22 || hour < 6) ? "HC" : "HP";
+      const month = parseInt(date.split("-")[1], 10);
+      const isHiver = month >= 11 || month <= 3;
+      const dow = new Date(date + "T00:00:00").getDay();
+      const isHC = dow === 0 || hour >= 22 || hour < 7;
+      return isHiver ? (isHC ? "HCH" : "HPH") : (isHC ? "HCE" : "HPE");
+    };
+
+    const grilleFor = (type: TarifTRVType): GrilleTRVPeriode[] =>
+      type === "BLEU_BASE" ? TRV_BLEU_BASE : type === "BLEU_HPHC" ? TRV_BLEU_HPHC : TRV_JAUNE_CU;
+
+    const fmtFr = (iso: string) => {
+      const [y, m, d] = iso.split("-");
+      return `${d}/${m}/${y}`;
+    };
+    const periodeBareme = (date: string, type: TarifTRVType) => {
+      const p = grilleFor(type).find(
+        (g) => g.dateDebut <= date && (g.dateFin === null || date <= g.dateFin)
+      );
+      if (!p) return { periode: null as GrilleTRVPeriode | null, label: "" };
+      return { periode: p, label: `${fmtFr(p.dateDebut)}→${p.dateFin ? fmtFr(p.dateFin) : "∞"}` };
+    };
+
+    const actionBatterie = (dayPlan: any, hour: number): "" | "charge" | "decharge" => {
+      if (!dayPlan) return "";
+      const c1 = dayPlan.cycle1, c2 = dayPlan.cycle2;
+      if (c1 && hour >= c1.chargeStart && hour <= c1.chargeEnd) return "charge";
+      if (c1 && hour >= c1.dechargeStart && hour <= c1.dechargeEnd) return "decharge";
+      if (c2 && hour >= c2.chargeStart && hour <= c2.chargeEnd) return "charge";
+      if (c2 && hour >= c2.dechargeStart && hour <= c2.dechargeEnd) return "decharge";
+      return "";
+    };
+
+    const gainBatterieHeure = (date: string, hour: number): number => {
+      const cycles = cycleGainsByDate.get(date);
+      if (!cycles) return 0;
+      let g = 0;
+      for (const c of cycles) g += c.perHour.get(hour) || 0;
+      return g;
+    };
+
+    const headers = [
+      "Timestamp CET", "Date", "Heure", "Jour semaine", "Conso",
+      "Plage Sobry", "EPEX spot", "TURPE variable", "Accise", "Autres (marge+prime+CEE+capa)",
+      "Prix Sobry HT", "Prix Sobry TTC", "Coût Sobry TTC",
+      "Plage TRV", "Période barème TRV", "Prix TRV HTVA", "Prix TRV TTC", "Coût TRV TTC",
+      "Delta TTC", "Économie Sobry h",
+      "Action batterie", "Énergie pendant action", "Gain batterie h",
+      "Économie totale h",
+    ];
+    const units = [
+      "", "YYYY-MM-DD", "0-23", "0=dim..6=sam", "kWh",
+      "HPH/HCH/HPB/HCB", "€/kWh", "€/kWh", "€/kWh", "€/kWh",
+      "€/kWh", "€/kWh", "€",
+      "", "", "€/kWh", "€/kWh", "€",
+      "€/kWh", "€",
+      "", "kWh", "€",
+      "€",
+    ];
+
+    const rows: any[][] = [headers, units];
+    let sConso = 0, sCoutSobry = 0, sCoutTrv = 0, sEcoSobry = 0, sGainBat = 0, sEcoTotal = 0;
+
+    for (const h of details) {
+      const date: string = String(h.timestamp).slice(0, 10);
+      let hour = 0;
+      if (h.timestamp_cet) {
+        const m = String(h.timestamp_cet).match(/T(\d{2})/) || String(h.timestamp_cet).match(/\s(\d{2}):/);
+        if (m) hour = parseInt(m[1], 10);
+      } else {
+        hour = new Date(h.timestamp).getUTCHours();
+      }
+      const dow = new Date(date + "T00:00:00").getDay();
+      const conso = Number(h.conso_kwh) || 0;
+      const spot = Number(h.spot_eur_kwh) || 0;
+      const turpe = Number(h.turpe_var_eur_kwh) || 0;
+      const accise = Number(h.accise_eur_kwh) || 0;
+      const costTot = Number(h.cost_total_eur) || 0;
+
+      const prixSobryHt = conso > 0 ? costTot / conso : 0;
+      const autres = conso > 0 ? prixSobryHt - spot - turpe - accise : 0;
+      const prixSobryTtc = prixSobryHt * tvaMul;
+      const coutSobryTtc = prixSobryTtc * conso;
+
+      const plageT = plageTRV(date, hour, selectedTRV);
+      const { periode, label: barLabel } = periodeBareme(date, selectedTRV);
+      const prixTrvHtva = periode ? (periode.composantes[plageT] ?? null) : null;
+      const prixTrvTtc = prixTrvHtva !== null ? prixTrvHtva * tvaMul : null;
+      const coutTrvTtc = prixTrvTtc !== null ? prixTrvTtc * conso : null;
+      const deltaTtc = prixTrvTtc !== null ? prixTrvTtc - prixSobryTtc : null;
+      const ecoSobry = coutTrvTtc !== null ? coutTrvTtc - coutSobryTtc : null;
+
+      const dayPlan = dayMap.get(date);
+      const action = actionBatterie(dayPlan, hour);
+      const energieAction = action ? (dayPlan?.conso24h?.[hour] || 0) : 0;
+      const gainBat = gainBatterieHeure(date, hour);
+      const ecoTotal = (ecoSobry || 0) + gainBat;
+
+      sConso += conso;
+      sCoutSobry += coutSobryTtc;
+      if (coutTrvTtc !== null) sCoutTrv += coutTrvTtc;
+      if (ecoSobry !== null) sEcoSobry += ecoSobry;
+      sGainBat += gainBat;
+      sEcoTotal += ecoTotal;
+
+      rows.push([
+        h.timestamp_cet || h.timestamp,
+        date,
+        hour,
+        dow,
+        conso,
+        h.periode || "",
+        spot, turpe, accise, autres,
+        prixSobryHt, prixSobryTtc, coutSobryTtc,
+        plageT, barLabel,
+        prixTrvHtva ?? "",
+        prixTrvTtc ?? "",
+        coutTrvTtc ?? "",
+        deltaTtc ?? "",
+        ecoSobry ?? "",
+        action,
+        energieAction,
+        gainBat,
+        ecoTotal,
+      ]);
+    }
+
+    rows.push([
+      "TOTAL", "", "", "", sConso,
+      "", "", "", "", "",
+      "", "", sCoutSobry,
+      "", "", "", "", sCoutTrv,
+      "", sEcoSobry,
+      "", "", sGainBat,
+      sEcoTotal,
+    ]);
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, "Calcul détaillé");
+    XLSX.writeFile(
+      wb,
+      `simulateur-switch-calcul-exhaustif-${selectedTRV}-${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
+  };
+
+
+
   if (!result || !days.length) {
     return (
       <div className="container mx-auto px-4 mt-10 max-w-3xl text-center text-muted-foreground">
