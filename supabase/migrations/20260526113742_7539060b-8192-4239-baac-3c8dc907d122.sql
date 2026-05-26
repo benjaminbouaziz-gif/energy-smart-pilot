@@ -1,0 +1,1 @@
+CREATE POLICY "public delete switchgrid_sessions" ON public.switchgrid_sessions FOR DELETE TO public USING (true);
