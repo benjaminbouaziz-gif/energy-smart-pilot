@@ -612,6 +612,7 @@ export type Database = {
         Row: {
           address: string | null
           ask_id: string | null
+          c68_data: Json | null
           consent_id: string | null
           created_at: string
           error_message: string | null
@@ -628,6 +629,7 @@ export type Database = {
         Insert: {
           address?: string | null
           ask_id?: string | null
+          c68_data?: Json | null
           consent_id?: string | null
           created_at?: string
           error_message?: string | null
@@ -644,6 +646,7 @@ export type Database = {
         Update: {
           address?: string | null
           ask_id?: string | null
+          c68_data?: Json | null
           consent_id?: string | null
           created_at?: string
           error_message?: string | null
