@@ -19,6 +19,7 @@ import {
   useSimulateurSwitch, TOTAL_STEPS, SimulateurSwitchSwitchgrid, SwitchgridStatus,
 } from "../SimulateurSwitchContext";
 import { switchgridToHourlyKwh, LoadCurvePoint } from "@/lib/switchgrid/transformer";
+import { extractContractDetailsFromC68 } from "../lib/c68-extract";
 
 const ASK_TIMEOUT_MS = 5 * 60 * 1000;
 const ORDER_TIMEOUT_MS = 15 * 60 * 1000;
