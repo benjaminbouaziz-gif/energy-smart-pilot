@@ -234,7 +234,7 @@ export default function Step3AnalyseConso() {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: React.ReactNode }) {
+function StatTile({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4">
       <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-1">{label}</div>
@@ -281,7 +281,7 @@ function formatDateFrLong(iso?: string) {
   return `${d.getUTCDate()} ${FR_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-function InfoTile({ label, value }: { label: string; value: React.ReactNode }) {
+function InfoTile({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-2xl bg-violet-50 border border-violet-100 px-4 py-3">
       <div className="text-xs text-muted-foreground mb-1">{label}</div>
@@ -296,7 +296,7 @@ function ContractDetailsCard({ contract }: { contract?: SimulateurSwitchContract
   const optTxt = labelOptionTarifaire(contract.optionTarifaire);
   const dateTxt = formatDateFrLong(contract.dateMiseEnService);
 
-  const tiles: { label: string; value: React.ReactNode }[] = [];
+  const tiles: { label: string; value: ReactNode }[] = [];
   if (contract.prm) tiles.push({ label: "PRM", value: <span className="font-mono">{formatPrm(contract.prm)}</span> });
   if (contract.titulaire) tiles.push({ label: "Titulaire", value: contract.titulaire });
   if (segTxt) tiles.push({ label: "Segment / Tension", value: segTxt });
