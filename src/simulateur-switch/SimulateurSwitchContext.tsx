@@ -122,6 +122,19 @@ export interface SimulateurSwitchFactureSobryAvecBatterie {
   simulationResult: any;
 }
 
+export interface SimulateurSwitchContractDetails {
+  raw: any;
+  prm?: string;
+  titulaire?: string;
+  segment?: string;
+  domaineTension?: string;
+  puissanceSouscriteKva?: number;
+  optionTarifaire?: string;
+  formulesTarifairesActives?: string[];
+  typeCompteur?: string;
+  dateMiseEnService?: string;
+}
+
 export interface SimulateurSwitchData {
   identite?: SimulateurSwitchIdentite;
   switchgrid?: SimulateurSwitchSwitchgrid;
@@ -132,6 +145,7 @@ export interface SimulateurSwitchData {
   factureSobry?: SimulateurSwitchFactureSobry;
   factureSobryAvecBatterie?: SimulateurSwitchFactureSobryAvecBatterie;
   simulationResult?: any;
+  contractDetails?: SimulateurSwitchContractDetails;
   [k: string]: any;
 }
 
