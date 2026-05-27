@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
       status: "FETCHING", order_id: data.id, loadcurve_request_id: loadcurve.id,
     }).eq("id", sessionId);
 
-    return new Response(JSON.stringify({ orderId: data.id, loadcurveRequestId: loadcurve.id }), {
+    return new Response(JSON.stringify({ orderId: data.id, loadcurveRequestId: loadcurve.id, _debugSwitchgridResponse: data, _debugLoadcurveObject: loadcurve, }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
