@@ -259,6 +259,7 @@ function InfoBlock({ label, value, className }: { label: string; value: string; 
 }
 
 function ContractDetailsCard({ contract }: { contract?: SimulateurSwitchContractDetails }) {
+  const [contractCardOpen, setContractCardOpen] = useState(false);
   if (!contract) return null;
   const cd = contract;
 
@@ -266,44 +267,77 @@ function ContractDetailsCard({ contract }: { contract?: SimulateurSwitchContract
     cd.prm || cd.segmentLibelle || cd.domaineTensionLibelle || cd.puissanceSouscriteKva ||
     cd.calendrierFrnLibelle || cd.formuleTarifaireLibelle || cd.plagesHeuresCreuses ||
     cd.typeComptageLibelle || cd.calibreDisjoncteur || cd.periodiciteReleve ||
-    cd.etatContractuel || cd.adresseInstallation;
+    cd.etatContractuel || cd.adresseInstallation || cd.typeContratLabel || cd.localisationCompteur;
   if (!hasAny) return null;
 
+  const compteurDesc = "Données récupérées automatiquement depuis votre compteur Linky";
+
   return (
-    <Card className="rounded-3xl">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-violet-600" />
-          Votre contrat Enedis
-        </CardTitle>
-        <CardDescription>Données récupérées automatiquement depuis votre compteur Linky</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {cd.prm && <InfoBlock label="PRM" value={formatPrm(cd.prm)} />}
-          {cd.segmentLibelle && <InfoBlock label="Segment" value={cd.segmentLibelle} />}
-          {cd.domaineTensionLibelle && <InfoBlock label="Domaine de tension" value={cd.domaineTensionLibelle} />}
-          {cd.puissanceSouscriteKva && <InfoBlock label="Puissance souscrite" value={`${cd.puissanceSouscriteKva} kVA`} />}
-          {cd.puissanceRaccordementKva && cd.puissanceRaccordementKva !== cd.puissanceSouscriteKva && (
-            <InfoBlock label="Puissance raccordement" value={`${cd.puissanceRaccordementKva} kVA`} />
-          )}
-          {cd.calendrierFrnLibelle && <InfoBlock label="Option tarifaire" value={cd.calendrierFrnLibelle} />}
-          {cd.formuleTarifaireLibelle && (
-            <InfoBlock label="Formule d'acheminement" value={cd.formuleTarifaireLibelle} className="sm:col-span-2 lg:col-span-3" />
-          )}
-          {cd.plagesHeuresCreuses && <InfoBlock label="Heures creuses actuelles" value={cd.plagesHeuresCreuses} />}
-          {cd.futuresPlagesHeuresCreuses && cd.futuresPlagesHeuresCreuses !== cd.plagesHeuresCreuses && (
-            <InfoBlock label="Futures heures creuses" value={cd.futuresPlagesHeuresCreuses} />
-          )}
-          {cd.typeComptageLibelle && <InfoBlock label="Type de compteur" value={cd.typeComptageLibelle} />}
-          {cd.calibreDisjoncteur && <InfoBlock label="Disjoncteur" value={cd.calibreDisjoncteur} />}
-          {cd.periodiciteReleve && <InfoBlock label="Périodicité de relevé" value={cd.periodiciteReleve} />}
-          {cd.etatContractuel && <InfoBlock label="État contractuel" value={cd.etatContractuel} />}
-          {cd.adresseInstallation && (
-            <InfoBlock label="Adresse" value={cd.adresseInstallation} className="sm:col-span-2 lg:col-span-3" />
-          )}
-        </div>
-      </CardContent>
+    <Card className="rounded-3xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setContractCardOpen(!contractCardOpen)}
+        className="w-full text-left transition-colors hover:bg-violet-50/50"
+        aria-expanded={contractCardOpen}
+      >
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Building2 className="w-5 h-5 text-violet-600 shrink-0" />
+            <div>
+              <CardTitle>Votre contrat Enedis</CardTitle>
+              <CardDescription>{compteurDesc}</CardDescription>
+            </div>
+          </div>
+          <motion.div
+            animate={{ rotate: contractCardOpen ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+            className="shrink-0"
+          >
+            <ChevronDown className="w-5 h-5 text-violet-600" />
+          </motion.div>
+        </CardHeader>
+      </button>
+      <motion.div
+        initial={false}
+        animate={{ height: contractCardOpen ? "auto" : 0, opacity: contractCardOpen ? 1 : 0 }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+        style={{ overflow: "hidden" }}
+      >
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {cd.prm && <InfoBlock label="PRM" value={formatPrm(cd.prm)} />}
+            {cd.typeContratLabel && (
+              <InfoBlock
+                label="Type de contrat"
+                value={cd.typeContratLabel}
+                className="sm:col-span-2 lg:col-span-3"
+              />
+            )}
+            {cd.segmentLibelle && <InfoBlock label="Segment" value={cd.segmentLibelle} />}
+            {cd.domaineTensionLibelle && <InfoBlock label="Domaine de tension" value={cd.domaineTensionLibelle} />}
+            {cd.puissanceSouscriteKva && <InfoBlock label="Puissance souscrite" value={`${cd.puissanceSouscriteKva} kVA`} />}
+            {cd.puissanceRaccordementKva && cd.puissanceRaccordementKva !== cd.puissanceSouscriteKva && (
+              <InfoBlock label="Puissance raccordement" value={`${cd.puissanceRaccordementKva} kVA`} />
+            )}
+            {cd.calendrierFrnLibelle && <InfoBlock label="Option tarifaire" value={cd.calendrierFrnLibelle} />}
+            {cd.formuleTarifaireLibelle && (
+              <InfoBlock label="Formule d'acheminement" value={cd.formuleTarifaireLibelle} className="sm:col-span-2 lg:col-span-3" />
+            )}
+            {cd.plagesHeuresCreuses && <InfoBlock label="Heures creuses actuelles" value={cd.plagesHeuresCreuses} />}
+            {cd.futuresPlagesHeuresCreuses && cd.futuresPlagesHeuresCreuses !== cd.plagesHeuresCreuses && (
+              <InfoBlock label="Futures heures creuses" value={cd.futuresPlagesHeuresCreuses} />
+            )}
+            {cd.typeComptageLibelle && <InfoBlock label="Type de compteur" value={cd.typeComptageLibelle} />}
+            {cd.localisationCompteur && <InfoBlock label="Localisation du compteur" value={cd.localisationCompteur} />}
+            {cd.calibreDisjoncteur && <InfoBlock label="Disjoncteur" value={cd.calibreDisjoncteur} />}
+            {cd.periodiciteReleve && <InfoBlock label="Périodicité de relevé" value={cd.periodiciteReleve} />}
+            {cd.etatContractuel && <InfoBlock label="État contractuel" value={cd.etatContractuel} />}
+            {cd.adresseInstallation && (
+              <InfoBlock label="Adresse" value={cd.adresseInstallation} className="sm:col-span-2 lg:col-span-3" />
+            )}
+          </div>
+        </CardContent>
+      </motion.div>
     </Card>
   );
 }
