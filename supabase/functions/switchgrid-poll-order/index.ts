@@ -47,6 +47,7 @@ Deno.serve(async (req) => {
     const status = order.status;
     const requests = order.requests ?? [];
     const loadcurve = requests.find((r: any) => r.type === "LOADCURVE");
+    const c68Req = requests.find((r: any) => r.type === "C68");
 
     if (["PENDING_REQUESTS", "PROCESSING", "PENDING_ADDRESS_CHECK"].includes(status)) {
       return new Response(JSON.stringify({ status }), {
