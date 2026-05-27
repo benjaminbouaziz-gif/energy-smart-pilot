@@ -125,14 +125,23 @@ export interface SimulateurSwitchFactureSobryAvecBatterie {
 export interface SimulateurSwitchContractDetails {
   raw: any;
   prm?: string;
-  titulaire?: string;
-  segment?: string;
-  domaineTension?: string;
+  segmentCode?: string;
+  segmentLibelle?: string;
+  etatContractuel?: string;
+  adresseInstallation?: string;
+  domaineTensionLibelle?: string;
+  domaineTensionCode?: string;
   puissanceSouscriteKva?: number;
-  optionTarifaire?: string;
-  formulesTarifairesActives?: string[];
-  typeCompteur?: string;
-  dateMiseEnService?: string;
+  puissanceRaccordementKva?: number;
+  formuleTarifaireCode?: string;
+  formuleTarifaireLibelle?: string;
+  calendrierFrnLibelle?: string;
+  plagesHeuresCreuses?: string;
+  futuresPlagesHeuresCreuses?: string;
+  typeComptageLibelle?: string;
+  calibreDisjoncteur?: string;
+  periodiciteReleve?: string;
+  dateDerniereAugmentationPuissance?: string;
 }
 
 export interface SimulateurSwitchData {
