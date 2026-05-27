@@ -142,6 +142,8 @@ export interface SimulateurSwitchContractDetails {
   calibreDisjoncteur?: string;
   periodiciteReleve?: string;
   dateDerniereAugmentationPuissance?: string;
+  typeContratLabel?: string;
+  localisationCompteur?: string;
 }
 
 export interface SimulateurSwitchData {
