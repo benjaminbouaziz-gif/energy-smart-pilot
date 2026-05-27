@@ -78,9 +78,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const urlAppelee = `${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`;
-    console.log("SWITCHGRID_DATA_URL_CALLED:", urlAppelee);
-    const dataResp = await fetch(urlAppelee, {
+    const dataResp = await fetch(`${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`, {
       method: "GET", headers: sgHeaders(), cache: "no-store",
     });
     const dataText = await dataResp.text();
@@ -90,10 +88,23 @@ Deno.serve(async (req) => {
       });
     }
     const payload = JSON.parse(dataText);
-    console.log("SWITCHGRID_DATA_RAW_PAYLOAD:", dataText.slice(0, 2000));
-    const periodMin = parsePeriodMin(payload.period);
-    const startMs = new Date(payload.startsAt).getTime();
-    const values: number[] = payload.values ?? [];
+    // Switchgrid retourne pour LOADCURVE le payload enveloppé par PRM :
+    // { "<PRM>": { period, startsAt, endsAt, values: [...] } }
+    // On détecte automatiquement : si values est à la racine, on l'utilise ;
+    // sinon on prend la première sous-clé qui contient un objet avec values.
+    let prmData: any = payload;
+    if (!Array.isArray(payload.values)) {
+      for (const key of Object.keys(payload)) {
+        const candidate = payload[key];
+        if (candidate && typeof candidate === "object" && Array.isArray(candidate.values)) {
+          prmData = candidate;
+          break;
+        }
+      }
+    }
+    const periodMin = parsePeriodMin(prmData.period);
+    const startMs = new Date(prmData.startsAt).getTime();
+    const values: number[] = prmData.values ?? [];
 
     const loadCurve = values.map((powerW, i) => ({
       timestamp: new Date(startMs + i * periodMin * 60000).toISOString(),
@@ -103,7 +114,7 @@ Deno.serve(async (req) => {
 
     await supabase.from("switchgrid_sessions").update({ status: "READY" }).eq("id", sessionId);
 
-    return new Response(JSON.stringify({ status: "READY", loadCurve, _debugUrlCalled: urlAppelee, _debugRawPayload: payload }), {
+    return new Response(JSON.stringify({ status: "READY", loadCurve }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
