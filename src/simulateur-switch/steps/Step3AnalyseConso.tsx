@@ -80,6 +80,17 @@ export default function Step3AnalyseConso() {
       </div>
       <ContractDetailsCard contract={data.contractDetails} />
 
+      {data.contractDetails?.raw && (
+        <details className="mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-violet-900">
+            DEBUG — JSON brut C68 (à retirer après diagnostic)
+          </summary>
+          <pre className="mt-2 max-h-96 overflow-auto text-xs">
+            {JSON.stringify(data.contractDetails.raw, null, 2)}
+          </pre>
+        </details>
+      )}
+
 
       {/* SECTION 1 - Stats clés */}
       <Card className="rounded-3xl border-primary/20 shadow-[var(--shadow-glow)]">
