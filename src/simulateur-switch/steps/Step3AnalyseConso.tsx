@@ -78,6 +78,8 @@ export default function Step3AnalyseConso() {
         <h1 className="text-3xl md:text-4xl font-black mb-2">Analyse de la consommation</h1>
         <p className="text-sm text-muted-foreground">Profil de consommation à présenter au client</p>
       </div>
+      <ContractDetailsCard contract={data.contractDetails} />
+
 
       {/* SECTION 1 - Stats clés */}
       <Card className="rounded-3xl border-primary/20 shadow-[var(--shadow-glow)]">
