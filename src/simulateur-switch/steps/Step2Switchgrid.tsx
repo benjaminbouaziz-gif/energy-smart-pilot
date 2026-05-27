@@ -193,6 +193,7 @@ export default function Step2Switchgrid() {
       const authHeaders = { apikey: SUPA_KEY, Authorization: `Bearer ${SUPA_KEY}` };
       const t1 = Date.now();
       let loadCurveRaw: LoadCurvePoint[] | null = null;
+      let contractDetailsRaw: any = null;
       while (!cancelRef.current && Date.now() - t1 < ORDER_TIMEOUT_MS) {
         const r = await fetch(
           `${SUPA_URL}/functions/v1/switchgrid-poll-order?orderId=${encodeURIComponent(orderId)}&sessionId=${encodeURIComponent(sessionId)}`,
@@ -200,7 +201,11 @@ export default function Step2Switchgrid() {
         );
         const j = await r.json();
         if (!r.ok) throw new Error(j?.error || "poll-order failed");
-        if (j.status === "READY") { loadCurveRaw = j.loadCurve as LoadCurvePoint[]; break; }
+        if (j.status === "READY") {
+          loadCurveRaw = j.loadCurve as LoadCurvePoint[];
+          contractDetailsRaw = j.contractDetails ?? null;
+          break;
+        }
         if (j.status === "FAILED") throw new Error(j.message || "Order failed");
         await sleepInterruptible(3000);
       }
@@ -211,6 +216,9 @@ export default function Step2Switchgrid() {
       }
 
       const result = switchgridToHourlyKwh(loadCurveRaw);
+      const contractDetails = contractDetailsRaw
+        ? extractContractDetailsFromC68(contractDetailsRaw)
+        : undefined;
       updateData({
         switchgrid: { ...sgRef.current, status: "READY" },
         loadCurve: {
@@ -222,6 +230,7 @@ export default function Step2Switchgrid() {
           warnings: result.warnings,
           source: "switchgrid",
         },
+        ...(contractDetails ? { contractDetails } : {}),
       });
       setTimeout(() => { if (!cancelRef.current) next(); }, 1500);
     } catch (e: any) {
