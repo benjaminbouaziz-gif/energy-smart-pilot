@@ -90,6 +90,7 @@ Deno.serve(async (req) => {
       });
     }
     const payload = JSON.parse(dataText);
+    console.log("SWITCHGRID_DATA_RAW_PAYLOAD:", dataText.slice(0, 2000));
     const periodMin = parsePeriodMin(payload.period);
     const startMs = new Date(payload.startsAt).getTime();
     const values: number[] = payload.values ?? [];
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
 
     await supabase.from("switchgrid_sessions").update({ status: "READY" }).eq("id", sessionId);
 
-    return new Response(JSON.stringify({ status: "READY", loadCurve, _debugUrlCalled: urlAppelee }), {
+    return new Response(JSON.stringify({ status: "READY", loadCurve, _debugUrlCalled: urlAppelee, _debugRawPayload: payload }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
