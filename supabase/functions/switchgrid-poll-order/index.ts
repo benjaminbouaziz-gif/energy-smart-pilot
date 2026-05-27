@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const dataResp = await fetch(`${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`, {
+    const urlAppelee = `${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`;
+    console.log("SWITCHGRID_DATA_URL_CALLED:", urlAppelee);
+    const dataResp = await fetch(urlAppelee, {
       method: "GET", headers: sgHeaders(), cache: "no-store",
     });
     const dataText = await dataResp.text();
