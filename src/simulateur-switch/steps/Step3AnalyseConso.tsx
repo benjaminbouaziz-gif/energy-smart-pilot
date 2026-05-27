@@ -249,84 +249,65 @@ function StatTile({ label, value }: { label: string; value: ReactNode }) {
 // ============================================================
 import type { SimulateurSwitchContractDetails } from "../SimulateurSwitchContext";
 
-const OPTION_TARIFAIRE_LABELS: Record<string, string> = {
-  BASE: "Base",
-  HPHC: "Heures Pleines / Heures Creuses",
-  HP_HC: "Heures Pleines / Heures Creuses",
-  "HP/HC": "Heures Pleines / Heures Creuses",
-  "TJ-CU": "Tarif Jaune CU",
-  "TLU-LU": "Tarif Longue Utilisation",
-  CU4: "Courte Utilisation 4 postes",
-  MU4: "Moyenne Utilisation 4 postes",
-  CU: "Courte Utilisation",
-  LU: "Longue Utilisation",
-};
-
-function labelOptionTarifaire(o?: string) {
-  if (!o) return undefined;
-  const up = o.toUpperCase().replace(/\s+/g, "");
-  return OPTION_TARIFAIRE_LABELS[up] ?? o;
-}
-
-function labelSegmentTension(segment?: string, tension?: string) {
-  if (!segment && !tension) return undefined;
-  const segTxt = segment === "C5" ? "C5 (≤ 36 kVA)" : segment === "C4" ? "C4 (36–250 kVA)" : segment;
-  if (segTxt && tension) return `${segTxt} — ${tension}`;
-  return segTxt ?? tension;
-}
-
-function formatDateFrLong(iso?: string) {
-  if (!iso) return undefined;
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return `${d.getUTCDate()} ${FR_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
-
-function InfoTile({ label, value }: { label: string; value: ReactNode }) {
+function InfoBlock({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
-    <div className="rounded-2xl bg-violet-50 border border-violet-100 px-4 py-3">
-      <div className="text-xs text-muted-foreground mb-1">{label}</div>
-      <div className="font-semibold text-base text-foreground">{value}</div>
+    <div className={`rounded-2xl bg-violet-50 p-3 ${className ?? ""}`}>
+      <div className="text-xs text-violet-700/70 font-medium">{label}</div>
+      <div className="text-sm font-semibold text-violet-900 mt-1">{value}</div>
     </div>
   );
 }
 
 function ContractDetailsCard({ contract }: { contract?: SimulateurSwitchContractDetails }) {
   if (!contract) return null;
-  const segTxt = labelSegmentTension(contract.segment, contract.domaineTension);
-  const optTxt = labelOptionTarifaire(contract.optionTarifaire);
-  const dateTxt = formatDateFrLong(contract.dateMiseEnService);
+  const cd = contract;
 
-  const tiles: { label: string; value: ReactNode }[] = [];
-  if (contract.prm) tiles.push({ label: "PRM", value: <span className="font-mono">{formatPrm(contract.prm)}</span> });
-  if (contract.titulaire) tiles.push({ label: "Titulaire", value: contract.titulaire });
-  if (segTxt) tiles.push({ label: "Segment / Tension", value: segTxt });
-  if (contract.puissanceSouscriteKva != null)
-    tiles.push({ label: "Puissance souscrite", value: `${contract.puissanceSouscriteKva} kVA` });
-  if (optTxt) tiles.push({ label: "Option tarifaire", value: optTxt });
-  if (contract.typeCompteur) tiles.push({ label: "Type de compteur", value: contract.typeCompteur });
-  if (dateTxt) tiles.push({ label: "Mise en service", value: dateTxt });
-
-  if (tiles.length === 0) return null;
+  const hasAny =
+    cd.prm || cd.segmentLibelle || cd.domaineTensionLibelle || cd.puissanceSouscriteKva ||
+    cd.calendrierFrnLibelle || cd.formuleTarifaireLibelle || cd.plagesHeuresCreuses ||
+    cd.typeComptageLibelle || cd.calibreDisjoncteur || cd.periodiciteReleve ||
+    cd.etatContractuel || cd.adresseInstallation;
+  if (!hasAny) return null;
 
   return (
     <Card className="rounded-3xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-primary" /> Votre contrat Enedis
+          <Building2 className="w-5 h-5 text-violet-600" />
+          Votre contrat Enedis
         </CardTitle>
-        <CardDescription>Données récupérées automatiquement depuis votre compteur</CardDescription>
+        <CardDescription>Données récupérées automatiquement depuis votre compteur Linky</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {tiles.map((t, i) => (
-            <InfoTile key={i} label={t.label} value={t.value} />
-          ))}
+          {cd.prm && <InfoBlock label="PRM" value={formatPrm(cd.prm)} />}
+          {cd.segmentLibelle && <InfoBlock label="Segment" value={cd.segmentLibelle} />}
+          {cd.domaineTensionLibelle && <InfoBlock label="Domaine de tension" value={cd.domaineTensionLibelle} />}
+          {cd.puissanceSouscriteKva && <InfoBlock label="Puissance souscrite" value={`${cd.puissanceSouscriteKva} kVA`} />}
+          {cd.puissanceRaccordementKva && cd.puissanceRaccordementKva !== cd.puissanceSouscriteKva && (
+            <InfoBlock label="Puissance raccordement" value={`${cd.puissanceRaccordementKva} kVA`} />
+          )}
+          {cd.calendrierFrnLibelle && <InfoBlock label="Option tarifaire" value={cd.calendrierFrnLibelle} />}
+          {cd.formuleTarifaireLibelle && (
+            <InfoBlock label="Formule d'acheminement" value={cd.formuleTarifaireLibelle} className="sm:col-span-2 lg:col-span-3" />
+          )}
+          {cd.plagesHeuresCreuses && <InfoBlock label="Heures creuses actuelles" value={cd.plagesHeuresCreuses} />}
+          {cd.futuresPlagesHeuresCreuses && cd.futuresPlagesHeuresCreuses !== cd.plagesHeuresCreuses && (
+            <InfoBlock label="Futures heures creuses" value={cd.futuresPlagesHeuresCreuses} />
+          )}
+          {cd.typeComptageLibelle && <InfoBlock label="Type de compteur" value={cd.typeComptageLibelle} />}
+          {cd.calibreDisjoncteur && <InfoBlock label="Disjoncteur" value={cd.calibreDisjoncteur} />}
+          {cd.periodiciteReleve && <InfoBlock label="Périodicité de relevé" value={cd.periodiciteReleve} />}
+          {cd.etatContractuel && <InfoBlock label="État contractuel" value={cd.etatContractuel} />}
+          {cd.adresseInstallation && (
+            <InfoBlock label="Adresse" value={cd.adresseInstallation} className="sm:col-span-2 lg:col-span-3" />
+          )}
         </div>
       </CardContent>
     </Card>
   );
 }
+
 
 // ============================================================
 // SECTION 5 — Visualisation jour par jour
