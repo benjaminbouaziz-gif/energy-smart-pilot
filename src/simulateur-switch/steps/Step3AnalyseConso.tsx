@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, Fragment, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays, Building2, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays, Building2, ChevronDown, TrendingUp, Info } from "lucide-react";
 import {
   Bar, BarChart, Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
   ComposedChart, Line,
@@ -46,6 +46,36 @@ export default function Step3AnalyseConso() {
     return m;
   }, [heatmap]);
 
+  const picMaxHoraireKw = useMemo(() => {
+    if (safeHourly.length === 0) return 0;
+    return Math.max(...safeHourly);
+  }, [safeHourly]);
+
+  const recommandationPuissance = useMemo(() => {
+    const puissanceSouscriteKva = data.contractDetails?.puissanceSouscriteKva;
+    if (!puissanceSouscriteKva || picMaxHoraireKw === 0) return null;
+    const picInstantaneEstime = picMaxHoraireKw * 1.3;
+    const paliersBT = [3, 6, 9, 12, 15, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240];
+    const picAvecMarge = picInstantaneEstime * 1.1;
+    const palierRecommande = paliersBT.find((p) => p >= picAvecMarge) ?? paliersBT[paliersBT.length - 1];
+    const ratio = picInstantaneEstime / puissanceSouscriteKva;
+    let diagnostic: "surdimensionne" | "optimal" | "limite" | "depassement";
+    if (ratio < 0.6) diagnostic = "surdimensionne";
+    else if (ratio < 0.85) diagnostic = "optimal";
+    else if (ratio < 1.0) diagnostic = "limite";
+    else diagnostic = "depassement";
+    return {
+      picHoraireKw: picMaxHoraireKw,
+      picInstantaneEstimeKva: picInstantaneEstime,
+      puissanceSouscriteActuelleKva: puissanceSouscriteKva,
+      palierRecommande,
+      diagnostic,
+      ratio,
+    };
+  }, [picMaxHoraireKw, data.contractDetails]);
+
+  const [openRecoPuissance, setOpenRecoPuissance] = useState(false);
+
   if (!lc || lc.hourlyKwh.length === 0) {
     return (
       <div className="container mx-auto px-4 mt-10 max-w-3xl">
@@ -83,18 +113,106 @@ export default function Step3AnalyseConso() {
 
 
       {/* SECTION 1 - Stats clés */}
-      <Card className="rounded-3xl border-primary/20 shadow-[var(--shadow-glow)]">
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatTile label="PRM" value={<span className="font-mono text-base">{formatPrm(prm)}</span>} />
-            <StatTile label="Période" value={
-              <span className="text-sm">{formatDateFr(lc.windowStart)} → {formatDateFr(lc.windowEnd)}</span>
-            } />
-            <StatTile label="Conso totale" value={<span>{fmtKwh(stats.totalKwh)} <span className="text-sm text-muted-foreground">kWh</span></span>} />
-            <StatTile label="Moyenne / jour" value={<span>{fmtKwh1(stats.dailyAvgKwh)} <span className="text-sm text-muted-foreground">kWh</span></span>} />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="rounded-3xl border-primary/20 shadow-[var(--shadow-glow)]">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 gap-4">
+              <StatTile label="PRM" value={<span className="font-mono text-base">{formatPrm(prm)}</span>} />
+              <StatTile label="Période" value={
+                <span className="text-sm">{formatDateFr(lc.windowStart)} → {formatDateFr(lc.windowEnd)}</span>
+              } />
+              <StatTile label="Conso totale" value={<span>{fmtKwh(stats.totalKwh)} <span className="text-sm text-muted-foreground">kWh</span></span>} />
+              <StatTile label="Moyenne / jour" value={<span>{fmtKwh1(stats.dailyAvgKwh)} <span className="text-sm text-muted-foreground">kWh</span></span>} />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-amber-200/60 shadow-[var(--shadow-glow)]">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-2xl bg-amber-100">
+                  <TrendingUp className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Pic max annuel (horaire)</div>
+                  <div className="text-2xl font-bold">{fmtKwh1(picMaxHoraireKw)} kW</div>
+                </div>
+              </div>
+              {recommandationPuissance && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpenRecoPuissance(!openRecoPuissance)}
+                  className="shrink-0 text-amber-600 hover:text-amber-700"
+                  aria-expanded={openRecoPuissance}
+                >
+                  <Info className="w-4 h-4 mr-1" />
+                  {openRecoPuissance ? "Masquer" : "Analyse"}
+                </Button>
+              )}
+            </div>
+            {recommandationPuissance && (
+              <motion.div
+                initial={false}
+                animate={{ height: openRecoPuissance ? "auto" : 0, opacity: openRecoPuissance ? 1 : 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="mt-4 pt-4 border-t border-amber-100 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-2xl bg-amber-50 p-3">
+                      <div className="text-xs text-amber-700/70 font-medium">Pic horaire observé</div>
+                      <div className="text-sm font-semibold text-amber-900 mt-1">{fmtKwh1(recommandationPuissance.picHoraireKw)} kW</div>
+                    </div>
+                    <div className="rounded-2xl bg-amber-50 p-3">
+                      <div className="text-xs text-amber-700/70 font-medium">Pic instantané estimé</div>
+                      <div className="text-sm font-semibold text-amber-900 mt-1">~{fmtKwh1(recommandationPuissance.picInstantaneEstimeKva)} kVA</div>
+                    </div>
+                    <div className="rounded-2xl bg-amber-50 p-3">
+                      <div className="text-xs text-amber-700/70 font-medium">Puissance souscrite actuelle</div>
+                      <div className="text-sm font-semibold text-amber-900 mt-1">{recommandationPuissance.puissanceSouscriteActuelleKva} kVA</div>
+                    </div>
+                  </div>
+                  {recommandationPuissance.diagnostic === "surdimensionne" && (
+                    <Alert className="border-emerald-200 bg-emerald-50">
+                      <AlertDescription className="text-emerald-900 text-sm">
+                        <strong>Vous êtes potentiellement surdimensionné.</strong> Votre pic instantané estimé ({fmtKwh1(recommandationPuissance.picInstantaneEstimeKva)} kVA) est nettement inférieur à votre puissance souscrite ({recommandationPuissance.puissanceSouscriteActuelleKva} kVA).
+                        Vous pourriez envisager de descendre à <strong>{recommandationPuissance.palierRecommande} kVA</strong> et économiser plusieurs centaines d'euros par an sur la prime fixe.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {recommandationPuissance.diagnostic === "optimal" && (
+                    <Alert className="border-blue-200 bg-blue-50">
+                      <AlertDescription className="text-blue-900 text-sm">
+                        <strong>Votre puissance souscrite semble bien calibrée.</strong> Votre pic instantané estimé représente {Math.round(recommandationPuissance.ratio * 100)} % de votre puissance souscrite, c'est dans la zone optimale (60–85 %).
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {recommandationPuissance.diagnostic === "limite" && (
+                    <Alert className="border-orange-200 bg-orange-50">
+                      <AlertDescription className="text-orange-900 text-sm">
+                        <strong>Votre puissance souscrite est en limite haute.</strong> Votre pic instantané estimé représente {Math.round(recommandationPuissance.ratio * 100)} % de votre puissance souscrite. Surveillez les éventuels dépassements (CMDPS facturés). Une augmentation vers {recommandationPuissance.palierRecommande} kVA pourrait être prudente.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {recommandationPuissance.diagnostic === "depassement" && (
+                    <Alert className="border-red-200 bg-red-50">
+                      <AlertDescription className="text-red-900 text-sm">
+                        <strong>Vous dépassez probablement votre puissance souscrite.</strong> Pic instantané estimé : {fmtKwh1(recommandationPuissance.picInstantaneEstimeKva)} kVA pour {recommandationPuissance.puissanceSouscriteActuelleKva} kVA souscrits. Cela génère des coûts de dépassement (CMDPS). Une augmentation à {recommandationPuissance.palierRecommande} kVA est recommandée.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <p className="text-xs text-muted-foreground italic">
+                    Estimation basée sur le pic moyen horaire majoré de 30 % pour estimer le pic instantané réel.
+                    Les pointes de démarrage de certains équipements (moteurs, fours, climatisation) peuvent dépasser cette estimation. À confirmer avec un audit dédié avant toute modification de contrat.
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {isManual && (
         <Alert className="border-gold/40">
