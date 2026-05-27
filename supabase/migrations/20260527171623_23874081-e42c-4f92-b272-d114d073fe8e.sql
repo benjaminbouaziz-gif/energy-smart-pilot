@@ -1,0 +1,1 @@
+ALTER TABLE public.switchgrid_sessions ADD COLUMN IF NOT EXISTS c68_data JSONB;

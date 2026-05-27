@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState, Fragment } from "react";
+import { useEffect, useMemo, useRef, useState, Fragment, type ReactNode } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays, Building2 } from "lucide-react";
 import {
   Bar, BarChart, Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
   ComposedChart, Line,
@@ -78,6 +78,8 @@ export default function Step3AnalyseConso() {
         <h1 className="text-3xl md:text-4xl font-black mb-2">Analyse de la consommation</h1>
         <p className="text-sm text-muted-foreground">Profil de consommation à présenter au client</p>
       </div>
+      <ContractDetailsCard contract={data.contractDetails} />
+
 
       {/* SECTION 1 - Stats clés */}
       <Card className="rounded-3xl border-primary/20 shadow-[var(--shadow-glow)]">
@@ -232,12 +234,96 @@ export default function Step3AnalyseConso() {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: React.ReactNode }) {
+function StatTile({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="rounded-2xl border border-gold/30 bg-gold/5 p-4">
       <div className="text-[10px] font-mono uppercase tracking-widest text-gold mb-1">{label}</div>
       <div className="text-2xl font-black text-foreground">{value}</div>
     </div>
+  );
+}
+
+// ============================================================
+// Carte récap C68 — Caractéristiques du contrat Enedis
+// ============================================================
+import type { SimulateurSwitchContractDetails } from "../SimulateurSwitchContext";
+
+const OPTION_TARIFAIRE_LABELS: Record<string, string> = {
+  BASE: "Base",
+  HPHC: "Heures Pleines / Heures Creuses",
+  HP_HC: "Heures Pleines / Heures Creuses",
+  "HP/HC": "Heures Pleines / Heures Creuses",
+  "TJ-CU": "Tarif Jaune CU",
+  "TLU-LU": "Tarif Longue Utilisation",
+  CU4: "Courte Utilisation 4 postes",
+  MU4: "Moyenne Utilisation 4 postes",
+  CU: "Courte Utilisation",
+  LU: "Longue Utilisation",
+};
+
+function labelOptionTarifaire(o?: string) {
+  if (!o) return undefined;
+  const up = o.toUpperCase().replace(/\s+/g, "");
+  return OPTION_TARIFAIRE_LABELS[up] ?? o;
+}
+
+function labelSegmentTension(segment?: string, tension?: string) {
+  if (!segment && !tension) return undefined;
+  const segTxt = segment === "C5" ? "C5 (≤ 36 kVA)" : segment === "C4" ? "C4 (36–250 kVA)" : segment;
+  if (segTxt && tension) return `${segTxt} — ${tension}`;
+  return segTxt ?? tension;
+}
+
+function formatDateFrLong(iso?: string) {
+  if (!iso) return undefined;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return `${d.getUTCDate()} ${FR_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+function InfoTile({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="rounded-2xl bg-violet-50 border border-violet-100 px-4 py-3">
+      <div className="text-xs text-muted-foreground mb-1">{label}</div>
+      <div className="font-semibold text-base text-foreground">{value}</div>
+    </div>
+  );
+}
+
+function ContractDetailsCard({ contract }: { contract?: SimulateurSwitchContractDetails }) {
+  if (!contract) return null;
+  const segTxt = labelSegmentTension(contract.segment, contract.domaineTension);
+  const optTxt = labelOptionTarifaire(contract.optionTarifaire);
+  const dateTxt = formatDateFrLong(contract.dateMiseEnService);
+
+  const tiles: { label: string; value: ReactNode }[] = [];
+  if (contract.prm) tiles.push({ label: "PRM", value: <span className="font-mono">{formatPrm(contract.prm)}</span> });
+  if (contract.titulaire) tiles.push({ label: "Titulaire", value: contract.titulaire });
+  if (segTxt) tiles.push({ label: "Segment / Tension", value: segTxt });
+  if (contract.puissanceSouscriteKva != null)
+    tiles.push({ label: "Puissance souscrite", value: `${contract.puissanceSouscriteKva} kVA` });
+  if (optTxt) tiles.push({ label: "Option tarifaire", value: optTxt });
+  if (contract.typeCompteur) tiles.push({ label: "Type de compteur", value: contract.typeCompteur });
+  if (dateTxt) tiles.push({ label: "Mise en service", value: dateTxt });
+
+  if (tiles.length === 0) return null;
+
+  return (
+    <Card className="rounded-3xl">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Building2 className="w-5 h-5 text-primary" /> Votre contrat Enedis
+        </CardTitle>
+        <CardDescription>Données récupérées automatiquement depuis votre compteur</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {tiles.map((t, i) => (
+            <InfoTile key={i} label={t.label} value={t.value} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
