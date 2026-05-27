@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, Fragment } from "react";
+import { useEffect, useMemo, useRef, useState, Fragment, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays, Building2 } from "lucide-react";
 import {
