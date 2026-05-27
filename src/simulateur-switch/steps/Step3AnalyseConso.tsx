@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Activity, Calendar, Gauge, Sparkles, Play, Pause, CalendarDays, Building2 } from "lucide-react";
 import {
   Bar, BarChart, Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend,
   ComposedChart, Line,
