@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const dataResp = await fetch(`${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`, {
+    const urlAppelee = `${SWITCHGRID_BASE_URL}/request/${requestId}/data?format=json`;
+    console.log("SWITCHGRID_DATA_URL_CALLED:", urlAppelee);
+    const dataResp = await fetch(urlAppelee, {
       method: "GET", headers: sgHeaders(), cache: "no-store",
     });
     const dataText = await dataResp.text();
@@ -100,7 +102,7 @@ Deno.serve(async (req) => {
 
     await supabase.from("switchgrid_sessions").update({ status: "READY" }).eq("id", sessionId);
 
-    return new Response(JSON.stringify({ status: "READY", loadCurve }), {
+    return new Response(JSON.stringify({ status: "READY", loadCurve, _debugUrlCalled: urlAppelee }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
