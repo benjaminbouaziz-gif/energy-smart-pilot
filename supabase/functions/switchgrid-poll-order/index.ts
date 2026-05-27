@@ -113,9 +113,23 @@ Deno.serve(async (req) => {
       durationMinutes: periodMin,
     }));
 
-    await supabase.from("switchgrid_sessions").update({ status: "READY" }).eq("id", sessionId);
+    // Fetch C68 contract details (best-effort, never blocks)
+    let c68DataParsed: any = null;
+    if (c68Req && c68Req.status === "SUCCESS" && c68Req.dataUrl) {
+      try {
+        const c68Resp = await fetch(c68Req.dataUrl, { cache: "no-store" });
+        if (c68Resp.ok) {
+          const c68Text = await c68Resp.text();
+          c68DataParsed = JSON.parse(c68Text);
+        }
+      } catch (_e) {
+        c68DataParsed = null;
+      }
+    }
 
-    return new Response(JSON.stringify({ status: "READY", loadCurve }), {
+    await supabase.from("switchgrid_sessions").update({ status: "READY", c68_data: c68DataParsed }).eq("id", sessionId);
+
+    return new Response(JSON.stringify({ status: "READY", loadCurve, contractDetails: c68DataParsed ?? null }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
