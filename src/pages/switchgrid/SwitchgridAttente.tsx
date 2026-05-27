@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { switchgridToHourlyKwh } from "@/lib/switchgrid/transformer";
+import { extractContractDetailsFromC68 } from "@/simulateur-switch/lib/c68-extract";
 import {
   Loader2, Plus, Download, RefreshCw, Trash2, CheckCircle2, AlertTriangle, Play,
 } from "lucide-react";
