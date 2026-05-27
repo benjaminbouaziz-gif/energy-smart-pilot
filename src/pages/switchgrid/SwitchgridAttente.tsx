@@ -205,6 +205,9 @@ export default function SwitchgridAttente() {
         throw new Error(j?.error || "Données indisponibles");
       }
       const result = switchgridToHourlyKwh(j.loadCurve);
+      const contractDetails = j.contractDetails
+        ? extractContractDetailsFromC68(j.contractDetails)
+        : undefined;
 
       const switchgridState = {
         step: 3,
@@ -242,6 +245,7 @@ export default function SwitchgridAttente() {
             totalKwh: result.totalKwh,
             qualityScore: result.qualityScore,
           },
+          ...(contractDetails ? { contractDetails } : {}),
         },
       };
 
