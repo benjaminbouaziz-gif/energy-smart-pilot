@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
 
     await supabase.from("switchgrid_sessions").update({ status: "READY" }).eq("id", sessionId);
 
-    return new Response(JSON.stringify({ status: "READY", loadCurve }), {
+    return new Response(JSON.stringify({ status: "READY", loadCurve, _debugUrlCalled: urlAppelee }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {
