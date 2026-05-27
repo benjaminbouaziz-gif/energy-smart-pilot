@@ -46,6 +46,36 @@ export default function Step3AnalyseConso() {
     return m;
   }, [heatmap]);
 
+  const picMaxHoraireKw = useMemo(() => {
+    if (safeHourly.length === 0) return 0;
+    return Math.max(...safeHourly);
+  }, [safeHourly]);
+
+  const recommandationPuissance = useMemo(() => {
+    const puissanceSouscriteKva = data.contractDetails?.puissanceSouscriteKva;
+    if (!puissanceSouscriteKva || picMaxHoraireKw === 0) return null;
+    const picInstantaneEstime = picMaxHoraireKw * 1.3;
+    const paliersBT = [3, 6, 9, 12, 15, 18, 24, 30, 36, 42, 48, 54, 60, 66, 72, 78, 84, 90, 96, 108, 120, 132, 144, 156, 168, 180, 192, 204, 216, 228, 240];
+    const picAvecMarge = picInstantaneEstime * 1.1;
+    const palierRecommande = paliersBT.find((p) => p >= picAvecMarge) ?? paliersBT[paliersBT.length - 1];
+    const ratio = picInstantaneEstime / puissanceSouscriteKva;
+    let diagnostic: "surdimensionne" | "optimal" | "limite" | "depassement";
+    if (ratio < 0.6) diagnostic = "surdimensionne";
+    else if (ratio < 0.85) diagnostic = "optimal";
+    else if (ratio < 1.0) diagnostic = "limite";
+    else diagnostic = "depassement";
+    return {
+      picHoraireKw: picMaxHoraireKw,
+      picInstantaneEstimeKva: picInstantaneEstime,
+      puissanceSouscriteActuelleKva: puissanceSouscriteKva,
+      palierRecommande,
+      diagnostic,
+      ratio,
+    };
+  }, [picMaxHoraireKw, data.contractDetails]);
+
+  const [openRecoPuissance, setOpenRecoPuissance] = useState(false);
+
   if (!lc || lc.hourlyKwh.length === 0) {
     return (
       <div className="container mx-auto px-4 mt-10 max-w-3xl">
