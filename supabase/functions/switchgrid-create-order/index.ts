@@ -58,6 +58,7 @@ Deno.serve(async (req) => {
       });
     }
     const data = JSON.parse(text);
+    console.log("SWITCHGRID_CREATE_ORDER_RESPONSE:", JSON.stringify(data, null, 2));
     const loadcurve = (data.requests ?? []).find((r: any) => r.type === "LOADCURVE");
     if (!loadcurve) {
       return new Response(JSON.stringify({ error: "NO_LOADCURVE_REQUEST" }), {
